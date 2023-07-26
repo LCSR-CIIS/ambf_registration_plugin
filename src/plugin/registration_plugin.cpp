@@ -165,7 +165,6 @@ bool afRegistrationPlugin::initLabels(){
     m_registrationStatusLabel->setCornerRadius(5, 5, 5, 5);
     m_registrationStatusLabel->setShowPanel(true);
     m_registrationStatusLabel->setColor(cColorf(1.0, 1.0, 1.0, 1.0));
-    m_registrationStatusLabel->setText("Registration Status: ");
 
     m_panelManager.addPanel(m_registrationStatusLabel, 0.8, 0.9, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
     m_panelManager.setVisible(m_registrationStatusLabel, true);
@@ -177,7 +176,6 @@ bool afRegistrationPlugin::initLabels(){
     m_savedPointsListLabel->setCornerRadius(5, 5, 5, 5);
     m_savedPointsListLabel->setShowPanel(true);
     m_savedPointsListLabel->setColor(cColorf(1.0, 1.0, 1.0, 1.0));
-    m_savedPointsListLabel->setText("--- List of Saved objects ---");
 
     m_panelManager.addPanel(m_savedPointsListLabel, 0.8, 0.8, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
     m_panelManager.setVisible(m_savedPointsListLabel, true);
@@ -255,7 +253,7 @@ void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a
 
 void afRegistrationPlugin::graphicsUpdate(){
 
-    string m_savedLocationText = "--- List of Saved objects --- \n";
+    string m_savedLocationText = "--- List of Saved Locations --- \n";
 
     // For Registration Status Label
     switch (m_activeMode){
@@ -272,7 +270,7 @@ void afRegistrationPlugin::graphicsUpdate(){
             // m_savedLocationText = "";
             for (int i=0; i < m_spheres.size(); i++){   
                 cVector3d trans = m_spheres[i]->getLocalPos();
-                m_savedLocationText += "Point " << to_string(i) + ": " + trans.str(5);
+                m_savedLocationText += "Point " + to_string(i) + ": " + trans.str(5);
 
                 if(i < m_spheres.size()-1){
                     m_savedLocationText += "\n";
@@ -321,7 +319,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 cTransform trans = m_measured_cp[i]->measured_cp();
 
                 // TODO: Need to change here
-                m_pointsPtr->setLocalTransform(trans);
+                m_pointsPtr[i]->setLocalTransform(trans);
             }
         }
 
