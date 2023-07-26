@@ -1,2 +1,4 @@
-# ambf_registration_plugin
-AMBF simulation plugin to perform registrration related task.
+# AMBF Registration Plugin
+AMBF simulation plugin to perform registration related task.
+
+

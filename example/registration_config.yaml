@@ -1,0 +1,19 @@
+## Pointer based registration
+pointer:
+  tooltip name: "drill_tip" # Rigid body that is attached to the tip of the tool
+  number of points: 8
+  name of points:
+    - marker_1
+    - marker_2
+    - marker_3
+    - marker_4
+    - marker_5
+    - marker_6
+    - marker_7
+    - marker_8
+
+## Optical Tracker Registration
+optical tracker:
+  namespace: "/adapter" #rostopic name for the optical marker
+  name of points:
+    - marker_body
