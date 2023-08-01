@@ -119,6 +119,8 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
                     cerr << "WARNING! No object named " << node["pointer"]["name of points"][i].as<string>() << " found." << endl;
                 }
             }
+
+            cerr << m_numPoints << "Points are specified as Keypoints" << endl;
         }
 
         // Check whether optical tracker based registration is needed or not
@@ -138,7 +140,7 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
                 if(objectPtr){
                     m_pointsPtr.push_back(objectPtr);
                     CRTKInterface* interface = new CRTKInterface(nspace + "/" + objectName);
-                    m_measured_cp.push_back(interface);
+                    m_trackingPoints.push_back(interface);
                 }
                 else{
                     cerr << "WARNING! No object named " << objectName << "found." << endl;
@@ -267,16 +269,14 @@ void afRegistrationPlugin::graphicsUpdate(){
             m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
 
 
-            // m_savedLocationText = "";
+            // Saving the saved points location as text and show on the screen.
             for (int i=0; i < m_spheres.size(); i++){   
                 cVector3d trans = m_spheres[i]->getLocalPos();
                 m_savedLocationText += "Point " + to_string(i) + ": " + trans.str(5);
-
                 if(i < m_spheres.size()-1){
                     m_savedLocationText += "\n";
                 }
             }
-
             m_panelManager.setText(m_savedPointsListLabel, m_savedLocationText);
             break;
 
@@ -298,7 +298,6 @@ void afRegistrationPlugin::graphicsUpdate(){
 void afRegistrationPlugin::physicsUpdate(double dt){
     if (m_activeMode == RegistrationMode::POINTER){
         if (m_savePoint){
-            cerr << "Saving the current location." << endl;
             cShapeSphere* pointMesh = new cShapeSphere(0.001);
             pointMesh->setRadius(0.001);
             pointMesh->m_material->setBlack();
@@ -311,17 +310,32 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
             m_savePoint = false;
         }
+
+        // Once all the points are saved
+        if (m_spheres.size() == m_pointsPtr.size()){
+            cerr << "Moving all the collected points" << endl;
+            for (int idx=0; idx<m_spheres.size(); idx++){
+                m_pointsPtr[idx]->setLocalPos(m_spheres[idx]->getLocalPos());
+            }
+        }
     }
 
     else if (m_activeMode == RegistrationMode::TRACKER){
         for (int i=0; i< m_numPoints; i++){
             if(m_pointsPtr[i]){
-                cTransform trans = m_measured_cp[i]->measured_cp();
 
-                // TODO: Need to change here
-                m_pointsPtr[i]->setLocalTransform(trans);
+                // Retreive point transformation from the rostopic
+                // cTransform trans = m_trackingPoints[i]->measured_cp();
+
+                // if (abs(trans.getLocalPos().x())>=0.0){
+                //     // TODO: Need to change here
+                //     m_pointsPtr[i]->setLocalTransform(trans);
+                // }
             }
         }
+    }
+
+    else if (m_activeMode == RegistrationMode::REGISTERED){
 
     }
 }

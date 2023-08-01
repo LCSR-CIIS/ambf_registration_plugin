@@ -108,7 +108,7 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         vector<cShapeSphere*> m_spheres;
         vector<cVector3d> m_savedPositions;
 
-        vector<CRTKInterface*> m_measured_cp;
+        vector<CRTKInterface*> m_trackingPoints;
        
 };
 

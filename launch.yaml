@@ -1,0 +1,16 @@
+# This is the base file for Coordination Application
+world config: ADF/world/world.yaml
+color config: ADF/color/colors.yaml
+input devices config: ADF/input_devices/input_devices.yaml
+
+plugins: [
+ {
+   path: ./build/,
+   name: registration_plugin,
+   filename: libregistration_plugin.so
+ }
+]
+
+multibody configs:
+  - "./example/ADF/test.yaml" #0
+  - "~/sdf_virtual_fixture/ADF/Galen/galen.yaml" #1
