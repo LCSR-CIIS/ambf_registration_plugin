@@ -104,6 +104,7 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         afRigidBodyPtr m_toolTipPtr = nullptr;
         int m_numPoints = 0;
         vector<afRigidBodyPtr> m_pointsPtr; 
+        vector<afRigidBodyPtr> m_trackingPointsPtr; 
         bool m_savePoint = false;
         vector<cShapeSphere*> m_spheres;
         vector<cVector3d> m_savedPositions;

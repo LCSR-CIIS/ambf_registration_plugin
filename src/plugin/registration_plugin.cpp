@@ -138,7 +138,7 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
                 objectPtr = m_worldPtr->getRigidBody(objectName);
                 
                 if(objectPtr){
-                    m_pointsPtr.push_back(objectPtr);
+                    m_trackingPointsPtr.push_back(objectPtr);
                     CRTKInterface* interface = new CRTKInterface(nspace + "/" + objectName);
                     m_trackingPoints.push_back(interface);
                 }
