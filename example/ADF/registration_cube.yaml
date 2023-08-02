@@ -89,7 +89,7 @@ BODY Registration Cube:
 BODY Sphere_0:
   name: Sphere_0
   mesh: Sphere_0.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -128,7 +128,7 @@ BODY Sphere_0:
 BODY Sphere_1:
   name: Sphere_1
   mesh: Sphere_1.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -167,7 +167,7 @@ BODY Sphere_1:
 BODY Sphere_10:
   name: Sphere_10
   mesh: Sphere_10.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -206,7 +206,7 @@ BODY Sphere_10:
 BODY Sphere_11:
   name: Sphere_11
   mesh: Sphere_11.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -245,7 +245,7 @@ BODY Sphere_11:
 BODY Sphere_12:
   name: Sphere_12
   mesh: Sphere_12.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -284,7 +284,7 @@ BODY Sphere_12:
 BODY Sphere_13:
   name: Sphere_13
   mesh: Sphere_13.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -323,7 +323,7 @@ BODY Sphere_13:
 BODY Sphere_14:
   name: Sphere_14
   mesh: Sphere_14.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -362,7 +362,7 @@ BODY Sphere_14:
 BODY Sphere_15:
   name: Sphere_15
   mesh: Sphere_15.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -401,7 +401,7 @@ BODY Sphere_15:
 BODY Sphere_16:
   name: Sphere_16
   mesh: Sphere_16.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -440,7 +440,7 @@ BODY Sphere_16:
 BODY Sphere_17:
   name: Sphere_17
   mesh: Sphere_17.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -479,7 +479,7 @@ BODY Sphere_17:
 BODY Sphere_18:
   name: Sphere_18
   mesh: Sphere_18.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -518,7 +518,7 @@ BODY Sphere_18:
 BODY Sphere_19:
   name: Sphere_19
   mesh: Sphere_19.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -557,7 +557,7 @@ BODY Sphere_19:
 BODY Sphere_2:
   name: Sphere_2
   mesh: Sphere_2.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -596,7 +596,7 @@ BODY Sphere_2:
 BODY Sphere_3:
   name: Sphere_3
   mesh: Sphere_3.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -635,7 +635,7 @@ BODY Sphere_3:
 BODY Sphere_4:
   name: Sphere_4
   mesh: Sphere_4.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -674,7 +674,7 @@ BODY Sphere_4:
 BODY Sphere_5:
   name: Sphere_5
   mesh: Sphere_5.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -713,7 +713,7 @@ BODY Sphere_5:
 BODY Sphere_6:
   name: Sphere_6
   mesh: Sphere_6.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -752,7 +752,7 @@ BODY Sphere_6:
 BODY Sphere_7:
   name: Sphere_7
   mesh: Sphere_7.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -791,7 +791,7 @@ BODY Sphere_7:
 BODY Sphere_8:
   name: Sphere_8
   mesh: Sphere_8.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
@@ -830,7 +830,7 @@ BODY Sphere_8:
 BODY Sphere_9:
   name: Sphere_9
   mesh: Sphere_9.OBJ
-  collision mesh type: CONVEX_HULL
+  collision mesh type: CONCAVE_MESH
   mass: 1.0
   collision margin: 0.001
   scale: 1.0
