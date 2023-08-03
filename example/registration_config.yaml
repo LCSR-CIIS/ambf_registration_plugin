@@ -3,14 +3,14 @@ pointer:
   tooltip name: "drill_tip" # Rigid body that is attached to the tip of the tool
   number of points: 8
   name of points:
-    - marker_1
-    - marker_2
-    - marker_3
-    - marker_4
-    - marker_5
-    - marker_6
-    - marker_7
-    - marker_8
+    - Sphere_01
+    - Sphere_02
+    - Sphere_03
+    - Sphere_04
+    - Sphere_05
+    - Sphere_06
+    - Sphere_07
+    - Sphere_08
 
 ## Optical Tracker Registration
 optical tracker:
