@@ -146,6 +146,7 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
                     cerr << "WARNING! No object named " << objectName << "found." << endl;
                 }
             }
+            m_registeringObject = m_worldPtr->getRigidBody("Registration Cube");
         }
     }
 
@@ -288,6 +289,8 @@ void afRegistrationPlugin::graphicsUpdate(){
         case RegistrationMode::REGISTERED:
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: REGISTERED");
             m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(0.,0.5,0.5));
+
+            m_panelManager.setText(m_savedPointsListLabel, m_registeredText);
             break;
     }
 
@@ -313,10 +316,37 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
         // Once all the points are saved
         if (m_spheres.size() == m_pointsPtr.size()){
-            cerr << "Moving all the collected points" << endl;
+
+            cerr << "Saving all the translational error." << endl;
             for (int idx=0; idx<m_spheres.size(); idx++){
-                m_pointsPtr[idx]->setLocalPos(m_spheres[idx]->getLocalPos());
+                m_savedError.push_back(m_pointsPtr[idx]->getLocalPos() - m_spheres[idx]->getLocalPos());
             }
+
+            // Get the average and error for the translation error
+            cVector3d sum;
+            for (int i=0; i<m_savedError.size(); i++){
+                cVector3d tmp;
+                m_savedError[i].divr(m_savedError.size(), tmp);
+                sum += tmp;
+            }
+
+            cVector3d err;
+            for (int i=0; i<m_savedError.size(); i++){
+                cVector3d tmp;
+                err += (m_savedError[i] - sum);
+            }
+            err.div(m_savedError.size());
+
+            // Saving text for the status monitor
+            m_registeredText = "Registeration Result: \n Avg: " + sum.str(4) + "error: " + err.str(4);
+
+            // Converting the cVector3d to btVector3
+            btVector3 trans_bt;
+            trans_bt.setValue(sum.x(), sum.y(), sum.z());
+            m_registeredPos = m_registeringObject->m_bulletRigidBody->getWorldTransform().getOrigin() - trans_bt;
+
+            // Change mode to "REGISTERED"
+            m_activeMode = RegistrationMode::REGISTERED;
         }
     }
 
@@ -337,6 +367,13 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
     else if (m_activeMode == RegistrationMode::REGISTERED){
 
+        // Comamand the registering Object to move to the calculated registered Position.
+        btTransform Tcommand;
+        Tcommand.setOrigin(m_registeredPos);
+        Tcommand.setRotation(m_registeringObject->m_bulletRigidBody->getWorldTransform().getRotation());
+        Tcommand = Tcommand * m_registeringObject->getInertialOffsetTransform();
+        m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+        m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
     }
 }
 

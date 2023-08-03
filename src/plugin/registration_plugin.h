@@ -103,13 +103,25 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         // Pointer based registration
         afRigidBodyPtr m_toolTipPtr = nullptr;
         int m_numPoints = 0;
+
         vector<afRigidBodyPtr> m_pointsPtr; 
         vector<afRigidBodyPtr> m_trackingPointsPtr; 
+        
+        // Pointer based Registration
         bool m_savePoint = false;
         vector<cShapeSphere*> m_spheres;
         vector<cVector3d> m_savedPositions;
+        vector<cVector3d> m_savedError;
 
+        // Tracker based Registration
         vector<CRTKInterface*> m_trackingPoints;
+
+        // Registered Statistics Text
+        string m_registeredText;
+        btVector3 m_registeredPos;
+
+        afRigidBodyPtr m_registeringObject;
+        vector<cVector3d> m_result;
        
 };
 

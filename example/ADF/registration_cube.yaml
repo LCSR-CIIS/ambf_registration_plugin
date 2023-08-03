@@ -51,7 +51,7 @@ BODY Registration Cube:
   name: Registration Cube
   mesh: Registration Cube.OBJ
   collision mesh type: CONCAVE_MESH
-  mass: 1.0
+  mass: 0.0
   collision margin: 0.001
   scale: 1.0
   location:
@@ -1120,7 +1120,7 @@ JOINT Registration Cube-Sphere_00:
   joint limits:
     high: 1.2
     low: -1.2
-  enable feedback: true
+  enable feedback: false
   passive: false
   controller output type: VELOCITY
   type: fixed

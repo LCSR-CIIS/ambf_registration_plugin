@@ -1,8 +1,9 @@
 ## Pointer based registration
 pointer:
   tooltip name: "drill_tip" # Rigid body that is attached to the tip of the tool
-  number of points: 8
+  number of points: 20
   name of points:
+    - Sphere_00
     - Sphere_01
     - Sphere_02
     - Sphere_03
@@ -11,6 +12,18 @@ pointer:
     - Sphere_06
     - Sphere_07
     - Sphere_08
+    - Sphere_08
+    - Sphere_09
+    - Sphere_10
+    - Sphere_11
+    - Sphere_12
+    - Sphere_13
+    - Sphere_14
+    - Sphere_15
+    - Sphere_16
+    - Sphere_17
+    - Sphere_18
+    - Sphere_19
 
 ## Optical Tracker Registration
 optical tracker:
