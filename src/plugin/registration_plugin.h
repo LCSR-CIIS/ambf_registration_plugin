@@ -47,6 +47,9 @@
 #include "../utils/CRTKInterface.h"
 #include <yaml-cpp/yaml.h>
 
+#include "../registration/point_cloud_registration.h"
+
+
 #include <boost/program_options.hpp>
 
 namespace boost{
@@ -113,6 +116,10 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         vector<cVector3d> m_savedPositions;
         vector<cVector3d> m_savedError;
 
+        vector<cVector3d> m_pointsIn;
+        vector<cVector3d> m_pointsOut;
+        cTransform m_registerdTrans;
+
         // Tracker based Registration
         vector<CRTKInterface*> m_trackingPoints;
 
@@ -123,6 +130,8 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         afRigidBodyPtr m_registeringObject;
         vector<cVector3d> m_result;
        
+       // Point cloud registration
+       PointCloudRegistration m_pointCloudRegistration;
 };
 
 

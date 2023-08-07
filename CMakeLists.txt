@@ -44,12 +44,19 @@ set(CMAKE_CXX_STANDARD 11)
 find_package(AMBF)
 find_package(Boost COMPONENTS program_options filesystem)
 
+find_package(PCL 1.2 REQUIRED)
+
 include_directories(${AMBF_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${PCL_INCLUDE_DIRS})
 
 
 link_directories(${AMBF_LIBRARY_DIRS})
 add_definitions(${AMBF_DEFINITIONS})
+
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
 
 # For spacenav control plugin
 add_library(registration_plugin SHARED
@@ -59,9 +66,11 @@ add_library(registration_plugin SHARED
     src/utils/camera_panel_manager.h
     src/utils/CRTKInterface.cpp
     src/utils/CRTKInterface.h
+    src/registration/point_cloud_registration.cpp
+    src/registration/point_cloud_registration.h
     )
 
-target_link_libraries (registration_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})
+target_link_libraries (registration_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES} ${PCL_LIBRARIES})
 set_property(TARGET registration_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 if(NOT BUILD_PLUGIN_WITH_ROS)

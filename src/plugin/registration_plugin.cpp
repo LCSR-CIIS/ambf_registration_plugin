@@ -317,10 +317,15 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         // Once all the points are saved
         if (m_spheres.size() == m_pointsPtr.size()){
 
+
             cerr << "Saving all the translational error." << endl;
             for (int idx=0; idx<m_spheres.size(); idx++){
                 m_savedError.push_back(m_pointsPtr[idx]->getLocalPos() - m_spheres[idx]->getLocalPos());
+                m_pointsIn.push_back(m_pointsPtr[idx]->getLocalPos());
+                m_pointsOut.push_back(m_spheres[idx]->getLocalPos());
             }
+
+            m_pointCloudRegistration.ICPRegistration(m_pointsIn, m_pointsOut, m_registerdTrans);
 
             // Get the average and error for the translation error
             cVector3d sum;
