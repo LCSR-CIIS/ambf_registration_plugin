@@ -64,7 +64,7 @@ using namespace std;
 using namespace ambf;
 
 enum class RegistrationMode{
-    UNREGISTERED=0, POINTER=1, TRACKER=2, REGISTERED=3
+    UNREGISTERED=0, POINTER=1, TRACKER=2, PIVOT=3, HANDEYE=4, REGISTERED=5 
 };
 
 class afRegistrationPlugin: public afSimulatorPlugin{
@@ -106,6 +106,7 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         // Pointer based registration
         afRigidBodyPtr m_toolTipPtr = nullptr;
         int m_numPoints = 0;
+        int m_numTrackingPoints = 0;
 
         vector<afRigidBodyPtr> m_pointsPtr; 
         vector<afRigidBodyPtr> m_trackingPointsPtr; 

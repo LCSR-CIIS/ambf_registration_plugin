@@ -128,13 +128,13 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
             cout << "Optical Tracker based registration" << endl;
 
             string nspace = node["optical tracker"]["namespace"].as<string>();
-            m_numPoints = node["pointer"]["name of points"].size();
+            m_numTrackingPoints = node["optical tracker"]["name of points"].size();
             
             // Load alll the points
-            for (int i=0; i < m_numPoints; i++){
+            for (int i=0; i < m_numTrackingPoints; i++){
 
                 afRigidBodyPtr objectPtr;
-                string objectName = node["pointer"]["name of points"][i].as<string>();
+                string objectName = node["optical tracker"]["name of points"][i].as<string>();
                 objectPtr = m_worldPtr->getRigidBody(objectName);
                 
                 if(objectPtr){
@@ -238,13 +238,17 @@ void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a
             cerr << "Registration Mode changed to TRACKER " << endl;
         }
         
-        // Need to remove later but assigning it for testing
         else if (a_key == GLFW_KEY_3){
-            m_activeMode = RegistrationMode::REGISTERED;
-            cerr << "Registration Mode changed to REGISTERED " << endl;
+            m_activeMode = RegistrationMode::PIVOT;
+            cerr << "Registration Mode changed to PIVOT " << endl;
         }
 
-        else if(a_key == GLFW_KEY_4){
+        else if (a_key == GLFW_KEY_4){
+            m_activeMode = RegistrationMode::HANDEYE;
+            cerr << "Registration Mode changed to HANDEYE " << endl;
+        }
+    
+        else if(a_key == GLFW_KEY_5){
             if (m_activeMode == RegistrationMode::POINTER){
                 m_savePoint = true;
                 cerr << "Saving Tooltip location ..." << endl;
@@ -269,7 +273,6 @@ void afRegistrationPlugin::graphicsUpdate(){
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: POINTER");
             m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
 
-
             // Saving the saved points location as text and show on the screen.
             for (int i=0; i < m_spheres.size(); i++){   
                 cVector3d trans = m_spheres[i]->getLocalPos();
@@ -283,6 +286,16 @@ void afRegistrationPlugin::graphicsUpdate(){
 
         case RegistrationMode::TRACKER:
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: TRACKER");
+            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
+            break;
+
+        case RegistrationMode::PIVOT:
+            m_panelManager.setText(m_registrationStatusLabel, "Registration Status: PIVOT");
+            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
+            break;
+
+        case RegistrationMode::HANDEYE:
+            m_panelManager.setText(m_registrationStatusLabel, "Registration Status: HANDEYE");
             m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
             break;
 
