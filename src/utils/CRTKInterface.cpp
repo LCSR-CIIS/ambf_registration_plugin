@@ -19,6 +19,9 @@ void CRTKInterface::init(string a_namespace){
     cout << "Base Name:" << baseName << endl;
     m_poseSub = m_rosNode->subscribe(baseName + "/measured_cp", 1, &CRTKInterface::poseCallback, this);
     m_jointStateSub = m_rosNode->subscribe(baseName + "/measured_js", 1, &CRTKInterface::jointStateCallback, this);
+    m_forceSub = m_rosNode->subscribe(baseName + "/measured_cf", 1 , &CRTKInterface::forceCallback, this);
+    
+    
     m_servoCPPub = m_rosNode->advertise<geometry_msgs::TransformStamped>(baseName + "/servo_cp", 1);
     m_servoCFPub = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName + "/compliance/servo_cf", 1);
     m_servoJPPub = m_rosNode->advertise<sensor_msgs::JointState>(baseName+ "/servo_jp", 1);
@@ -45,12 +48,20 @@ void CRTKInterface::jointStateCallback(sensor_msgs::JointStateConstPtr msg){
 
 }
 
+void CRTKInterface::forceCallback(geometry_msgs::WrenchStampedConstPtr msg){
+    m_measured_cf.set(msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z);
+}
+
 cTransform& CRTKInterface::measured_cp(){
     return m_measured_cp;
 }
 
 vector<double> CRTKInterface::measured_jp(){
     return m_measured_jp;
+}
+
+cVector3d& CRTKInterface::measured_cf(){
+    return m_measured_cf;
 }
 
 void CRTKInterface::servo_cp(cTransform &trans){

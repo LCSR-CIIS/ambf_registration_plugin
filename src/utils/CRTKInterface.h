@@ -26,9 +26,12 @@ public:
     // Callback functions
     void poseCallback(geometry_msgs::PoseStampedConstPtr);
     void jointStateCallback(sensor_msgs::JointStateConstPtr);
+    void forceCallback(geometry_msgs::WrenchStampedConstPtr);
+
 
     // Query Command
     cTransform& measured_cp();
+    cVector3d& measured_cf();
     vector<double> measured_jp();
 
     // Motion Command
@@ -42,6 +45,7 @@ public:
 private:
     // Subscribers
     ros::Subscriber m_jointStateSub;
+    ros::Subscriber m_forceSub;
     ros::Subscriber m_poseSub;
 
     // Publishers
@@ -51,6 +55,7 @@ private:
     ros::Publisher m_moveJPPub;
     
     cTransform m_measured_cp;
+    cVector3d m_measured_cf;
     vector<double> m_measured_jp;
 
     geometry_msgs::PoseStamped m_servo_cp;
