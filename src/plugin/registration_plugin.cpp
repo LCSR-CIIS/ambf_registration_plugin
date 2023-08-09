@@ -87,75 +87,13 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
 
     // When config file was defined
     if(!config_filepath.empty()){
-        cerr << "> loading the user defined configuration file..." << endl; 
-        cerr << config_filepath << endl;
-        //Load the user defined object here. 
-        YAML::Node node = YAML::LoadFile(config_filepath);
-        
-        // Check whether pointer based registration is needed or not
-        if (node["pointer"]){
-            cout << "Pointer based Registration" << endl;
-            // Get the name of the tooltip object
-            string toolTipName = node["pointer"]["tooltip name"].as<string>();
-
-            m_toolTipPtr = m_worldPtr->getRigidBody(toolTipName);
-
-            if(!m_toolTipPtr){
-                cerr << "ERROR! NO Tooltip named: " << toolTipName << endl;
-                return -1;
-            }
-
-            m_numPoints = node["pointer"]["name of points"].size();
-            // Load alll the points
-            for (int i=0; i < m_numPoints; i++){
-
-                afRigidBodyPtr objectPtr;
-                objectPtr = m_worldPtr->getRigidBody(node["pointer"]["name of points"][i].as<string>());
-                
-                if(objectPtr){
-                    m_pointsPtr.push_back(objectPtr);
-                }
-                else{
-                    cerr << "WARNING! No object named " << node["pointer"]["name of points"][i].as<string>() << " found." << endl;
-                }
-            }
-
-            cerr << m_numPoints << "Points are specified as Keypoints" << endl;
-        }
-
-        // Check whether optical tracker based registration is needed or not
-        if (node["optical tracker"]){
-            cout << "Optical Tracker based registration" << endl;
-
-            string nspace = node["optical tracker"]["namespace"].as<string>();
-            m_numTrackingPoints = node["optical tracker"]["name of points"].size();
-            
-            // Load alll the points
-            for (int i=0; i < m_numTrackingPoints; i++){
-
-                afRigidBodyPtr objectPtr;
-                string objectName = node["optical tracker"]["name of points"][i].as<string>();
-                objectPtr = m_worldPtr->getRigidBody(objectName);
-                
-                if(objectPtr){
-                    m_trackingPointsPtr.push_back(objectPtr);
-                    CRTKInterface* interface = new CRTKInterface(nspace + "/" + objectName);
-                    m_trackingPoints.push_back(interface);
-                }
-                else{
-                    cerr << "WARNING! No object named " << objectName << "found." << endl;
-                }
-            }
-            m_registeringObject = m_worldPtr->getRigidBody("Registration Cube");
-        }
+        return readConfigFile(config_filepath);
     }
 
     else{
         cerr << "ERROR! NO configuration file specified." << endl;
         return -1;
     }
-
-    return 1;
 }
 
 bool afRegistrationPlugin::initLabels(){
@@ -255,7 +193,6 @@ void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a
             }
         }
     }
-
 }
 
 void afRegistrationPlugin::graphicsUpdate(){
@@ -296,6 +233,7 @@ void afRegistrationPlugin::graphicsUpdate(){
 
         case RegistrationMode::HANDEYE:
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: HANDEYE");
+            m_panelManager.setText(m_savedPointsListLabel, m_registeredText);
             m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
             break;
 
@@ -327,45 +265,42 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             m_savePoint = false;
         }
 
+        // TODO: Add/Remove saved Points if needed
         // Once all the points are saved
         if (m_spheres.size() == m_pointsPtr.size()){
-
-
             cerr << "Saving all the translational error." << endl;
             for (int idx=0; idx<m_spheres.size(); idx++){
                 m_savedError.push_back(m_pointsPtr[idx]->getLocalPos() - m_spheres[idx]->getLocalPos());
-                m_pointsIn.push_back(m_pointsPtr[idx]->getLocalPos());
-                m_pointsOut.push_back(m_spheres[idx]->getLocalPos());
+                m_pointsIn.push_back(m_spheres[idx]->getLocalPos());
+                m_pointsOut.push_back(m_pointsPtr[idx]->getLocalPos());
             }
 
-            m_pointCloudRegistration.ICPRegistration(m_pointsIn, m_pointsOut, m_registerdTrans);
+            // Perform ICP registration
+            bool resultPCRegist = m_pointCloudRegistration.ICPRegistration(m_pointsIn, m_pointsOut, m_registeredTransform);
 
-            // Get the average and error for the translation error
-            cVector3d sum;
-            for (int i=0; i<m_savedError.size(); i++){
-                cVector3d tmp;
-                m_savedError[i].divr(m_savedError.size(), tmp);
-                sum += tmp;
+            if (resultPCRegist){
+                // Change mode to "REGISTERED"
+                btTransform Tcommand;
+
+                // Tcommand.setRotation(m_registeredTransform.getRotation());
+                // Tcommand.setOrigin(-m_registeredTransform.getOrigin());
+                // Tcommand.setRotation(m_registeringObject->m_bulletRigidBody->getWorldTransform().getRotation());
+                // Tcommand = Tcommand * m_registeringObject->getInertialOffsetTransform();
+                // m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+                // m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
+
+
+                m_registeringObject->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
+                Tcommand.mult(m_registeredTransform.inverse(), Tcommand);
+
+                m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+                m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
+
+                m_activeMode = RegistrationMode::REGISTERED;
             }
 
-            cVector3d err;
-            for (int i=0; i<m_savedError.size(); i++){
-                cVector3d tmp;
-                err += (m_savedError[i] - sum);
-            }
-            err.div(m_savedError.size());
-
-            // Saving text for the status monitor
-            m_registeredText = "Registeration Result: \n Avg: " + sum.str(4) + "error: " + err.str(4);
-
-            // Converting the cVector3d to btVector3
-            btVector3 trans_bt;
-            trans_bt.setValue(sum.x(), sum.y(), sum.z());
-            m_registeredPos = m_registeringObject->m_bulletRigidBody->getWorldTransform().getOrigin() - trans_bt;
-
-            // Change mode to "REGISTERED"
-            m_activeMode = RegistrationMode::REGISTERED;
         }
+            
     }
 
     else if (m_activeMode == RegistrationMode::TRACKER){
@@ -383,16 +318,189 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         }
     }
 
+    else if (m_activeMode == RegistrationMode::HANDEYE){
+        
+        cout << "Robot changed mode to Rotaion Only mode" << endl;
+        //While you are in this mode, the motion will be restricted to rotation only.
+        cVector3d measured_cf = m_robotInterface->measured_cf();
+        vector<double> sendForce(6);
+        sendForce[0] = measured_cf.x();
+        sendForce[1] = measured_cf.y();
+        sendForce[2] = measured_cf.z();
+        m_robotInterface->servo_cf(sendForce);
+
+        // HandEye Calibration:
+        cTransform collectedPoint = m_toolInterface->measured_cp();
+        
+        if (m_savedPoints.size() == 0){
+            m_savedPoints.push_back(collectedPoint);
+        }
+        else {
+            // TODO: threshold hardcoded
+            // Save only the new collected points are far enough from old points
+            if ((m_savedPoints[-1].getLocalPos() - collectedPoint.getLocalPos()).length() > 0.001){
+                m_savedPoints.push_back(collectedPoint);
+            }
+        }
+
+        // One you collected enough points for the calibration
+        if (m_savedPoints.size() > 100){
+            
+        }
+
+    }
+
     else if (m_activeMode == RegistrationMode::REGISTERED){
 
         // Comamand the registering Object to move to the calculated registered Position.
-        btTransform Tcommand;
-        Tcommand.setOrigin(m_registeredPos);
-        Tcommand.setRotation(m_registeringObject->m_bulletRigidBody->getWorldTransform().getRotation());
-        Tcommand = Tcommand * m_registeringObject->getInertialOffsetTransform();
-        m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-        m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
+        // btTransform Tcommand;
+
+        // Tcommand.setOrigin(m_registeringObject->m_bulletRigidBody->getWorldTransform().getOrigin() + m_registeredTransfrom.getOrigin());
+        // Tcommand.setRotation(m_registeringObject->m_bulletRigidBody->getWorldTransform().getRotation());
+        // Tcommand = Tcommand * m_registeringObject->getInertialOffsetTransform();
+        // m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+        // m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
+
+        // Saving text for the status monitor
+        m_registeredText = "Registeration Result: \n Avg: " + to_string(m_registeredTransform.getOrigin().x()) + "," +
+        to_string(m_registeredTransform.getOrigin().y()) + "," + to_string(m_registeredTransform.getOrigin().z());
     }
+}
+
+int afRegistrationPlugin::readConfigFile(string config_filepath){
+        cerr << "> loading the user defined configuration file..." << endl; 
+        cerr << config_filepath << endl;
+
+        //Load the user defined object here. 
+        YAML::Node node = YAML::LoadFile(config_filepath);
+        
+        // Check whether pointer based registration is needed or not
+        if (node["pointer"]){
+            cout << "Pointer based Registration" << endl;
+            // Get the name of the tooltip object
+            string toolTipName = node["pointer"]["tooltip name"].as<string>();
+
+            m_toolTipPtr = m_worldPtr->getRigidBody(toolTipName);
+
+            if(!m_toolTipPtr){
+                cerr << "ERROR! NO Tooltip named: " << toolTipName << endl;
+                return -1;
+            }
+
+            m_numPoints = node["pointer"]["name of points"].size();
+            // Load alll the points
+            for (int i=0; i < m_numPoints; i++){
+
+                afRigidBodyPtr objectPtr;
+                objectPtr = m_worldPtr->getRigidBody(node["pointer"]["name of points"][i].as<string>());
+                
+                if(objectPtr){
+                    m_pointsPtr.push_back(objectPtr);
+                }
+                else{
+                    cerr << "WARNING! No point named " << node["pointer"]["name of points"][i].as<string>() << " found." << endl;
+                }
+            }
+
+            cerr << m_numPoints << "Points are specified as Keypoints" << endl;
+            
+            m_registeringObject = m_worldPtr->getRigidBody(node["pointer"]["object name"].as<string>());
+
+            if(!m_registeringObject){
+                cerr << "ERROR! No object named " << node["pointer"]["object name"].as<string>() << " found." << endl;
+                
+                return -1;
+            }
+        }
+
+        // Check whether optical tracker based registration is needed or not
+        if (node["optical tracker"]){
+            cout << "Optical Tracker based registration" << endl;
+
+            string nspace = node["optical tracker"]["namespace"].as<string>();
+            m_numTrackingPoints = node["optical tracker"]["name of points"].size();
+            
+            // Load alll the points
+            for (int i=0; i < m_numTrackingPoints; i++){
+
+                afRigidBodyPtr objectPtr;
+                string objectName = node["optical tracker"]["name of points"][i].as<string>();
+                objectPtr = m_worldPtr->getRigidBody(objectName);
+                
+                if(objectPtr){
+                    m_trackingPointsPtr.push_back(objectPtr);
+                    CRTKInterface* interface = new CRTKInterface(nspace + "/" + objectName);
+                    m_trackingPoints.push_back(interface);
+                }
+                else{
+                    cerr << "WARNING! No object named " << objectName << "found." << endl;
+                }
+            }
+        }
+
+        if (node["hand eye"]){
+            cout << "Hand Eye Calibration" << endl;
+
+            // Get marker in AMBF
+            string markerName = node["hand eye"]["marker name"].as<string>();
+            m_toolPtr = m_worldPtr->getRigidBody(markerName);
+            
+            if(!m_toolPtr){
+                cerr << "WARNING! No marker named " << markerName << "found." << endl;
+            }
+
+            // Setting up CRTK communication
+            string nspace = node["hand eye"]["namespace"].as<string>();
+            m_robotInterface = new CRTKInterface(nspace);
+            m_toolInterface = new CRTKInterface("/" + markerName + "/");
+
+            // Get joint in AMBF
+            string jointName = node["hand eye"]["joint name"].as<string>();
+            m_eeJointPtr = m_worldPtr->getRigidBody(jointName);
+            
+            if(!m_eeJointPtr){
+                cerr << "ERROR! No joint named " << jointName << "found." << endl;
+                return -1;
+            }
+
+
+            if(node["hand eye"]["optical tracker name"]){
+                string trackerName = node["hand eye"]["optical tracker name"].as<string>();
+                m_trackerPtr = m_worldPtr->getRigidBody(trackerName);
+
+                if(!m_trackerPtr){
+                cerr << "WARNING! No Tracker named " << trackerName << "found." << endl;
+                }
+            }
+        }
+
+        if (node["pivot"]){
+            cout << "Pivot Calibration" << endl;
+
+            string toolTipName = node["pivot"]["tooltip name"].as<string>();
+            m_toolTipPtr = m_worldPtr->getRigidBody(toolTipName);
+
+            if(!m_toolTipPtr){
+                cerr << "ERROR! NO Tooltip named: " << toolTipName << endl;
+                return -1;
+            }
+
+            // Get marker in AMBF
+            string markerName = node["pivot"]["marker name"].as<string>();
+            m_toolPtr = m_worldPtr->getRigidBody(markerName);
+            
+            if(!m_toolPtr){
+                cerr << "WARNING! No marker named " << markerName << "found." << endl;
+            }
+
+            // Setting up CRTK communication
+            string nspace = node["pivot"]["namespace"].as<string>();
+            m_toolInterface = new CRTKInterface(nspace + "/" + markerName);
+        }
+
+
+        return 1;
+
 }
 
 void afRegistrationPlugin::reset(){

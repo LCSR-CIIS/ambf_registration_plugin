@@ -80,6 +80,7 @@ class afRegistrationPlugin: public afSimulatorPlugin{
     protected:
         bool initLabels();
         bool initCamera(vector<string> cameraNames);
+        int readConfigFile(string config_filepath);
 
     // private:
         // Pointer to the world
@@ -100,8 +101,6 @@ class afRegistrationPlugin: public afSimulatorPlugin{
 
 
         RegistrationMode m_activeMode = RegistrationMode::UNREGISTERED;
-
-        CRTKInterface* m_crtkInterface;
 
         // Pointer based registration
         afRigidBodyPtr m_toolTipPtr = nullptr;
@@ -126,13 +125,26 @@ class afRegistrationPlugin: public afSimulatorPlugin{
 
         // Registered Statistics Text
         string m_registeredText;
-        btVector3 m_registeredPos;
+        btTransform m_registeredTransform;
 
         afRigidBodyPtr m_registeringObject;
         vector<cVector3d> m_result;
        
-       // Point cloud registration
-       PointCloudRegistration m_pointCloudRegistration;
+        // Point cloud registration
+        PointCloudRegistration m_pointCloudRegistration;
+
+
+        // Hand-eye Registration
+        CRTKInterface * m_robotInterface;
+        CRTKInterface * m_toolInterface;
+        afRigidBodyPtr m_eeJointPtr;
+
+        // These two pointers are for optional Objects
+        afRigidBodyPtr m_toolPtr; 
+        afRigidBodyPtr m_trackerPtr;
+
+        vector<cTransform> m_savedPoints;
+
 };
 
 
