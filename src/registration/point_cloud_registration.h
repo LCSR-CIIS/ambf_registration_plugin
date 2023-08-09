@@ -52,13 +52,19 @@
 
 #include "chai3d.h"
 
+// For bullet related functions
+#include <afFramework.h>
+
 using namespace chai3d;
 using namespace std;
 
 class PointCloudRegistration{
     public:
         PointCloudRegistration();
-        int ICPRegistration(vector<cVector3d> pointsIn, vector<cVector3d> pointsOut, cTransform trans);
+        int ICPRegistration(vector<cVector3d> pointsIn, vector<cVector3d> pointsOut, btTransform& trans);
+        void cvectorToPointCloud(vector<cVector3d> points,  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
+        void eigenMatrixTocTransform(Eigen::Matrix<float, 4, 4> Trans, cTransform &trans);
+        void eigenMatrixTobtTransform(Eigen::Matrix<float, 4, 4> Trans, btTransform &trans);
 };
 
 

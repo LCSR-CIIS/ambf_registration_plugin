@@ -46,7 +46,7 @@
 PointCloudRegistration::PointCloudRegistration(){
 }
 
-int PointCloudRegistration::ICPRegistration(vector<cVector3d> pointsIn, vector<cVector3d> pointsOut, cTransform trans)
+int PointCloudRegistration::ICPRegistration(vector<cVector3d> pointsIn, vector<cVector3d> pointsOut, btTransform &trans)
 {   
     if (pointsIn.size() != pointsOut.size()){
         cerr << "ERROR! The size of the input poin cloud does not match with the source point cloud." << endl;
@@ -56,17 +56,10 @@ int PointCloudRegistration::ICPRegistration(vector<cVector3d> pointsIn, vector<c
     // Convert the Points to the Pcl::pointXYZ data type
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloudIn (new pcl::PointCloud<pcl::PointXYZ>(pointsIn.size(),1));
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOut (new pcl::PointCloud<pcl::PointXYZ>(pointsIn.size(),1));
+    cvectorToPointCloud(pointsIn, cloudIn);
+    cvectorToPointCloud(pointsOut, cloudOut);
 
-    for (size_t i=0; i < pointsIn.size(); i++){
-        cloudIn->points[i].x = pointsIn[i].x();  
-        cloudIn->points[i].y = pointsIn[i].y();  
-        cloudIn->points[i].z = pointsIn[i].z();  
-
-        cloudOut->points[i].x = pointsOut[i].x();  
-        cloudOut->points[i].y = pointsOut[i].y();  
-        cloudOut->points[i].z = pointsOut[i].z();
-    }
-
+    // Perform ICP registration
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
     icp.setInputSource(cloudIn);
     icp.setInputTarget(cloudOut);
@@ -77,25 +70,47 @@ int PointCloudRegistration::ICPRegistration(vector<cVector3d> pointsIn, vector<c
     cout << "has converged:" << icp.hasConverged() << " score: " << icp.getFitnessScore() << endl;
     cout << icp.getFinalTransformation() << endl;
 
-    // Convert icp based method Matrix to cTransform (There may be a better way...)
     Eigen::Matrix<float, 4, 4> Trans;
     Trans = icp.getFinalTransformation();
     
+    // Convert Eigen Matrix4 to btTransform
+    eigenMatrixTobtTransform(Trans, trans);
+
+    return 1;
+}  
+
+void PointCloudRegistration::cvectorToPointCloud(vector<cVector3d> points,  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud){
+
+    for (size_t i=0; i < points.size(); i++){
+        cloud->points[i].x = points[i].x();  
+        cloud->points[i].y = points[i].y();  
+        cloud->points[i].z = points[i].z();  
+    }
+}
+
+void PointCloudRegistration::eigenMatrixTocTransform(Eigen::Matrix<float, 4, 4> Trans, cTransform &trans){
+    // Chai3d related dataType
     cVector3d chai_T(Trans(0,3), Trans(1,3), Trans(2,3));
     cMatrix3d chai_R(Trans(0,0),Trans(1,0),Trans(2,0), Trans(0,1), Trans(1,1), Trans(2,1), Trans(0,2), Trans(1,2), Trans(2,1));
-
-    trans.setLocalPos(chai_T);    
+    
+    trans.setLocalPos(chai_T);
     trans.setLocalRot(chai_R);
+}
+
+void PointCloudRegistration::eigenMatrixTobtTransform(Eigen::Matrix<float, 4, 4> Trans, btTransform &trans){
+    
+    // Converted to Chai3d data type first
+    cTransform tmp_trans;
+    eigenMatrixTocTransform(Trans, tmp_trans);
+
+    // Convert Rotation into quaternion
     cQuaternion chai_qr;
-    chai_qr.fromRotMat(chai_R);
+    chai_qr.fromRotMat(tmp_trans.getLocalRot());
 
     // Change to btVector and Matrix
-
-
-    // Sanity check with print statement:
-    // cout << chai_R.str() << endl;
-    // cout << chai_T.str() << endl;
-    // cout << chai_qr << endl;
-
-    return 0;
-}  
+    btVector3 btTrans;
+    btTrans.setValue(tmp_trans.getLocalPos().x(), tmp_trans.getLocalPos().y(), tmp_trans.getLocalPos().z());   
+    btQuaternion btRot(chai_qr.x,chai_qr.y, chai_qr.z, chai_qr.w);
+    trans.setOrigin(btTrans);
+    trans.setRotation(btRot);
+}
