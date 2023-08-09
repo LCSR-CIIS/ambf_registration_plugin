@@ -68,6 +68,8 @@ add_library(registration_plugin SHARED
     src/utils/CRTKInterface.h
     src/registration/point_cloud_registration.cpp
     src/registration/point_cloud_registration.h
+    src/registration/pivot_calibration.cpp
+    src/registration/pivot_calibration.h
     )
 
 target_link_libraries (registration_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES} ${PCL_LIBRARIES})
