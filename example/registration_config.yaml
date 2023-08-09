@@ -1,6 +1,6 @@
 ## Pointer based registration
 pointer:
-  tooltip name: "drill_tip" # Rigid body that is attached to the tip of the tool
+  tooltip name: drill_tip # Rigid body that is attached to the tip of the tool
   number of points: 20
   name of points:
     - Sphere_00
@@ -24,9 +24,24 @@ pointer:
     - Sphere_17
     - Sphere_18
     - Sphere_19
+  object name: Registration Cube
 
 ## Optical Tracker Registration
 optical tracker:
-  namespace: "/adapter" #rostopic name for the optical marker
+  namespace: /adapter #rostopic name for the optical marker
   name of points:
     - marker_body
+
+## Hand-Eye Regisration
+hand eye:
+  # Both the robot and the marker status should be published using CRTK
+  namespace: /REMS/Research/ #namespace for the robot 
+  marker name: galenDrill # This name should used for both rostopic name and object name in AMBF
+  joint name: ee_joint
+  optical tracker name: tracker
+
+## Pivot calibration
+pivot:
+  tooltip name: drill_tip
+  namespace: /REMS/Research/ #namespace for the robot 
+  marker name: galenDrill
