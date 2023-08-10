@@ -57,6 +57,11 @@ add_definitions(${AMBF_DEFINITIONS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+link_directories(${OpenCV_LIBRARY_DIRS})
+add_definitions(${OpenCV_DEFINITIONS})
+
 
 # For spacenav control plugin
 add_library(registration_plugin SHARED
@@ -70,9 +75,11 @@ add_library(registration_plugin SHARED
     src/registration/point_cloud_registration.h
     src/registration/pivot_calibration.cpp
     src/registration/pivot_calibration.h
+    src/registration/hand_eye_calibration.cpp
+    src/registration/hand_eye_calibration.h
     )
 
-target_link_libraries (registration_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries (registration_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES})
 set_property(TARGET registration_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 if(NOT BUILD_PLUGIN_WITH_ROS)

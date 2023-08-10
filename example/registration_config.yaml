@@ -33,15 +33,15 @@ optical tracker:
     - marker_body
 
 ## Hand-Eye Regisration
-hand eye:
-  # Both the robot and the marker status should be published using CRTK
-  namespace: /REMS/Research/ #namespace for the robot 
-  marker name: galenDrill # This name should used for both rostopic name and object name in AMBF
-  joint name: ee_joint
-  optical tracker name: tracker
+# hand eye:
+#   # Both the robot and the marker status should be published using CRTK
+#   namespace: /REMS/Research/ #namespace for the robot 
+#   marker name: galenDrill # This name should used for both rostopic name and object name in AMBF
+#   joint name: ee_joint
+#   optical tracker name: tracker
 
-## Pivot calibration
-pivot:
-  tooltip name: drill_tip
-  namespace: /REMS/Research/ #namespace for the robot 
-  marker name: galenDrill
+# ## Pivot calibration
+# pivot:
+#   tooltip name: drill_tip
+#   namespace: /REMS/Research/ #namespace for the robot 
+#   marker name: galenDrill

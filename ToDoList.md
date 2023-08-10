@@ -18,3 +18,6 @@
 
 ## general
 - camera_panel_manager.cpp/h and CRTKInterface.cpp/h should be in the ambf main branch to avoid local copies.
+
+- CRTKInterface
+ Check whether you are connected to the robot or not.

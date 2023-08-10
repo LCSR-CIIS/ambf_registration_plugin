@@ -26,7 +26,7 @@
     "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
     LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
     FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, IN        DIRECT,
     INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
     BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
@@ -322,31 +322,31 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         
         cout << "Robot changed mode to Rotaion Only mode" << endl;
         //While you are in this mode, the motion will be restricted to rotation only.
-        cVector3d measured_cf = m_robotInterface->measured_cf();
-        vector<double> sendForce(6);
-        sendForce[0] = measured_cf.x();
-        sendForce[1] = measured_cf.y();
-        sendForce[2] = measured_cf.z();
-        m_robotInterface->servo_cf(sendForce);
+        // cVector3d measured_cf = m_robotInterface->measured_cf();
+        // vector<double> sendForce(6);
+        // sendForce[0] = measured_cf.x();
+        // sendForce[1] = measured_cf.y();
+        // sendForce[2] = measured_cf.z();
+        // m_robotInterface->servo_cf(sendForce);
 
-        // HandEye Calibration:
-        cTransform collectedPoint = m_toolInterface->measured_cp();
+        // // HandEye Calibration:
+        // cTransform collectedPoint = m_toolInterface->measured_cp();
         
-        if (m_savedPoints.size() == 0){
-            m_savedPoints.push_back(collectedPoint);
-        }
-        else {
-            // TODO: threshold hardcoded
-            // Save only the new collected points are far enough from old points
-            if ((m_savedPoints[-1].getLocalPos() - collectedPoint.getLocalPos()).length() > 0.001){
-                m_savedPoints.push_back(collectedPoint);
-            }
-        }
+        // if (m_savedPoints.size() == 0){
+        //     m_savedPoints.push_back(collectedPoint);
+        // }
+        // else {
+        //     // TODO: threshold hardcoded
+        //     // Save only the new collected points are far enough from old points
+        //     if ((m_savedPoints[-1].getLocalPos() - collectedPoint.getLocalPos()).length() > 0.001){
+        //         m_savedPoints.push_back(collectedPoint);
+        //     }
+        // }
 
-        // One you collected enough points for the calibration
-        if (m_savedPoints.size() > 100){
-            
-        }
+        // // One you collected enough points for the calibration
+        // if (m_savedPoints.size() > 100){
+
+        // }
 
     }
 
