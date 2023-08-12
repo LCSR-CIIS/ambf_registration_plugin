@@ -46,6 +46,80 @@ HandEyeCalibration::HandEyeCalibration(){
 
 }
 
-int HandEyeCalibration::calibrate(vector<cTransform> transEE, vector<cTransform> transMarker, cTransfromd& ee2marker, cTransform& traccker){
+int cTransformToCVMat(cTransform trans, cv::Mat& Rot, cv::Mat& Trans){
+
+    if (Rot.size().height == 3 && Rot.size().width == 3 && Trans.size().height == 3 &&){
+        cerr << "ERORR! Coversion in CV is impossible. Check the size of the matrix." << endl;
+        return -1;
+    }
+
+    for (int i = 0 ; i < 3; i++){
+        for (int j = 0 ; j < 3; j++){
+            Rot.at(i,j) = trans.getLocalRot().at(i,j);
+        }
+        Trans.at(i,0) = trans.getLocalPos().at(i);
+    }
+    return 1;
+   
+}
+
+int CVMatTocTransform(cTransform& trans, cv::Mat Rot, cv::Mat Trans){
+
+    if (Rot.size().height == 3 && Rot.size().width == 3 && Trans.size().height == 3 &&){
+        cerr << "ERORR! Coversion in CV is impossible. Check the size of the matrix." << endl;
+        return -1;
+    }
+
+    cMatrix3d cRot;
+    cVector3d cTrans;
+    for (int i = 0 ; i < 3; i++){
+        for (int j = 0 ; j < 3; j++){
+            cRot.at(i,j) = Rot.at(i,j);
+        }
+        cTrans.at(i) = Trans.at(i,0);
+    }
+   trans.setLocalRot(cRot);
+   trans.setLocalPos(cTrans);
+
+   return 1;
+}
+
+
+int HandEyeCalibration::calibrate(vector<cTransform> transEE, vector<cTransform> transMarker, cTransform& ee2marker, cTransform& tracker){
+    if (transEE.size() != transMarker.size()){
+        cerr << "HandEye Calibration ERROR! Sizes of the recorded data don't match!" << endl;
+        return -1;
+    }
     
+    cv::InputArrayOfArrays R_cam2marker;
+	cv::InputArrayOfArrays t_cam2marker;
+	cv::InputArrayOfArrays R_base2ee;
+	cv::InputArrayOfArrays t_base2ee;
+	cv::OutputArray R_base2cam;
+	cv::OutputArray t_base2cam;
+	cv::OutputArray R_ee2marker;
+	cv::OutputArray t_ee2marker;
+
+    for (int i = 0; i < transEE.size(); i++){
+        cv::Mat M_ee = Mat_<double>(3,3);
+        cv::Mat t_ee = Mat_<double>(3,1);
+        cv::Mat M_marker = Mat_<double>(3,3);
+        cv::Mat t_marker = Mat_<double>(3,1);
+
+        cTransformToCVMat(transEE[i], M_ee, t_ee);
+        cTransformToCVMat(transMarker[i], M_marker, t_marker);
+
+        R_cam2marker.push_back(M_tracker);
+        t_cam2marker.push_back(t_tracker);
+
+        R_base2ee.push_back(M_ee);
+	    t_base2ee.push_back(t_ee);       
+    }
+
+    // Perform OpenCV function "calibrateRobotWorldHandEye()"
+    cv::calibrateRobotWorldHandEye(R_cam2marker, t_cam2marker, R_base2ee, t_base2ee, R_base2cam, t_base2cam, R_ee2marker, t_ee2marker)
+
+    CVMatTocTransform(ee2marker, R_ee2marker, t_ee2marker);
+    CVMatTocTransform(tracker, R_base2cam, t_base2cam);
+
 }

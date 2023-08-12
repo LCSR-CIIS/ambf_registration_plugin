@@ -44,6 +44,7 @@
 #define HAND_EYE_CALIBRATION_H
 
 #include <iostream>
+#include "chai3d.h"
 #include <opencv2/opencv.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
@@ -53,7 +54,7 @@ using namespace chai3d;
 class HandEyeCalibration{
     public:
         HandEyeCalibration();
-        int calibrate(vector<cTransform> transEE, vector<cTransform> transMarker, cTransfromd& ee2marker, cTransform& traccker);
+        int calibrate(vector<cTransform> transEE, vector<cTransform> transMarker, cTransform& ee2marker, cTransform& tracker);
 
 }
 
