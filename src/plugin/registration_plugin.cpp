@@ -167,26 +167,26 @@ bool afRegistrationPlugin::initCamera(vector<string> cameraNames){
 void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, int a_mods){
     if (a_mods == GLFW_MOD_CONTROL){
         if (a_key == GLFW_KEY_1){
+            m_activeMode = RegistrationMode::HANDEYE;
+            cerr << "Registration Mode changed to HANDEYE " << endl;
+        }
+
+        else if (a_key == GLFW_KEY_2){
+            m_activeMode = RegistrationMode::PIVOT;
+            cerr << "Registration Mode changed to PIVOT " << endl;
+        }
+        
+        else if (a_key == GLFW_KEY_3){
             m_activeMode = RegistrationMode::POINTER;
             cerr << "Registration Mode changed to POINTER " << endl;
         }
 
-        else if (a_key == GLFW_KEY_2){
+        else if (a_key == GLFW_KEY_4){
             m_activeMode = RegistrationMode::TRACKER;
             cerr << "Registration Mode changed to TRACKER " << endl;
         }
-        
-        else if (a_key == GLFW_KEY_3){
-            m_activeMode = RegistrationMode::PIVOT;
-            cerr << "Registration Mode changed to PIVOT " << endl;
-        }
-
-        else if (a_key == GLFW_KEY_4){
-            m_activeMode = RegistrationMode::HANDEYE;
-            cerr << "Registration Mode changed to HANDEYE " << endl;
-        }
     
-        else if(a_key == GLFW_KEY_5){
+        else if(a_key == GLFW_KEY_9){
             if (m_activeMode == RegistrationMode::POINTER){
                 m_savePoint = true;
                 cerr << "Saving Tooltip location ..." << endl;
@@ -224,17 +224,23 @@ void afRegistrationPlugin::graphicsUpdate(){
         case RegistrationMode::TRACKER:
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: TRACKER");
             m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
+            m_panelManager.setText(m_savedPointsListLabel, "Tracking ....");
+
             break;
 
         case RegistrationMode::PIVOT:
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: PIVOT");
             m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
+            m_panelManager.setText(m_savedPointsListLabel, "Pivot calibration ....");
+            m_panelManager.setFontColor(m_savedPointsListLabel, cColorf(1.,0.,0.));
+
             break;
 
         case RegistrationMode::HANDEYE:
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: HANDEYE");
             m_panelManager.setText(m_savedPointsListLabel, m_registeredText);
             m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
+            m_panelManager.setFontColor(m_savedPointsListLabel, cColorf(1.,0.,0.));
             break;
 
         case RegistrationMode::REGISTERED:
@@ -320,47 +326,58 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
     else if (m_activeMode == RegistrationMode::HANDEYE){
         
-        cout << "Robot changed mode to Rotaion Only mode" << endl;
+        cTransform measured_cp = m_toolInterface->measured_cp();
+        m_registeredText = "WARNING! No tool location published \nCheck your tracker!!\n";
+
+        if (measured_cp.getLocalPos().length() > 0.0){
+            m_registeredText = "";
+        }
+
+
         //While you are in this mode, the motion will be restricted to rotation only.
-        // cVector3d measured_cf = m_robotInterface->measured_cf();
-        // vector<double> sendForce(6);
-        // sendForce[0] = measured_cf.x();
-        // sendForce[1] = measured_cf.y();
-        // sendForce[2] = measured_cf.z();
-        // m_robotInterface->servo_cf(sendForce);
+        cVector3d measured_cf = m_robotInterface->measured_cf();
 
-        // // HandEye Calibration:
-        // cTransform collectedPoint = m_toolInterface->measured_cp();
+        m_registeredText += "WARNING! No robot related topic published";
         
-        // if (m_savedPoints.size() == 0){
-        //     m_savedPoints.push_back(collectedPoint);
-        // }
-        // else {
-        //     // TODO: threshold hardcoded
-        //     // Save only the new collected points are far enough from old points
-        //     if ((m_savedPoints[-1].getLocalPos() - collectedPoint.getLocalPos()).length() > 0.001){
-        //         m_savedPoints.push_back(collectedPoint);
-        //     }
-        // }
+        if(measured_cf.length() < 10.0){
+            // Erase the warning if there is measured_cf
+            m_registeredText = "";
 
-        // // One you collected enough points for the calibration
-        // if (m_savedPoints.size() > 100){
+            vector<double> sendForce(6);
+            sendForce[0] = measured_cf.x();
+            sendForce[1] = measured_cf.y();
+            sendForce[2] = measured_cf.z();
+            m_robotInterface->servo_cf(sendForce);
 
-        // }
+
+
+            // HandEye Calibration:
+            cTransform collectedPoint = m_toolInterface->measured_cp();
+            
+            if (m_savedPoints.size() == 0){
+                m_savedPoints.push_back(collectedPoint);
+            }
+            else {
+                // TODO: threshold hardcoded
+                // Save only the new collected points are far enough from old points
+                if ((m_savedPoints[-1].getLocalPos() - collectedPoint.getLocalPos()).length() > 0.001){
+                    m_savedPoints.push_back(collectedPoint);
+                }
+            }
+
+            // One you collected enough points for the calibration
+            if (m_savedPoints.size() > 100){
+                
+            }
+        }        
+
+        if (m_savedPoints.size() > 0){
+            m_registeredText = "Number of saved Points: " + to_string(m_savedPoints.size());
+        }
 
     }
 
     else if (m_activeMode == RegistrationMode::REGISTERED){
-
-        // Comamand the registering Object to move to the calculated registered Position.
-        // btTransform Tcommand;
-
-        // Tcommand.setOrigin(m_registeringObject->m_bulletRigidBody->getWorldTransform().getOrigin() + m_registeredTransfrom.getOrigin());
-        // Tcommand.setRotation(m_registeringObject->m_bulletRigidBody->getWorldTransform().getRotation());
-        // Tcommand = Tcommand * m_registeringObject->getInertialOffsetTransform();
-        // m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-        // m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
-
         // Saving text for the status monitor
         m_registeredText = "Registeration Result: \n Avg: " + to_string(m_registeredTransform.getOrigin().x()) + "," +
         to_string(m_registeredTransform.getOrigin().y()) + "," + to_string(m_registeredTransform.getOrigin().z());
@@ -433,7 +450,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                     m_trackingPoints.push_back(interface);
                 }
                 else{
-                    cerr << "WARNING! No object named " << objectName << "found." << endl;
+                    cerr << "WARNING! No object named " << objectName << " found." << endl;
                 }
             }
         }
@@ -459,8 +476,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
             m_eeJointPtr = m_worldPtr->getRigidBody(jointName);
             
             if(!m_eeJointPtr){
-                cerr << "ERROR! No joint named " << jointName << "found." << endl;
-                return -1;
+                cerr << "ERROR! No Endeffector pose named " << jointName << "found." << endl;
             }
 
 
