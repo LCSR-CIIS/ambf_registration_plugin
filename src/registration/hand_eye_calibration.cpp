@@ -92,37 +92,45 @@ int HandEyeCalibration::calibrate(vector<cTransform> transEE, vector<cTransform>
     
     vector<cv::Mat> R_cam2marker;
 	vector<cv::Mat> t_cam2marker;
-	vector<cv::Mat> R_base2ee;
-	vector<cv::Mat> t_base2ee;
+	vector<cv::Mat> R_ee2base;
+	vector<cv::Mat> t_ee2base;
 	vector<cv::Mat> R_base2cam;
 	vector<cv::Mat> t_base2cam;
-	vector<cv::Mat> R_ee2marker;
-	vector<cv::Mat> t_ee2marker;
+	vector<cv::Mat> R_marker2ee;
+	vector<cv::Mat> t_marker2ee;
 
     for (int i = 0; i < transEE.size(); i++){
         cv::Mat M_ee = cv::Mat_<double>(3,3);
         cv::Mat t_ee = cv::Mat_<double>(3,1);
         cv::Mat M_marker = cv::Mat_<double>(3,3);
         cv::Mat t_marker = cv::Mat_<double>(3,1);
-
-        cTransformToCVMat(transEE[i], M_ee, t_ee);
+        
+        cTransform transEEinv;
+        transEEinv.copyfrom(transEE[i]);
+        transEEinv.invert();
+        cTransformToCVMat(transEEinv, M_ee, t_ee);
         cTransformToCVMat(transMarker[i], M_marker, t_marker);
 
         R_cam2marker.push_back(M_marker);
         t_cam2marker.push_back(t_marker);
 
-        R_base2ee.push_back(M_ee);
-	    t_base2ee.push_back(t_ee);       
+        R_ee2base.push_back(M_ee);
+	    t_ee2base.push_back(t_ee);       
     }
 
     // Perform OpenCV function "calibrateRobotWorldHandEye()"
-    cv::calibrateRobotWorldHandEye(R_cam2marker, t_cam2marker, R_base2ee, t_base2ee, R_base2cam, t_base2cam, R_ee2marker, t_ee2marker, 0);
-    // cv::calibrateHandEye(R_cam2marker, t_cam2marker, R_base2ee, t_base2ee, R_base2cam, t_base2cam, R_ee2marker, t_ee2marker, 0);
+    cv::calibrateHandEye(R_ee2base, t_ee2base , R_cam2marker, t_cam2marker, R_marker2ee, t_marker2ee, cv::CALIB_HAND_EYE_TSAI);
 
-    // CVMatTocTransform(ee2marker, R_ee2marker[0], t_ee2marker[0]);
-    // CVMatTocTransform(tracker, R_base2cam[0], t_base2cam[0]);
+    CVMatTocTransform(ee2marker, R_marker2ee[0], t_marker2ee[0]);
+    ee2marker.invert();
 
-    
+    // 1. Base to EE
+    transEE[0].mulr(ee2marker, tracker);
+    // 2. EE to inverse of tracking
+    cTransform marker2cam;
+    marker2cam.copyfrom(transMarker[0]);
+    marker2cam.invert();
+    tracker.mul(marker2cam);     
 
     return 1;
 }
