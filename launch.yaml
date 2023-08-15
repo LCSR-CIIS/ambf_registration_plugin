@@ -12,7 +12,6 @@ plugins: [
 ]
 
 multibody configs:
-  - "./example/ADF/test.yaml" #0
-  - "./example/ADF/registration_test.yaml" #1
-  - "./example/ADF/registration_cube.yaml" #2
-  - "~/sdf_virtual_fixture/ADF/Galen/galen.yaml" #3
+  - "./example/ADF/registration_cube.yaml" #0
+  - "./example/ADF/marker.yaml" #1
+  - "./example/ADF/tracker.yaml" #2
