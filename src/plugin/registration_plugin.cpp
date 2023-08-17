@@ -360,7 +360,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             else {
                 // TODO: threshold hardcoded
                 // Save only the new collected points are far enough from old points
-                if ((m_savedPoints[-1].getLocalPos() - collectedPoint.getLocalPos()).length() > 0.001){
+                if ((m_savedPoints[-1].getLocalPos() - collectedPoint.getLocalPos()).length() > 0.01){
                     m_savedPoints.push_back(collectedPoint);
                 }
             }

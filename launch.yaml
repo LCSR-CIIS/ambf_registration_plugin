@@ -15,3 +15,4 @@ multibody configs:
   - "./example/ADF/registration_cube.yaml" #0
   - "./example/ADF/marker.yaml" #1
   - "./example/ADF/tracker.yaml" #2
+  - "../sdf_virtual_fixture/ADF/Galen/galen.yaml" #2
