@@ -286,7 +286,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
             if (resultPCRegist){
                 // Change mode to "REGISTERED"
-                btTransform Tcommand;
+                btTransform Tcommand = m_registeredTransform;
 
                 // Tcommand.setRotation(m_registeredTransform.getRotation());
                 // Tcommand.setOrigin(-m_registeredTransform.getOrigin());
@@ -334,7 +334,6 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         }
 
 
-        //While you are in this mode, the motion will be restricted to rotation only.
         cVector3d measured_cf = m_robotInterface->measured_cf();
 
         m_registeredText += "WARNING! No robot related topic published";
@@ -343,31 +342,41 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             // Erase the warning if there is measured_cf
             m_registeredText = "";
 
+            //While you are in this mode, the motion will be restricted to rotation only.
             vector<double> sendForce(6);
-            sendForce[0] = measured_cf.x();
-            sendForce[1] = measured_cf.y();
-            sendForce[2] = measured_cf.z();
+            sendForce[0] = -measured_cf.x();
+            sendForce[1] = -measured_cf.y();
+            sendForce[2] = -measured_cf.z();
+            sendForce[3] = 0.0;
+            sendForce[4] = 0.0;
+            sendForce[5] = 0.0;
             m_robotInterface->servo_cf(sendForce);
 
-
-
-            // HandEye Calibration:
+            // get trackerLocation data from rostopics
             cTransform collectedPoint = m_toolInterface->measured_cp();
-            
+
             if (m_savedPoints.size() == 0){
                 m_savedPoints.push_back(collectedPoint);
+                m_savedRobotPoints.push_back(m_eeJointPtr->getLocalTransform());
             }
             else {
-                // TODO: threshold hardcoded
-                // Save only the new collected points are far enough from old points
-                if ((m_savedPoints[-1].getLocalPos() - collectedPoint.getLocalPos()).length() > 0.01){
+                // Save only the new collected points which are far enough from old points
+                if ((m_savedPoints[m_savedPoints.size()].getLocalPos() - collectedPoint.getLocalPos()).length() > m_trackRes){
                     m_savedPoints.push_back(collectedPoint);
+                    m_savedRobotPoints.push_back(m_eeJointPtr->getLocalTransform());
                 }
             }
 
-            // One you collected enough points for the calibration
-            if (m_savedPoints.size() > 100){
-                
+            // Once you collected enough points for the calibration
+            if (m_savedPoints.size() > 1000){
+                cTransform ee2marker;
+                cTransform tracker;
+                m_handEyeCalibration.calibrate(m_savedRobotPoints, m_savedPoints,ee2marker, tracker);
+
+                if(m_trackerPtr){
+                    m_trackerPtr->setLocalTransform(tracker);
+                }
+
             }
         }        
 
@@ -377,6 +386,11 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
     }
 
+    
+    else if (m_activeMode == RegistrationMode::PIVOT){
+        m_registeredText = "PIVOT Calibration!\n"; 
+    }
+    
     else if (m_activeMode == RegistrationMode::REGISTERED){
         // Saving text for the status monitor
         m_registeredText = "Registeration Result: \n Avg: " + to_string(m_registeredTransform.getOrigin().x()) + "," +
@@ -488,6 +502,15 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 cerr << "WARNING! No Tracker named " << trackerName << "found." << endl;
                 }
             }
+
+            if(node["hand eye"]["resolution"]){
+                m_trackRes = node["hand eye"]["resolution"].as<double>();
+            }
+
+            m_markerPtr = m_worldPtr->getRigidBody("marker_body");
+            if(!m_markerPtr){
+                cerr << "WARNING! No Marker named marker_body found." << endl;
+            }
         }
 
         if (node["pivot"]){
@@ -509,9 +532,20 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 cerr << "WARNING! No marker named " << markerName << "found." << endl;
             }
 
+            if(node["pivot"]["resolution"]){
+                m_pivotRes = node["pivot"]["resolution"].as<double>();
+            }
+
             // Setting up CRTK communication
             string nspace = node["pivot"]["namespace"].as<string>();
             m_toolInterface = new CRTKInterface(nspace + "/" + markerName);
+
+            if(!m_markerPtr){
+                m_markerPtr = m_worldPtr->getRigidBody("marker_body");
+                if(!m_markerPtr){
+                    cerr << "WARNING! No Marker named marker_body found." << endl;
+                }
+            }
         }
 
 

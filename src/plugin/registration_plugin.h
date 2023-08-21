@@ -48,6 +48,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "../registration/point_cloud_registration.h"
+#include "../registration/hand_eye_calibration.h"
 
 
 #include <boost/program_options.hpp>
@@ -135,9 +136,16 @@ class afRegistrationPlugin: public afSimulatorPlugin{
 
 
         // Hand-eye Registration
+        HandEyeCalibration m_handEyeCalibration;
         CRTKInterface * m_robotInterface;
         CRTKInterface * m_toolInterface;
         afRigidBodyPtr m_eeJointPtr;
+        afRigidBodyPtr m_markerPtr;
+        vector<cTransform> m_savedRobotPoints;
+        double m_trackRes = 0.001;
+        
+        // Pivot-calibration 
+        double m_pivotRes = 0.001;
 
         // These two pointers are for optional Objects
         afRigidBodyPtr m_toolPtr; 
