@@ -39,7 +39,7 @@ hand eye:
   marker name: atracsys/Anspoch_drill # This name should used for both rostopic name and object name in AMBF
   joint name: dovetail_male
   optical tracker name: Tracker
-  resolution: 0.7
+  resolution: 0.001
 
 # ## Pivot calibration
 # pivot:

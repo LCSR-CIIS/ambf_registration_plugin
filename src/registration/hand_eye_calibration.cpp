@@ -47,8 +47,7 @@ HandEyeCalibration::HandEyeCalibration(){
 }
 
 int cTransformToCVMat(cTransform trans, cv::Mat& Rot, cv::Mat& Trans){
-
-    if (Rot.size().height == 3 && Rot.size().width == 3 && Trans.size().height == 3){
+    if (!(Rot.size().height == 3 && Rot.size().width == 3 && Trans.size().height == 3)){
         cerr << "ERORR! Coversion in CV is impossible. Check the size of the matrix." << endl;
         return -1;
     }
@@ -63,8 +62,7 @@ int cTransformToCVMat(cTransform trans, cv::Mat& Rot, cv::Mat& Trans){
 }
 
 int CVMatTocTransform(cTransform& trans, cv::Mat Rot, cv::Mat Trans){
-
-    if (Rot.size().height == 3 && Rot.size().width == 3 && Trans.size().height == 3){
+    if (!(Rot.size().height == 3 && Rot.size().width == 3 && Trans.size().height == 3)){
         cerr << "ERORR! Coversion in CV is impossible. Check the size of the matrix." << endl;
         return -1;
     }
@@ -133,4 +131,32 @@ int HandEyeCalibration::calibrate(vector<cTransform> transEE, vector<cTransform>
     tracker.mul(marker2cam);     
 
     return 1;
+}
+
+
+int main(){
+    cout << "Hello from cpp code." << endl;
+
+    cTransform testEE;
+    cTransform testMarker;
+
+    testEE.setLocalPos(cVector3d(1.0, 0.0 , 0.0));
+    testMarker.setLocalPos(cVector3d(0.0, 1.0 , 0.0));
+
+    vector<cTransform> vecTestEE;
+    vector<cTransform> vecTestMarker;
+
+    for (int i=0; i< 4; i++){
+        vecTestEE.push_back(testEE);
+        vecTestMarker.push_back(testMarker);
+    }
+
+    cTransform testEE2Marker;
+    cTransform testTracker;
+
+    HandEyeCalibration testHandEye;
+    testHandEye.calibrate(vecTestEE, vecTestMarker, testEE2Marker, testTracker);
+
+    return 1;
+
 }

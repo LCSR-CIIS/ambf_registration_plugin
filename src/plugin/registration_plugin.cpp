@@ -240,7 +240,7 @@ void afRegistrationPlugin::graphicsUpdate(){
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: HANDEYE");
             m_panelManager.setText(m_savedPointsListLabel, m_registeredText);
             m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
-            m_panelManager.setFontColor(m_savedPointsListLabel, cColorf(1.,0.,0.));
+            m_panelManager.setFontColor(m_savedPointsListLabel, cColorf(0.,0.,0.));
             break;
 
         case RegistrationMode::REGISTERED:
@@ -361,7 +361,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             }
             else {
                 // Save only the new collected points which are far enough from old points
-                if ((m_savedPoints[m_savedPoints.size()].getLocalPos() - collectedPoint.getLocalPos()).length() > m_trackRes){
+                if ((m_savedPoints.back().getLocalPos() - collectedPoint.getLocalPos()).length() > m_trackRes){
                     m_savedPoints.push_back(collectedPoint);
                     m_savedRobotPoints.push_back(m_eeJointPtr->getLocalTransform());
                 }

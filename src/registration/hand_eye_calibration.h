@@ -60,4 +60,6 @@ class HandEyeCalibration{
 
 };
 
+int main();
+
 #endif //HAND_EYE_CALIBRARTION_H
