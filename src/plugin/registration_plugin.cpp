@@ -224,7 +224,7 @@ void afRegistrationPlugin::graphicsUpdate(){
         case RegistrationMode::TRACKER:
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: TRACKER");
             m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
-            m_panelManager.setText(m_savedPointsListLabel, "Tracking ....");
+            m_panelManager.setText(m_savedPointsListLabel, m_registeredText);
 
             break;
 
@@ -288,14 +288,6 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 // Change mode to "REGISTERED"
                 btTransform Tcommand = m_registeredTransform;
 
-                // Tcommand.setRotation(m_registeredTransform.getRotation());
-                // Tcommand.setOrigin(-m_registeredTransform.getOrigin());
-                // Tcommand.setRotation(m_registeringObject->m_bulletRigidBody->getWorldTransform().getRotation());
-                // Tcommand = Tcommand * m_registeringObject->getInertialOffsetTransform();
-                // m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-                // m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
-
-
                 m_registeringObject->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
                 Tcommand.mult(m_registeredTransform.inverse(), Tcommand);
 
@@ -310,22 +302,6 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     }
 
     else if (m_activeMode == RegistrationMode::TRACKER){
-        for (int i=0; i< m_numPoints; i++){
-            if(m_pointsPtr[i]){
-
-                // Retreive point transformation from the rostopic
-                // cTransform trans = m_trackingPoints[i]->measured_cp();
-
-                // if (abs(trans.getLocalPos().x())>=0.0){
-                //     // TODO: Need to change here
-                //     m_pointsPtr[i]->setLocalTransform(trans);
-                // }
-            }
-        }
-    }
-
-    else if (m_activeMode == RegistrationMode::HANDEYE){
-        
         cTransform measured_cp = m_toolInterface->measured_cp();
         m_registeredText = "WARNING! No tool location published \nCheck your tracker!!\n";
 
@@ -333,24 +309,14 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             m_registeredText = "";
         }
 
-
         cVector3d measured_cf = m_robotInterface->measured_cf();
 
         m_registeredText += "WARNING! No robot related topic published";
         
+        // ToDo: Change this to Robot Mode
         if(measured_cf.length() < 10.0){
             // Erase the warning if there is measured_cf
-            m_registeredText = "";
-
-            //While you are in this mode, the motion will be restricted to rotation only.
-            vector<double> sendForce(6);
-            sendForce[0] = -measured_cf.x();
-            sendForce[1] = -measured_cf.y();
-            sendForce[2] = -measured_cf.z();
-            sendForce[3] = 0.0;
-            sendForce[4] = 0.0;
-            sendForce[5] = 0.0;
-            m_robotInterface->servo_cf(sendForce);
+            m_registeredText = "Saving Points...\n";
 
             // get trackerLocation data from rostopics
             cTransform collectedPoint = m_toolInterface->measured_cp();
@@ -368,24 +334,70 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             }
 
             // Once you collected enough points for the calibration
-            if (m_savedPoints.size() > 1000){
-                cTransform ee2marker;
-                cTransform tracker;
-                m_handEyeCalibration.calibrate(m_savedRobotPoints, m_savedPoints,ee2marker, tracker);
+            if (m_savedPoints.size() > m_numHE && !m_flagTrack){
+                m_registeredText = "Saving Points into csv file.";
+                saveDataToCSV("HE_trackerTomarker.csv", m_savedPoints);             
+                saveDataToCSV("HE_worldToEE.csv", m_savedRobotPoints);   
+                m_registeredText = "[INFO] Saved to /data/ folder!";
+                cerr << "Saved to /data/ folder!" << endl;
+                m_flagTrack = true;
+            }
 
-                if(m_trackerPtr){
-                    m_trackerPtr->setLocalTransform(tracker);
-                }
-
+            else if(m_savedPoints.size() > 0){
+                m_registeredText += "Number of saved Points: " + to_string(m_savedPoints.size()) + "/" + to_string(m_numHE);
             }
         }        
 
-        if (m_savedPoints.size() > 0){
-            m_registeredText = "Number of saved Points: " + to_string(m_savedPoints.size());
-        }
-
     }
 
+    else if (m_activeMode == RegistrationMode::HANDEYE){
+        
+        if(!m_flagHE){
+            cTransform measured_cp = m_toolInterface->measured_cp();
+            m_registeredText = "WARNING! No tool location published \nCheck your tracker!!\n";
+
+            if (measured_cp.getLocalPos().length() > 0.0){
+                m_registeredText = "";
+            }
+
+            cVector3d measured_cf = m_robotInterface->measured_cf();
+
+            m_registeredText += "WARNING! No robot related topic published";
+            
+            // ToDo: Change this to Robot Mode
+            if(measured_cf.length() < 10.0){
+                // Erase the warning if there is measured_cf
+                m_registeredText = "";
+
+                // get trackerLocation data from rostopics
+                cTransform collectedPoint = m_toolInterface->measured_cp();
+
+                if (m_savedPoints.size() == 0){
+                    m_savedPoints.push_back(collectedPoint);
+                    m_savedRobotPoints.push_back(m_eeJointPtr->getLocalTransform());
+                }
+                else {
+                    // Save only the new collected points which are far enough from old points
+                    if ((m_savedPoints.back().getLocalPos() - collectedPoint.getLocalPos()).length() > m_trackRes){
+                        m_savedPoints.push_back(collectedPoint);
+                        m_savedRobotPoints.push_back(m_eeJointPtr->getLocalTransform());
+                    }
+                }
+
+                // Once you collected enough points for the calibration
+                if (m_savedPoints.size() > m_numHE && !m_flagHE){
+                    cTransform ee2marker;
+                    cTransform tracker;
+                    // m_handEyeCalibration.calibrate(m_savedRobotPoints, m_savedPoints, m_ee2marker, m_tracker);
+                    m_flagHE = true;
+                }
+            }        
+
+            if (m_savedPoints.size() > 0){
+                m_registeredText = "Number of saved Points: " + to_string(m_savedPoints.size());
+            }
+        }
+    }
     
     else if (m_activeMode == RegistrationMode::PIVOT){
         m_registeredText = "PIVOT Calibration!\n"; 
@@ -396,6 +408,20 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         m_registeredText = "Registeration Result: \n Avg: " + to_string(m_registeredTransform.getOrigin().x()) + "," +
         to_string(m_registeredTransform.getOrigin().y()) + "," + to_string(m_registeredTransform.getOrigin().z());
     }
+
+    // Once you finish HandEye registration
+    if (m_flagHE){
+        if(m_markerPtr){
+            // Move marker to using the HandEye calibration 
+            btTransform Tcommand = m_ee2marker;
+
+            m_eeJointPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
+            Tcommand.mult(Tcommand, m_ee2marker);
+
+            m_markerPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+            m_markerPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
+        }
+    }    
 }
 
 int afRegistrationPlugin::readConfigFile(string config_filepath){
@@ -507,6 +533,40 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 m_trackRes = node["hand eye"]["resolution"].as<double>();
             }
 
+            if(node["hand eye"]["number of points"]){
+                m_numHE = node["hand eye"]["number of points"].as<int>();
+            }
+
+            if(node["hand eye"]["registered HE result"]){
+                double x = node["hand eye"]["registered HE result"]["q_rot"]["x"].as<double>();
+                double y = node["hand eye"]["registered HE result"]["q_rot"]["y"].as<double>();
+                double z = node["hand eye"]["registered HE result"]["q_rot"]["z"].as<double>();
+                double w = node["hand eye"]["registered HE result"]["q_rot"]["w"].as<double>();
+                cQuaternion q_rot(w, x, y, z);
+                cerr << "Quaternion Rot: " << q_rot.str(5) << endl;
+                btQuaternion btRot(q_rot.x, q_rot.y, q_rot.z, q_rot.w);
+                m_ee2marker.setRotation(btRot);  
+
+                cMatrix3d rot;
+                q_rot.toRotMat(rot);
+                // m_ee2marker.setLocalRot(rot);
+                x = node["hand eye"]["registered HE result"]["q_dual"]["x"].as<double>();
+                y = node["hand eye"]["registered HE result"]["q_dual"]["y"].as<double>();
+                z = node["hand eye"]["registered HE result"]["q_dual"]["z"].as<double>();
+                w = node["hand eye"]["registered HE result"]["q_dual"]["w"].as<double>();
+                cQuaternion q_dual(w, x, y, z);
+                q_rot.conj();
+                q_dual.mul(q_rot);
+                q_dual.mul(0.5);
+                cerr << "Quaternion Trans: " << q_dual.str(5) << endl;
+                btVector3 btTrans;
+                btTrans.setValue(x, y, z); 
+                m_ee2marker.setOrigin(btTrans);
+
+                // Change to btVector and Matrix
+                m_flagHE = true;
+            }
+
             m_markerPtr = m_worldPtr->getRigidBody("marker_body");
             if(!m_markerPtr){
                 cerr << "WARNING! No Marker named marker_body found." << endl;
@@ -563,3 +623,16 @@ bool afRegistrationPlugin::close(){
     return -1;
 }
 
+void saveDataToCSV(string fileName, vector<cTransform> vecTransform){
+    std::ofstream file;
+    time_t now = time(0);
+
+    file.open("./data/" + fileName);
+    for (int i=0; i < vecTransform.size(); i++){
+        file << to_string(i) +  ", " +  vecTransform[i].getLocalPos().str(6) + ",";
+        cQuaternion qRot;
+        qRot.fromRotMat(vecTransform[i].getLocalRot());
+        file << to_string(qRot.x) + ", " + to_string(qRot.y) + ", " + to_string(qRot.z) + ", " + to_string(qRot.w) + "\n";
+    }
+    file.close();
+}

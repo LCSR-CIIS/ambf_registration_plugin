@@ -5,6 +5,14 @@
         "vector": "cpp",
         "unordered_map": "cpp",
         "bitset": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "iostream": "cpp",
+        "ostream": "cpp",
+        "array": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "ranges": "cpp",
+        "utility": "cpp",
+        "*.ipp": "cpp"
     }
 }

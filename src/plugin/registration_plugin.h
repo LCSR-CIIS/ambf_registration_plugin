@@ -53,6 +53,9 @@
 
 #include <boost/program_options.hpp>
 
+#include <fstream>
+#include <ctime>
+
 namespace boost{
     namespace program_options{
         class variables_map;
@@ -123,6 +126,7 @@ class afRegistrationPlugin: public afSimulatorPlugin{
 
         // Tracker based Registration
         vector<CRTKInterface*> m_trackingPoints;
+        bool m_flagTrack = false;
 
         // Registered Statistics Text
         string m_registeredText;
@@ -142,7 +146,11 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         afRigidBodyPtr m_eeJointPtr;
         afRigidBodyPtr m_markerPtr;
         vector<cTransform> m_savedRobotPoints;
+        btTransform m_ee2marker;
+        cTransform m_tracker;
         double m_trackRes = 0.001;
+        int m_numHE = 1000;
+        bool m_flagHE = false;
         
         // Pivot-calibration 
         double m_pivotRes = 0.001;
@@ -155,5 +163,7 @@ class afRegistrationPlugin: public afSimulatorPlugin{
 
 };
 
+
+void saveDataToCSV(string fileName, vector<cTransform> vecTransform);
 
 AF_REGISTER_SIMULATOR_PLUGIN(afRegistrationPlugin)

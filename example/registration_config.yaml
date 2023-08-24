@@ -40,6 +40,18 @@ hand eye:
   joint name: dovetail_male
   optical tracker name: Tracker
   resolution: 0.001
+  number of points: 1000
+  registered HE result:
+    q_rot: 
+      x: -0.44392565
+      y: -0.43748763
+      z: 0.57720114
+      w: 0.52761105
+    q_dual: 
+      x: 0.05157883    
+      y: -0.03933842
+      z: -0.02773238
+      w: 0.04111789
 
 # ## Pivot calibration
 # pivot:

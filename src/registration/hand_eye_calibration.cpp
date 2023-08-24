@@ -54,10 +54,11 @@ int cTransformToCVMat(cTransform trans, cv::Mat& Rot, cv::Mat& Trans){
 
     for (int i = 0 ; i < 3; i++){
         for (int j = 0 ; j < 3; j++){
-            Rot.at<double>(i,j) = trans.getLocalRot()(i,j);
+            Rot.at<double>(i,j) = trans.getLocalRot()(j,i);
         }
         Trans.at<double>(i,0) = trans.getLocalPos()(i);
     }
+
     return 1;
 }
 
@@ -71,9 +72,9 @@ int CVMatTocTransform(cTransform& trans, cv::Mat Rot, cv::Mat Trans){
     cVector3d cTrans;
     for (int i = 0 ; i < 3; i++){
         for (int j = 0 ; j < 3; j++){
-            cRot(i,j) = Rot.at<double>(i,j);
+            cRot(i,j) = Rot.at<double>(j,i);
         }
-        cTrans(i)= Trans.at<double>(i);
+        cTrans(i)= Trans.at<double>(i, 0);
     }
    trans.setLocalRot(cRot);
    trans.setLocalPos(cTrans);
@@ -92,10 +93,8 @@ int HandEyeCalibration::calibrate(vector<cTransform> transEE, vector<cTransform>
 	vector<cv::Mat> t_cam2marker;
 	vector<cv::Mat> R_ee2base;
 	vector<cv::Mat> t_ee2base;
-	vector<cv::Mat> R_base2cam;
-	vector<cv::Mat> t_base2cam;
-	vector<cv::Mat> R_marker2ee;
-	vector<cv::Mat> t_marker2ee;
+    cv::Mat R_marker2ee = cv::Mat_<double>(3,3); 
+    cv::Mat t_marker2ee = cv::Mat_<double>(3,1); 
 
     for (int i = 0; i < transEE.size(); i++){
         cv::Mat M_ee = cv::Mat_<double>(3,3);
@@ -107,35 +106,39 @@ int HandEyeCalibration::calibrate(vector<cTransform> transEE, vector<cTransform>
         transEEinv.copyfrom(transEE[i]);
         transEEinv.invert();
         cTransformToCVMat(transEEinv, M_ee, t_ee);
-        cTransformToCVMat(transMarker[i], M_marker, t_marker);
 
         R_cam2marker.push_back(M_marker);
         t_cam2marker.push_back(t_marker);
 
         R_ee2base.push_back(M_ee);
-	    t_ee2base.push_back(t_ee);       
+	    t_ee2base.push_back(t_ee);   
     }
 
     // Perform OpenCV function "calibrateRobotWorldHandEye()"
-    cv::calibrateHandEye(R_ee2base, t_ee2base , R_cam2marker, t_cam2marker, R_marker2ee, t_marker2ee, cv::CALIB_HAND_EYE_TSAI);
+    cv::calibrateHandEye(R_ee2base, t_ee2base , R_cam2marker, t_cam2marker, R_marker2ee, t_marker2ee, cv::CALIB_HAND_EYE_HORAUD);
 
-    CVMatTocTransform(ee2marker, R_marker2ee[0], t_marker2ee[0]);
+    CVMatTocTransform(ee2marker, R_marker2ee , t_marker2ee);
     ee2marker.invert();
 
     // 1. Base to EE
-    transEE[0].mulr(ee2marker, tracker);
+    transEE[150].mulr(ee2marker, tracker);
+
+    cout << "Marker Location: " << tracker.getLocalPos().str(4) << endl;
+
     // 2. EE to inverse of tracking
     cTransform marker2cam;
-    marker2cam.copyfrom(transMarker[0]);
+    marker2cam.copyfrom(transMarker[150]);
     marker2cam.invert();
-    tracker.mul(marker2cam);     
+    tracker.mul(marker2cam);   
+
+    cerr << "Done HandEye Calibration!!" << endl;  
 
     return 1;
 }
 
 
 int main(){
-    cout << "Hello from cpp code." << endl;
+    cout << "Hello from HandEye cpp code." << endl;
 
     cTransform testEE;
     cTransform testMarker;
@@ -156,6 +159,10 @@ int main(){
 
     HandEyeCalibration testHandEye;
     testHandEye.calibrate(vecTestEE, vecTestMarker, testEE2Marker, testTracker);
+
+    cerr << testEE2Marker.getLocalPos() << endl;
+    cerr << testTracker.getLocalPos() << endl;
+
 
     return 1;
 
