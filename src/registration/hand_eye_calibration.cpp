@@ -137,33 +137,33 @@ int HandEyeCalibration::calibrate(vector<cTransform> transEE, vector<cTransform>
 }
 
 
-int main(){
-    cout << "Hello from HandEye cpp code." << endl;
+// int main(){
+//     cout << "Hello from HandEye cpp code." << endl;
 
-    cTransform testEE;
-    cTransform testMarker;
+//     cTransform testEE;
+//     cTransform testMarker;
 
-    testEE.setLocalPos(cVector3d(1.0, 0.0 , 0.0));
-    testMarker.setLocalPos(cVector3d(0.0, 1.0 , 0.0));
+//     testEE.setLocalPos(cVector3d(1.0, 0.0 , 0.0));
+//     testMarker.setLocalPos(cVector3d(0.0, 1.0 , 0.0));
 
-    vector<cTransform> vecTestEE;
-    vector<cTransform> vecTestMarker;
+//     vector<cTransform> vecTestEE;
+//     vector<cTransform> vecTestMarker;
 
-    for (int i=0; i< 4; i++){
-        vecTestEE.push_back(testEE);
-        vecTestMarker.push_back(testMarker);
-    }
+//     for (int i=0; i< 4; i++){
+//         vecTestEE.push_back(testEE);
+//         vecTestMarker.push_back(testMarker);
+//     }
 
-    cTransform testEE2Marker;
-    cTransform testTracker;
+//     cTransform testEE2Marker;
+//     cTransform testTracker;
 
-    HandEyeCalibration testHandEye;
-    testHandEye.calibrate(vecTestEE, vecTestMarker, testEE2Marker, testTracker);
+//     HandEyeCalibration testHandEye;
+//     testHandEye.calibrate(vecTestEE, vecTestMarker, testEE2Marker, testTracker);
 
-    cerr << testEE2Marker.getLocalPos() << endl;
-    cerr << testTracker.getLocalPos() << endl;
+//     cerr << testEE2Marker.getLocalPos() << endl;
+//     cerr << testTracker.getLocalPos() << endl;
 
 
-    return 1;
+//     return 1;
 
-}
+// }

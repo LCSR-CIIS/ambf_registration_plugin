@@ -90,5 +90,8 @@ if(BUILD_PLUGIN_WITH_ROS)
     add_definitions(-DBUILD_WITH_ROS)
 endif()
 
-add_executable(TestHandEye src/registration/hand_eye_calibration.cpp)
-target_link_libraries(TestHandEye ${AMBF_LIBRARIES} ${OpenCV_LIBRARIES})
+# add_executable(TestHandEye src/registration/hand_eye_calibration.cpp)
+# target_link_libraries(TestHandEye ${AMBF_LIBRARIES} ${OpenCV_LIBRARIES})
+
+add_executable(TestPointCloud src/registration/point_cloud_registration.cpp)
+target_link_libraries(TestPointCloud ${AMBF_LIBRARIES} ${PCL_LIBRARIES})

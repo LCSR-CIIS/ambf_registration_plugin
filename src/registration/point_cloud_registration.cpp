@@ -114,3 +114,34 @@ void PointCloudRegistration::eigenMatrixTobtTransform(Eigen::Matrix<float, 4, 4>
     trans.setOrigin(btTrans);
     trans.setRotation(btRot);
 }
+
+// For debugging purpose
+int main(){
+    cout << "Hello from point_cloud_registration.cpp!" << endl;
+
+    vector<cVector3d> In;
+    In.push_back(cVector3d(1.0, 2.0, 3.0));
+    In.push_back(cVector3d(1.0, 1.2, 3.0));
+    In.push_back(cVector3d(1.4, 2.0, 3.0));
+    In.push_back(cVector3d(1.0, 2.9, 3.0));
+    In.push_back(cVector3d(3.0, 2.0, 3.0));
+    In.push_back(cVector3d(1.0, 5.0, 3.0));
+    In.push_back(cVector3d(2.0, 4.0, 3.0));
+
+    vector<cVector3d> Out;
+    Out.push_back(cVector3d(1.0, 2.0, -0.9));
+    Out.push_back(cVector3d(1.0, 1.2, -1.1));
+    Out.push_back(cVector3d(1.4, 2.0, -1.0));
+    Out.push_back(cVector3d(1.0, 2.9, -1.1));
+    Out.push_back(cVector3d(3.0, 2.0, -1.0));
+    Out.push_back(cVector3d(1.0, 5.0, -1.0));
+    Out.push_back(cVector3d(2.0, 4.0, -1.0));
+
+    cerr << In.size() << "|" << In[0].str(3) << endl;
+    PointCloudRegistration pcr;
+    btTransform trans;
+    pcr.ICPRegistration(In, Out, trans);
+    cerr << trans.getOrigin().x() << ", " << trans.getOrigin().y() << ", " << trans.getOrigin().z() << endl;
+
+    return 1;
+}

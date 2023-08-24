@@ -67,5 +67,6 @@ class PointCloudRegistration{
         void eigenMatrixTobtTransform(Eigen::Matrix<float, 4, 4> Trans, btTransform &trans);
 };
 
+int main();
 
 #endif //POINT_CLOUD_REGISTRATION_H
