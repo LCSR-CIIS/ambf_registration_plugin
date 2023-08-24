@@ -231,8 +231,8 @@ void afRegistrationPlugin::graphicsUpdate(){
         case RegistrationMode::PIVOT:
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: PIVOT");
             m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
-            m_panelManager.setText(m_savedPointsListLabel, "Pivot calibration ....");
-            m_panelManager.setFontColor(m_savedPointsListLabel, cColorf(1.,0.,0.));
+            m_panelManager.setText(m_savedPointsListLabel, m_registeredText);
+            m_panelManager.setFontColor(m_savedPointsListLabel, cColorf(0.,0.,0.));
 
             break;
 
@@ -314,7 +314,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         m_registeredText += "WARNING! No robot related topic published";
         
         // ToDo: Change this to Robot Mode
-        if(measured_cf.length() < 10.0){
+        if(measured_cf.length() < 10.0 && !m_flagTrack){
             // Erase the warning if there is measured_cf
             m_registeredText = "Saving Points...\n";
 
@@ -351,7 +351,6 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     }
 
     else if (m_activeMode == RegistrationMode::HANDEYE){
-        
         if(!m_flagHE){
             cTransform measured_cp = m_toolInterface->measured_cp();
             m_registeredText = "WARNING! No tool location published \nCheck your tracker!!\n";
@@ -385,7 +384,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 }
 
                 // Once you collected enough points for the calibration
-                if (m_savedPoints.size() > m_numHE && !m_flagHE){
+                if (m_savedPoints.size() > m_numHE){
                     cTransform ee2marker;
                     cTransform tracker;
                     // m_handEyeCalibration.calibrate(m_savedRobotPoints, m_savedPoints, m_ee2marker, m_tracker);
@@ -400,7 +399,46 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     }
     
     else if (m_activeMode == RegistrationMode::PIVOT){
-        m_registeredText = "PIVOT Calibration!\n"; 
+        cTransform measured_cp = m_toolInterface->measured_cp();
+        m_registeredText = "WARNING! No tool location published \nCheck your tracker!!\n";
+
+        if (measured_cp.getLocalPos().length() > 0.0 && !m_flagPivot){
+            // Erase the warning if there is measured_cf
+            m_registeredText = "Saving Points...\n";
+
+            // get trackerLocation data from rostopics
+            cTransform collectedPoint = m_toolInterface->measured_cp();
+
+            if (m_savedPivotPoints.size() == 0){
+                m_savedPivotPoints.push_back(collectedPoint);
+            }
+            else {
+                // Save only the new collected points which are far enough from old points
+                if ((m_savedPivotPoints.back().getLocalPos() - collectedPoint.getLocalPos()).length() > m_pivotRes){
+                    m_savedPivotPoints.push_back(collectedPoint);
+                }
+            }
+
+            // Once you collected enough points for the calibration
+            if (m_savedPivotPoints.size() > m_numPivot){
+                cVector3d dimple;
+                m_pivotCalibration.calibrate(m_savedPivotPoints, m_marker2tip, dimple);
+
+                // If you want to save the points
+                if(0){
+                    m_registeredText = "Saving Points into csv file.";
+                    saveDataToCSV("Pivot_trackerTomarker.csv", m_savedPoints);             
+                    m_registeredText = "[INFO] Saved to /data/ folder!";
+                    cerr << "Saved to /data/ folder!" << endl;
+                }
+                
+                m_flagPivot = true;
+            }
+
+            else if(m_savedPivotPoints.size() > 0){
+                m_registeredText += "Number of saved Points: " + to_string(m_savedPivotPoints.size()) + "/" + to_string(m_numPivot);
+            }
+        }
     }
     
     else if (m_activeMode == RegistrationMode::REGISTERED){
@@ -412,16 +450,29 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     // Once you finish HandEye registration
     if (m_flagHE){
         if(m_markerPtr){
-            // Move marker to using the HandEye calibration 
-            btTransform Tcommand = m_ee2marker;
+            // Move marker to using the HandEye calibration
+            // Use cTransform to move
+            cTransform marker = m_eeJointPtr->getLocalTransform();
+            // marker.mul(m_ee2marker);
+            // m_markerPtr->setLocalTransform(marker);
 
-            m_eeJointPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
-            Tcommand.mult(Tcommand, m_ee2marker);
+            // // Use btTransform to move the Marker
+            // btTransform Tcommand = m_btee2marker;
+            // m_eeJointPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
+            // Tcommand.mult(Tcommand, m_btee2marker);
 
-            m_markerPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-            m_markerPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
+            // m_markerPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+            // m_markerPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
         }
-    }    
+    }
+
+    if (m_flagPivot){
+        cTransform marker = m_eeJointPtr->getLocalTransform();
+        marker.mul(m_ee2marker);
+        cVector3d tip;
+        marker.mulr(m_marker2tip, tip);
+        m_burrMesh->setLocalPos(tip);
+    }
 }
 
 int afRegistrationPlugin::readConfigFile(string config_filepath){
@@ -545,7 +596,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 cQuaternion q_rot(w, x, y, z);
                 cerr << "Quaternion Rot: " << q_rot.str(5) << endl;
                 btQuaternion btRot(q_rot.x, q_rot.y, q_rot.z, q_rot.w);
-                m_ee2marker.setRotation(btRot);  
+                m_btee2marker.setRotation(btRot);  
 
                 cMatrix3d rot;
                 q_rot.toRotMat(rot);
@@ -561,7 +612,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 cerr << "Quaternion Trans: " << q_dual.str(5) << endl;
                 btVector3 btTrans;
                 btTrans.setValue(x, y, z); 
-                m_ee2marker.setOrigin(btTrans);
+                m_btee2marker.setOrigin(btTrans);
 
                 // Change to btVector and Matrix
                 m_flagHE = true;
@@ -598,7 +649,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
 
             // Setting up CRTK communication
             string nspace = node["pivot"]["namespace"].as<string>();
-            m_toolInterface = new CRTKInterface(nspace + "/" + markerName);
+            m_toolInterface = new CRTKInterface("/" + markerName + "/");
 
             if(!m_markerPtr){
                 m_markerPtr = m_worldPtr->getRigidBody("marker_body");
@@ -606,6 +657,28 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                     cerr << "WARNING! No Marker named marker_body found." << endl;
                 }
             }
+
+            if(node["pivot"]["number of points"]){
+                m_numHE = node["pivot"]["number of points"].as<int>();
+            }
+
+            if(node["pivot"]["registered pivot result"]){
+                double x = node["pivot"]["registered pivot result"]["t_tip"]["x"].as<double>();
+                double y = node["pivot"]["registered pivot result"]["t_tip"]["y"].as<double>();
+                double z = node["pivot"]["registered pivot result"]["t_tip"]["z"].as<double>();
+
+                m_marker2tip.set(x, y, z);
+                m_flagPivot = true;
+            }
+            m_burrMesh = new cShapeSphere(0.02);
+            m_burrMesh->setRadius(0.02);
+            m_burrMesh->m_material->setBlack();
+            m_burrMesh->m_material->setShininess(0);
+            m_burrMesh->m_material->m_specular.set(0, 0, 0);
+            m_burrMesh->setShowEnabled(true);
+
+            m_worldPtr->addSceneObjectToWorld(m_burrMesh);
+
         }
 
 

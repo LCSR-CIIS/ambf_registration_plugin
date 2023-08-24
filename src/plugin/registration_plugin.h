@@ -49,6 +49,7 @@
 
 #include "../registration/point_cloud_registration.h"
 #include "../registration/hand_eye_calibration.h"
+#include "../registration/pivot_calibration.h"
 
 
 #include <boost/program_options.hpp>
@@ -146,14 +147,24 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         afRigidBodyPtr m_eeJointPtr;
         afRigidBodyPtr m_markerPtr;
         vector<cTransform> m_savedRobotPoints;
-        btTransform m_ee2marker;
+        cTransform m_ee2marker;
+        btTransform m_btee2marker;
         cTransform m_tracker;
         double m_trackRes = 0.001;
         int m_numHE = 1000;
         bool m_flagHE = false;
         
-        // Pivot-calibration 
+        // Pivot-calibration
+        PivotCalibration m_pivotCalibration;
+        vector<cTransform> m_savedPivotPoints;
         double m_pivotRes = 0.001;
+        int m_numPivot = 1000;
+        bool m_flagPivot = false;
+
+        cVector3d m_marker2tip;
+
+        cShapeSphere* m_burrMesh;
+
 
         // These two pointers are for optional Objects
         afRigidBodyPtr m_toolPtr; 

@@ -54,7 +54,14 @@ hand eye:
       w: 0.04111789
 
 # ## Pivot calibration
-# pivot:
-#   tooltip name: drill_tip
-#   namespace: /REMS/Research/ #namespace for the robot 
-#   marker name: galenDrill
+pivot:
+  tooltip name: drill_tip
+  namespace: /REMS/Research/ #namespace for the robot 
+  marker name: atracsys/Anspoch_drill
+  resolution: 0.001
+  number of points: 100
+  registered pivot result:
+    t_tip: 
+      x: -0.077053
+      y:  0.150933
+      z:  0.043711
