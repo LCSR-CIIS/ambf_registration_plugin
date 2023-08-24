@@ -20,3 +20,10 @@ ETH HandEye calibration method
 ```bash
 python3 compute_hand_eye_calibration.py --aligned_poses_B_H_csv_file ~/ambf_registration_plugin/data/HE_worldToEE.csv --aligned_poses_W_E_csv_file ~/ambf_registration_plugin/data/HE_trackerTomarker.csv --visualize VIZULALIZE
 ```
+
+Pivot Calibration
+```bash
+cd Twin-S/optical_tracking          
+python3 sksurgery_pivot_calibration.py -i ~/ambf_registration_plugin/data/Pivot_trackerTomarker.csv -c ../config/ransac_config.json
+
+```
