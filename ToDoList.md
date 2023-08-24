@@ -26,3 +26,7 @@ These objects should be rigidBody. Need to be seperate ADF file. (Need to play w
 - CRTKInterface
  Check whether you are connected to the robot or not. (Status??)
  Galen does not publish meaning full topic now. Maybe we can use "REMS/Research/footpedal" value instead?
+
+
+ ## ToDo
+ - Add tracker for the anatomy
