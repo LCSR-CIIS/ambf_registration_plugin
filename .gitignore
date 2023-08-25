@@ -1,7 +1,7 @@
 build
 .vscode
+*.user
+*.old
+*.blend1
 
-settings.json
-*.blend
-
-data/
+data
