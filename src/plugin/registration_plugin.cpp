@@ -457,12 +457,12 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             // m_markerPtr->setLocalTransform(marker);
 
             // // Use btTransform to move the Marker
-            // btTransform Tcommand = m_btee2marker;
-            // m_eeJointPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
-            // Tcommand.mult(Tcommand, m_btee2marker);
+             btTransform Tcommand = m_btee2marker;
+             m_eeJointPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
+             Tcommand.mult(Tcommand, m_btee2marker);
 
-            // m_markerPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-            // m_markerPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
+             m_markerPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+             m_markerPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
         }
     }
 
