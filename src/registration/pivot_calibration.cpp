@@ -99,6 +99,8 @@ int PivotCalibration::calibrate(vector<cTransform> transIn, cVector3d& tipPos, c
     Eigen::Vector3d tipEigen = x.block(0, 0, 3, 1);
     Eigen::Vector3d markerEigen = x.block(3, 0, 3, 1);
     tipPos.set(tipEigen(0), tipEigen(1), tipEigen(2));
+
+    cerr << "Tip Pose" << tipPos.str(4) << endl;
     markerPos.set(markerEigen(0), markerEigen(1), markerEigen(2));
 
     return 1;
