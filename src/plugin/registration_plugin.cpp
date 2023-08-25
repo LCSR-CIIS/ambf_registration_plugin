@@ -314,22 +314,28 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         m_registeredText += "WARNING! No robot related topic published";
         
         // ToDo: Change this to Robot Mode
-        if(measured_cf.length() < 10.0 && !m_flagTrack){
+        if(measured_cp.getLocalPos().length() > 0.0 && !m_flagTrack){
             // Erase the warning if there is measured_cf
             m_registeredText = "Saving Points...\n";
 
             // get trackerLocation data from rostopics
             cTransform collectedPoint = m_toolInterface->measured_cp();
+            cTransform collectedReference = m_trackingInterfaces[0]->measured_cp();
+            collectedReference.invert();
 
             if (m_savedPoints.size() == 0){
                 m_savedPoints.push_back(collectedPoint);
-                m_savedRobotPoints.push_back(m_eeJointPtr->getLocalTransform());
+                m_savedRef2Points.push_back(collectedReference * collectedPoint);
+                m_savedAMBFPoints.push_back(m_eeJointPtr->getLocalTransform());
+                m_savedRobotPoints.push_back(m_robotInterface->measured_cp());
             }
             else {
                 // Save only the new collected points which are far enough from old points
                 if ((m_savedPoints.back().getLocalPos() - collectedPoint.getLocalPos()).length() > m_trackRes){
                     m_savedPoints.push_back(collectedPoint);
-                    m_savedRobotPoints.push_back(m_eeJointPtr->getLocalTransform());
+                    m_savedRef2Points.push_back(collectedReference * collectedPoint);
+                    m_savedAMBFPoints.push_back(m_eeJointPtr->getLocalTransform());
+                    m_savedRobotPoints.push_back(m_robotInterface->measured_cp());
                 }
             }
 
@@ -337,6 +343,8 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             if (m_savedPoints.size() > m_numHE && !m_flagTrack){
                 m_registeredText = "Saving Points into csv file.";
                 saveDataToCSV("HE_trackerTomarker.csv", m_savedPoints);             
+                saveDataToCSV("HE_referenceTomarker.csv", m_savedRef2Points);             
+                saveDataToCSV("HE_ambfToEE.csv", m_savedAMBFPoints);   
                 saveDataToCSV("HE_worldToEE.csv", m_savedRobotPoints);   
                 m_registeredText = "[INFO] Saved to /data/ folder!";
                 cerr << "Saved to /data/ folder!" << endl;
@@ -346,7 +354,12 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             else if(m_savedPoints.size() > 0){
                 m_registeredText += "Number of saved Points: " + to_string(m_savedPoints.size()) + "/" + to_string(m_numHE);
             }
-        }        
+
+            if(m_flagTrack){
+                m_registeredText = "Saved Tracking data!!";
+            }
+        }
+
 
     }
 
@@ -425,9 +438,9 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 m_pivotCalibration.calibrate(m_savedPivotPoints, m_marker2tip, dimple);
 
                 // If you want to save the points
-                if(0){
+                if(1){
                     m_registeredText = "Saving Points into csv file.";
-                    saveDataToCSV("Pivot_trackerTomarker.csv", m_savedPoints);             
+                    saveDataToCSV("Pivot_trackerTomarker.csv", m_savedPivotPoints);             
                     m_registeredText = "[INFO] Saved to /data/ folder!";
                     cerr << "Saved to /data/ folder!" << endl;
                 }
@@ -452,17 +465,21 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         if(m_markerPtr){
             // Move marker to using the HandEye calibration
             // Use cTransform to move
-            cTransform marker = m_eeJointPtr->getLocalTransform();
+            // cTransform marker = m_eeJointPtr->getLocalTransform();
             // marker.mul(m_ee2marker);
             // m_markerPtr->setLocalTransform(marker);
+            // m_burrMesh->setLocalPos(marker.getLocalPos());
 
-            // // Use btTransform to move the Marker
-            // btTransform Tcommand = m_btee2marker;
-            // m_eeJointPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
-            // Tcommand.mult(Tcommand, m_btee2marker);
+            // // // Use btTransform to move the Marker
+            btTransform Tcommand;
+            btTransform currentTrans = m_eeJointPtr->m_bulletRigidBody->getWorldTransform();
+            // m_btee2marker.inverse();
+            // Tcommand.mult(currentTrans, m_btee2marker);
 
-            // m_markerPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-            // m_markerPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
+            Tcommand = currentTrans * m_btee2marker;
+
+            m_markerPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+            m_markerPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
         }
     }
 
@@ -535,10 +552,11 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 string objectName = node["optical tracker"]["name of points"][i].as<string>();
                 objectPtr = m_worldPtr->getRigidBody(objectName);
                 
-                if(objectPtr){
+                if(1){
+                // if(objectPtr){
                     m_trackingPointsPtr.push_back(objectPtr);
                     CRTKInterface* interface = new CRTKInterface(nspace + "/" + objectName);
-                    m_trackingPoints.push_back(interface);
+                    m_trackingInterfaces.push_back(interface);
                 }
                 else{
                     cerr << "WARNING! No object named " << objectName << " found." << endl;
@@ -595,6 +613,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 double w = node["hand eye"]["registered HE result"]["q_rot"]["w"].as<double>();
                 cQuaternion q_rot(w, x, y, z);
                 cerr << "Quaternion Rot: " << q_rot.str(5) << endl;
+                q_rot.invert();
                 btQuaternion btRot(q_rot.x, q_rot.y, q_rot.z, q_rot.w);
                 m_btee2marker.setRotation(btRot);  
 

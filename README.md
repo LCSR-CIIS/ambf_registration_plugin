@@ -18,6 +18,7 @@ ambf_simulator --launch_file launch.yaml -l 0,1 -a ~/sdf_virtual_fixture/ADF/Gal
 ## Perform HandEye calibration
 ETH HandEye calibration method
 ```bash
+cd hand_eye_calibration/hand_eye_calibration/bin
 python3 compute_hand_eye_calibration.py --aligned_poses_B_H_csv_file ~/ambf_registration_plugin/data/HE_worldToEE.csv --aligned_poses_W_E_csv_file ~/ambf_registration_plugin/data/HE_trackerTomarker.csv --visualize VIZULALIZE
 ```
 

@@ -126,7 +126,9 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         cTransform m_registerdTrans;
 
         // Tracker based Registration
-        vector<CRTKInterface*> m_trackingPoints;
+        vector<CRTKInterface*> m_trackingInterfaces;
+        vector<cTransform> m_savedAMBFPoints;
+        vector<cTransform> m_savedRef2Points;
         bool m_flagTrack = false;
 
         // Registered Statistics Text

@@ -28,9 +28,9 @@ pointer:
 
 ## Optical Tracker Registration
 optical tracker:
-  namespace: /adapter #rostopic name for the optical marker
+  namespace: /atracsys #rostopic name for the optical marker
   name of points:
-    - marker_body
+    - anatomy
 
 ## Hand-Eye Regisration
 hand eye:
@@ -40,28 +40,58 @@ hand eye:
   joint name: dovetail_male
   optical tracker name: Tracker
   resolution: 0.001
-  number of points: 1000
+  number of points: 4000
   registered HE result:
+    # 0811
+    # q_rot: 
+    #   x: -0.44392565
+    #   y: -0.43748763
+    #   z: 0.57720114
+    #   w: 0.52761105
+    # q_dual: 
+    #   x: 0.05157883    
+    #   y: -0.03933842
+    #   z: -0.02773238
+    #   w: 0.04111789
+    
+    # # 0824
+    # q_rot: 
+    #   x: 0.28250703     
+    #   y: -0.34652492
+    #   z: 0.88047073
+    #   w: 0.1577389
+    # q_dual: 
+    #   x: 0.04093878     
+    #   y: -0.03396216
+    #   z: -0.02833392
+    #   w: 0.01022549
+
+    # 0824
     q_rot: 
-      x: -0.44392565
-      y: -0.43748763
-      z: 0.57720114
-      w: 0.52761105
+      x: 0.31249885      
+      y: -0.31309434
+      z: 0.8859285
+      w: 0.13945287
     q_dual: 
-      x: 0.05157883    
-      y: -0.03933842
-      z: -0.02773238
-      w: 0.04111789
+      x: 0.04779426    
+      y: -0.01977394
+      z: -0.02610652
+      w: 0.0143543
+
 
 # ## Pivot calibration
 pivot:
   tooltip name: drill_tip
   namespace: /REMS/Research/ #namespace for the robot 
   marker name: atracsys/Anspoch_drill
-  resolution: 0.001
-  number of points: 100
-  registered pivot result:
-    t_tip: 
-      x: -0.077053
-      y:  0.150933
-      z:  0.043711
+  resolution: 0.0001
+  number of points: 1000
+  # registered pivot result:
+  #   # t_tip: 
+  #   #   x: -0.077053
+  #   #   y:  0.150933
+  #   #   z:  0.043711
+  #   t_tip: 
+  #     x: -0.077053
+  #     y:  0.150933
+  #     z:  0.043711
