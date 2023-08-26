@@ -12,7 +12,7 @@ namespace: /ambf/env/
 BODY marker_body:
   name: marker_body
   mesh: marker_body.STL
-  mass: 1.0
+  mass: 0.0
   collision margin: 0.001
   scale: 1.0
   location:

@@ -471,13 +471,13 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             // m_burrMesh->setLocalPos(marker.getLocalPos());
 
             // // // Use btTransform to move the Marker
-            btTransform Tcommand;
-            btTransform currentTrans = m_eeJointPtr->m_bulletRigidBody->getWorldTransform();
+            // btTransform Tcommand;
+            // btTransform currentTrans = m_eeJointPtr->m_bulletRigidBody->getWorldTransform();
             // m_btee2marker.inverse();
             // Tcommand.mult(currentTrans, m_btee2marker);
 
-            // // Use btTransform to move the Marker
-             btTransform Tcommand = m_btee2marker;
+            // // // Use btTransform to move the Marker
+             btTransform Tcommand;
              m_eeJointPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
              Tcommand.mult(Tcommand, m_btee2marker);
 
