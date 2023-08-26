@@ -308,7 +308,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         if (measured_cp.getLocalPos().length() > 0.0){
             m_registeredText = "";
         }
-
+        
         cVector3d measured_cf = m_robotInterface->measured_cf();
 
         m_registeredText += "WARNING! No robot related topic published";
@@ -359,7 +359,9 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 m_registeredText = "Saved Tracking data!!";
             }
         }
-
+        else{
+            cerr << measured_cp.getLocalPos().str() << endl;
+        }
 
     }
 

@@ -47,7 +47,7 @@ BODY marker_body:
     linear: 0.04
   visible: true
   collision groups:
-  - 0
+  - 20
   collision shape: BOX
   collision geometry:
     x: 0.1
