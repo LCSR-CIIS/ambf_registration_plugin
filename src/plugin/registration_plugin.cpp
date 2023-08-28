@@ -260,7 +260,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         if (m_savePoint){
             cShapeSphere* pointMesh = new cShapeSphere(0.001);
             pointMesh->setRadius(0.001);
-            pointMesh->m_material->setBlack();
+            pointMesh->m_material->setRed();
             pointMesh->m_material->setShininess(0);
             pointMesh->m_material->m_specular.set(0, 0, 0);
             pointMesh->setShowEnabled(true);
@@ -423,26 +423,33 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
             // get trackerLocation data from rostopics
             cTransform collectedPoint = m_toolInterface->measured_cp();
+            cTransform collectedReference = m_trackingInterfaces[0]->measured_cp();
+            collectedReference.invert();
 
             if (m_savedPivotPoints.size() == 0){
                 m_savedPivotPoints.push_back(collectedPoint);
+                m_savedRef2Points.push_back(collectedReference * collectedPoint);
             }
             else {
                 // Save only the new collected points which are far enough from old points
                 if ((m_savedPivotPoints.back().getLocalPos() - collectedPoint.getLocalPos()).length() > m_pivotRes){
                     m_savedPivotPoints.push_back(collectedPoint);
+                    m_savedRef2Points.push_back(collectedReference * collectedPoint);
                 }
             }
 
             // Once you collected enough points for the calibration
             if (m_savedPivotPoints.size() > m_numPivot){
                 cVector3d dimple;
+                cVector3d test;
                 m_pivotCalibration.calibrate(m_savedPivotPoints, m_marker2tip, dimple);
+                m_pivotCalibration.calibrate(m_savedRef2Points, test, dimple);
 
                 // If you want to save the points
                 if(1){
                     m_registeredText = "Saving Points into csv file.";
                     saveDataToCSV("Pivot_trackerTomarker.csv", m_savedPivotPoints);             
+                    saveDataToCSV("Pivot_referenceTomarker.csv", m_savedRef2Points);             
                     m_registeredText = "[INFO] Saved to /data/ folder!";
                     cerr << "Saved to /data/ folder!" << endl;
                 }
@@ -683,7 +690,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
             }
 
             if(node["pivot"]["number of points"]){
-                m_numHE = node["pivot"]["number of points"].as<int>();
+                m_numPivot = node["pivot"]["number of points"].as<int>();
             }
 
             if(node["pivot"]["registered pivot result"]){
@@ -694,8 +701,8 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 m_marker2tip.set(x, y, z);
                 m_flagPivot = true;
             }
-            m_burrMesh = new cShapeSphere(0.02);
-            m_burrMesh->setRadius(0.02);
+            m_burrMesh = new cShapeSphere(0.002);
+            m_burrMesh->setRadius(0.002);
             m_burrMesh->m_material->setBlack();
             m_burrMesh->m_material->setShininess(0);
             m_burrMesh->m_material->m_specular.set(0, 0, 0);

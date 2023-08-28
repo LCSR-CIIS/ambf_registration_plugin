@@ -17,7 +17,8 @@
 
 - Add Tracker and marker in the AMBF world
 These objects should be rigidBody. Need to be seperate ADF file. (Need to play with Blender)
-
+-> Need to match the origin and the frame (May be for later???)
+-> Change the geometry file can be easier??
 
 
 ## general
@@ -29,4 +30,15 @@ These objects should be rigidBody. Need to be seperate ADF file. (Need to play w
 
 
  ## ToDo
- - Add tracker for the anatomy
+ - (Done) Add tracker for the anatomy
+ - (Done) Check the ADF file for the robot
+ - (Done) Verify the location of the tooltip
+ - (Done) Redo the Hnadeye Calibration and pivot calibration
+ - try Point Coud registration
+ - Get/Print the calibratied transformation for the tooltip
+ - Get the screws for the anatomy
+ 
+ # After going back to house
+ - Blend force
+ - Check the SDF generation pipeline
+
