@@ -264,7 +264,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             pointMesh->m_material->setShininess(0);
             pointMesh->m_material->m_specular.set(0, 0, 0);
             pointMesh->setShowEnabled(true);
-            pointMesh->setLocalPos(m_toolTipPtr->getLocalPos());
+            pointMesh->setLocalPos(m_burrMesh->getLocalPos());
             m_worldPtr->addSceneObjectToWorld(pointMesh);
             m_spheres.push_back(pointMesh);
 
@@ -277,20 +277,20 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             cerr << "Saving all the translational error." << endl;
             for (int idx=0; idx<m_spheres.size(); idx++){
                 m_savedError.push_back(m_pointsPtr[idx]->getLocalPos() - m_spheres[idx]->getLocalPos());
-                m_pointsIn.push_back(m_spheres[idx]->getLocalPos());
-                m_pointsOut.push_back(m_pointsPtr[idx]->getLocalPos());
+                m_pointsIn.push_back(m_pointsPtr[idx]->getLocalPos());
+                m_pointsOut.push_back(m_spheres[idx]->getLocalPos());
             }
 
             // Perform ICP registration
-            bool resultPCRegist = m_pointCloudRegistration.ICPRegistration(m_pointsIn, m_pointsOut, m_registeredTransform);
+            // bool resultPCRegist = m_pointCloudRegistration.ICPRegistration(m_pointsIn, m_pointsOut, m_registeredTransform);
+            bool resultPCRegist = m_pointCloudRegistration.PointSetTransOnly(m_pointsIn, m_pointsOut, m_registeredTransform);
 
             if (resultPCRegist){
                 // Change mode to "REGISTERED"
-                btTransform Tcommand = m_registeredTransform;
+                btTransform Tcommand;
 
-                m_registeringObject->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
-                Tcommand.mult(m_registeredTransform.inverse(), Tcommand);
-
+                btTransform currentTrans = m_registeringObject->m_bulletRigidBody->getWorldTransform();
+                Tcommand.mult(m_registeredTransform, currentTrans);
                 m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
                 m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
 
@@ -358,9 +358,6 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             if(m_flagTrack){
                 m_registeredText = "Saved Tracking data!!";
             }
-        }
-        else{
-            cerr << measured_cp.getLocalPos().str() << endl;
         }
 
     }
@@ -466,7 +463,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     else if (m_activeMode == RegistrationMode::REGISTERED){
         // Saving text for the status monitor
         m_registeredText = "Registeration Result: \n Avg: " + to_string(m_registeredTransform.getOrigin().x()) + "," +
-        to_string(m_registeredTransform.getOrigin().y()) + "," + to_string(m_registeredTransform.getOrigin().z());
+        to_string(m_registeredTransform.getOrigin().y()) + "," + to_string(m_registeredTransform.getOrigin().z()) + "\n";
     }
 
     // Once you finish HandEye registration
@@ -496,11 +493,24 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     }
 
     if (m_flagPivot){
-        cTransform marker = m_eeJointPtr->getLocalTransform();
-        marker.mul(m_ee2marker);
+        cVector3d tmp;
+        m_ee2marker.mulr(m_marker2tip, tmp);
         cVector3d tip;
-        marker.mulr(m_marker2tip, tip);
+        m_eeJointPtr->getLocalTransform().mulr(tmp, tip);
+
+        // cTransform result;
+        // m_ee2marker.mulr(m_eeJointPtr->getLocalTransform(), result);
+        // result.mulr(m_marker2tip, tip);
+
         m_burrMesh->setLocalPos(tip);
+    }
+
+    if(m_flagHE && m_flagPivot){
+        cVector3d finalTransform;
+        m_ee2marker.mulr(m_marker2tip, finalTransform);
+        m_registeredText += "EE2Tooltip: " + finalTransform.str(6);
+        // cout << "Final Registration result: " << endl;
+        // cout << "EE2Tooltip: "  << finalTransform.str(6) << endl;
     }
 }
 
@@ -631,7 +641,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
 
                 cMatrix3d rot;
                 q_rot.toRotMat(rot);
-                // m_ee2marker.setLocalRot(rot);
+                m_ee2marker.setLocalRot(rot);
                 x = node["hand eye"]["registered HE result"]["q_dual"]["x"].as<double>();
                 y = node["hand eye"]["registered HE result"]["q_dual"]["y"].as<double>();
                 z = node["hand eye"]["registered HE result"]["q_dual"]["z"].as<double>();
@@ -644,7 +654,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 btVector3 btTrans;
                 btTrans.setValue(x, y, z); 
                 m_btee2marker.setOrigin(btTrans);
-
+                m_ee2marker.setLocalPos(cVector3d(x, y ,z));
                 // Change to btVector and Matrix
                 m_flagHE = true;
             }

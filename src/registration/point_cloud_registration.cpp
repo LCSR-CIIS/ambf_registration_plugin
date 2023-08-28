@@ -58,12 +58,13 @@ int PointCloudRegistration::ICPRegistration(vector<cVector3d> pointsIn, vector<c
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOut (new pcl::PointCloud<pcl::PointXYZ>(pointsIn.size(),1));
     cvectorToPointCloud(pointsIn, cloudIn);
     cvectorToPointCloud(pointsOut, cloudOut);
-
+    
     // Perform ICP registration
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
     icp.setInputSource(cloudIn);
     icp.setInputTarget(cloudOut);
-    
+    icp.setMaximumIterations(1);
+
     pcl::PointCloud<pcl::PointXYZ> Final;
     icp.align(Final);
 
@@ -77,7 +78,41 @@ int PointCloudRegistration::ICPRegistration(vector<cVector3d> pointsIn, vector<c
     eigenMatrixTobtTransform(Trans, trans);
 
     return 1;
-}  
+} 
+
+int PointCloudRegistration::PointSetTransOnly(vector<cVector3d> pointsIn, vector<cVector3d> pointsOut, btTransform &trans){
+    if (pointsIn.size() != pointsOut.size()){
+        cerr << "ERROR! The size of the input poin cloud does not match with the source point cloud." << endl;
+        return -1;
+    }
+    
+    cVector3d average;
+    cVector3d error;
+
+    for(int i =0; i < pointsIn.size(); i++){
+        average += (pointsOut[i] - pointsIn[i]);
+    }
+    average.div(pointsIn.size());
+
+    
+    for(int i =0; i < pointsIn.size(); i++){
+
+        error += (pointsOut[i] - pointsIn[i]) - average;
+    }
+    error.div(pointsIn.size());
+
+    cerr << "Average: " << average.str(6) << endl;
+    cerr << "Error: " << error.str(6) << endl;
+
+    btVector3 btTrans;
+    btTrans.setValue(average.x(), average.y(), average.z());   
+    btQuaternion btRot(0.0, 0.0, 0.0, 1.0);
+    trans.setOrigin(btTrans);
+    trans.setRotation(btRot);
+
+
+    return 1;
+}
 
 void PointCloudRegistration::cvectorToPointCloud(vector<cVector3d> points,  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud){
 
@@ -102,6 +137,10 @@ void PointCloudRegistration::eigenMatrixTobtTransform(Eigen::Matrix<float, 4, 4>
     // Converted to Chai3d data type first
     cTransform tmp_trans;
     eigenMatrixTocTransform(Trans, tmp_trans);
+
+    cerr << "Registration Transform: " << endl;
+    cerr << "Translation: " << tmp_trans.getLocalPos().str(6) << endl;
+    cerr << "Rotation: " << tmp_trans.getLocalRot().str(6) << endl;
 
     // Convert Rotation into quaternion
     cQuaternion chai_qr;
