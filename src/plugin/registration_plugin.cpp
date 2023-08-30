@@ -264,7 +264,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             pointMesh->m_material->setShininess(0);
             pointMesh->m_material->m_specular.set(0, 0, 0);
             pointMesh->setShowEnabled(true);
-            pointMesh->setLocalPos(m_burrMesh->getLocalPos());
+            pointMesh->setLocalPos(m_toolTipPtr->getLocalPos());
             m_worldPtr->addSceneObjectToWorld(pointMesh);
             m_spheres.push_back(pointMesh);
 
@@ -635,7 +635,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 double w = node["hand eye"]["registered HE result"]["q_rot"]["w"].as<double>();
                 cQuaternion q_rot(w, x, y, z);
                 cerr << "Quaternion Rot: " << q_rot.str(5) << endl;
-                q_rot.invert();
+                // q_rot.invert();
                 btQuaternion btRot(q_rot.x, q_rot.y, q_rot.z, q_rot.w);
                 m_btee2marker.setRotation(btRot);  
 
@@ -652,9 +652,9 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 q_dual.mul(0.5);
                 cerr << "Quaternion Trans: " << q_dual.str(5) << endl;
                 btVector3 btTrans;
-                btTrans.setValue(x, y, z); 
+                btTrans.setValue(q_dual.x, q_dual.y, q_dual.z); 
                 m_btee2marker.setOrigin(btTrans);
-                m_ee2marker.setLocalPos(cVector3d(x, y ,z));
+                m_ee2marker.setLocalPos(cVector3d(q_dual.x, q_dual.y, q_dual.z));
                 // Change to btVector and Matrix
                 m_flagHE = true;
             }

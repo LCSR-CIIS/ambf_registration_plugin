@@ -37,8 +37,7 @@ These objects should be rigidBody. Need to be seperate ADF file. (Need to play w
  - try Point Coud registration
  - Get/Print the calibratied transformation for the tooltip
  - Get the screws for the anatomy
- 
- # After going back to house
- - Blend force
- - Check the SDF generation pipeline
+
+ - Test Pivot registration
+ - Test point-set registration
 

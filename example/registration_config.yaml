@@ -1,29 +1,34 @@
 ## Pointer based registration
 pointer:
   tooltip name: drill_tip # Rigid body that is attached to the tip of the tool
-  number of points: 20
+  number of points: 4
   name of points:
-    - Sphere_00
-    - Sphere_01
-    - Sphere_02
-    - Sphere_03
-    - Sphere_04
-    - Sphere_05
-    - Sphere_06
-    - Sphere_07
-    - Sphere_08
-    - Sphere_09
-    - Sphere_10
-    - Sphere_11
-    - Sphere_12
-    - Sphere_13
-    - Sphere_14
-    - Sphere_15
-    - Sphere_16
-    - Sphere_17
-    - Sphere_18
-    - Sphere_19
-  object name: Registration Cube
+    - F_1
+    - F_2
+    - F_3
+    - F_4
+
+    # - Sphere_00
+    # - Sphere_01
+    # - Sphere_02
+    # - Sphere_03
+    # - Sphere_04
+    # - Sphere_05
+    # - Sphere_06
+    # - Sphere_07
+    # - Sphere_08
+    # - Sphere_09
+    # - Sphere_10
+    # - Sphere_11
+    # - Sphere_12
+    # - Sphere_13
+    # - Sphere_14
+    # - Sphere_15
+    # - Sphere_16
+    # - Sphere_17
+    # - Sphere_18
+    # - Sphere_19
+  object name: TB0828_anatomical_origin
 
 ## Optical Tracker Registration
 optical tracker:
@@ -102,17 +107,31 @@ hand eye:
     #   w: 0.01932698
 
     # 0827 Dual
+    # q_rot:
+    #   x: -0.20573478  
+    #   y: 0.8678339
+    #   z: 0.40940596  
+    #   w: 0.19215694
+
+    # q_dual:
+    #   x: -0.0400526      
+    #   y: -0.02514503  
+    #   z: 0.03460158 
+    #   w: -0.00304229
+
+    # 0828
     q_rot:
-      x: -0.20573478  
-      y: 0.8678339
-      z: 0.40940596  
-      w: 0.19215694
+      x: -0.20493657      
+      y: 0.86554729
+      z: 0.41228553 
+      w: 0.19710286
 
     q_dual:
-      x: -0.0400526      
-      y: -0.02514503  
-      z: 0.03460158 
-      w: -0.00304229
+      x: -0.0418117          
+      y: -0.02558465  
+      z: 0.03405824
+      w: -0.00236295
+
 
 
 # ## Pivot calibration
@@ -141,8 +160,13 @@ pivot:
     #   z: 0.04693415223
 
     # 0827 Dual
-    t_tip:
-      x: 0.113366
-      y: -0.161801
-      z: 0.084349
+    # t_tip:
+    #   x: 0.113366
+    #   y: -0.161801
+    #   z: 0.084349
 
+    #0828
+    t_tip:
+      x: 0.11388708842    
+      y: -0.15785066246
+      z: 0.08484844486
