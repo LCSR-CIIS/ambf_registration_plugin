@@ -80,35 +80,59 @@ int PointCloudRegistration::ICPRegistration(vector<cVector3d> pointsIn, vector<c
     return 1;
 } 
 
-int PointCloudRegistration::PointSetTransOnly(vector<cVector3d> pointsIn, vector<cVector3d> pointsOut, btTransform &trans){
+int PointCloudRegistration::PointSetRegistration(vector<cVector3d> pointsIn, vector<cVector3d> pointsOut, btTransform &trans){
     if (pointsIn.size() != pointsOut.size()){
         cerr << "ERROR! The size of the input poin cloud does not match with the source point cloud." << endl;
         return -1;
     }
     
-    cVector3d average;
-    cVector3d error;
 
-    for(int i =0; i < pointsIn.size(); i++){
-        average += (pointsOut[i] - pointsIn[i]);
+
+    // 1. Get the center of the each point and align them
+    vector<Eigen::Vector3d> vecPointIn;
+    vector<Eigen::Vector3d> vecPointOut;
+
+    Eigen::Vector3d aveIn;
+    Eigen::Vector3d aveOut;
+
+    for (size_t i = 0; i < pointsIn.size(); i++){
+        aveIn += Eigen::Vector3d(pointsIn[i](0), pointsIn[i](1), pointsIn[i](2));
+        aveOut += Eigen::Vector3d(pointsOut[i](0), pointsOut[i](1), pointsOut[i](2));
+        vecPointIn.push_back(Eigen::Vector3d(pointsIn[i](0), pointsIn[i](1), pointsIn[i](2)));
+        vecPointOut.push_back(Eigen::Vector3d(pointsOut[i](0), pointsOut[i](1), pointsOut[i](2)));
     }
-    average.div(pointsIn.size());
+    aveIn *= 1.0/pointsIn.size();
+    aveOut *= 1.0/pointsOut.size();
 
+    for (size_t i = 0; i < pointsIn.size(); i++){
+        vecPointIn[i] = vecPointIn[i] - aveIn;
+        vecPointOut[i] = vecPointOut[i] - aveOut;
+    }
+
+    cerr << "aveIn: " << endl;
+    cerr << aveIn << endl;
+    cerr << "aveOut: " << endl;
+    cerr << aveOut << endl;
+
+    // 2. Get W = sum(x' p')
+    Eigen::MatrixXd W;
+    W.setZero(3,3);
+    for (size_t i = 0; i < pointsIn.size(); i++){
+        W += vecPointIn[i] * vecPointOut[i].transpose();
+    }
     
-    for(int i =0; i < pointsIn.size(); i++){
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd(W, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    Eigen::Matrix3d R = svd.matrixU() * svd.matrixV().transpose();
+    Eigen::Vector3d T = aveIn - R * aveOut;
+    
+    cerr << "Rotation Result: " << R << endl;
+    cerr << "Translation Result: " << T << endl;
 
-        error += (pointsOut[i] - pointsIn[i]) - average;
-    }
-    error.div(pointsIn.size());
-
-    cerr << "Average: " << average.str(6) << endl;
-    cerr << "Error: " << error.str(6) << endl;
-
-    btVector3 btTrans;
-    btTrans.setValue(average.x(), average.y(), average.z());   
-    btQuaternion btRot(0.0, 0.0, 0.0, 1.0);
-    trans.setOrigin(btTrans);
-    trans.setRotation(btRot);
+    Eigen::Affine3d aff = Eigen::Affine3d::Identity();
+    aff.translation() = T;
+    aff.linear() = R;
+    Eigen::Matrix<float, 4, 4> Trans = aff.matrix().cast <float> (); ;
+    eigenMatrixTobtTransform(Trans, trans);
 
 
     return 1;
@@ -168,10 +192,10 @@ int main(){
     In.push_back(cVector3d(2.0, 4.0, 3.0));
 
     vector<cVector3d> Out;
-    Out.push_back(cVector3d(1.0, 2.0, -0.9));
-    Out.push_back(cVector3d(1.0, 1.2, -1.1));
+    Out.push_back(cVector3d(1.0, 2.0, -1.0));
+    Out.push_back(cVector3d(1.0, 1.2, -1.0));
     Out.push_back(cVector3d(1.4, 2.0, -1.0));
-    Out.push_back(cVector3d(1.0, 2.9, -1.1));
+    Out.push_back(cVector3d(1.0, 2.9, -1.0));
     Out.push_back(cVector3d(3.0, 2.0, -1.0));
     Out.push_back(cVector3d(1.0, 5.0, -1.0));
     Out.push_back(cVector3d(2.0, 4.0, -1.0));
@@ -179,8 +203,9 @@ int main(){
     cerr << In.size() << "|" << In[0].str(3) << endl;
     PointCloudRegistration pcr;
     btTransform trans;
-    pcr.ICPRegistration(In, Out, trans);
-    cerr << trans.getOrigin().x() << ", " << trans.getOrigin().y() << ", " << trans.getOrigin().z() << endl;
+    // pcr.ICPRegistration(In, Out, trans);
+    pcr.PointSetRegistration(In, Out, trans);
+    // cerr << trans.getOrigin().x() << ", " << trans.getOrigin().y() << ", " << trans.getOrigin().z() << endl;
 
     return 1;
 }

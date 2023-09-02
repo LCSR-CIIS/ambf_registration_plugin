@@ -283,7 +283,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
             // Perform ICP registration
             // bool resultPCRegist = m_pointCloudRegistration.ICPRegistration(m_pointsIn, m_pointsOut, m_registeredTransform);
-            bool resultPCRegist = m_pointCloudRegistration.PointSetTransOnly(m_pointsIn, m_pointsOut, m_registeredTransform);
+            bool resultPCRegist = m_pointCloudRegistration.PointSetRegistration(m_pointsIn, m_pointsOut, m_registeredTransform);
 
             if (resultPCRegist){
                 // Change mode to "REGISTERED"
