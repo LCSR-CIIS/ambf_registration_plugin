@@ -5,3 +5,5 @@ build
 *.blend1
 
 data/
+
+*.egg-info
