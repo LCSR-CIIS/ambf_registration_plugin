@@ -290,9 +290,14 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 btTransform Tcommand;
 
                 btTransform currentTrans = m_registeringObject->m_bulletRigidBody->getWorldTransform();
-                Tcommand.mult(m_registeredTransform, currentTrans);
+                Tcommand.mult(currentTrans, m_registeredTransform);
                 m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
                 m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
+
+                btScalar x, y, z;
+                m_registeringObject->m_bulletRigidBody->getWorldTransform().getBasis().getEulerZYX(z, y, x);;
+
+                cerr << "Roll: " << x << "," << "Pitch: " << y << "," << "Yaw: " << z << endl; 
 
                 m_activeMode = RegistrationMode::REGISTERED;
             }

@@ -3,10 +3,10 @@ pointer:
   tooltip name: drill_tip # Rigid body that is attached to the tip of the tool
   number of points: 4
   name of points:
-    - F_1
-    - F_2
-    - F_3
-    - F_4
+    - F1
+    - F2
+    - F3
+    - F4
 
     # - Sphere_00
     # - Sphere_01
@@ -28,7 +28,7 @@ pointer:
     # - Sphere_17
     # - Sphere_18
     # - Sphere_19
-  object name: TB0828_anatomical_origin
+  object name: DS0904_1_anatomical_origin
 
 ## Optical Tracker Registration
 optical tracker:

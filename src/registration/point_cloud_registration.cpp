@@ -123,7 +123,7 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> pointsIn, vec
     
     Eigen::JacobiSVD<Eigen::MatrixXd> svd(W, Eigen::ComputeThinU | Eigen::ComputeThinV);
     Eigen::Matrix3d R = svd.matrixU() * svd.matrixV().transpose();
-    Eigen::Vector3d T = aveIn - R * aveOut;
+    Eigen::Vector3d T = aveOut - R * aveIn;
     
     cerr << "Rotation Result: " << R << endl;
     cerr << "Translation Result: " << T << endl;

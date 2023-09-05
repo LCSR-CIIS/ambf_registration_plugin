@@ -16,4 +16,4 @@ multibody configs:
   - "/home/hishida3/sdf_virtual_fixture/ADF/RT147_256.yaml"
   - "./example/ADF/marker.yaml" #1
   - "./example/ADF/tracker.yaml" #2
-  - "../sdf_virtual_fixture/ADF/Galen/galen.yaml" #2
+  - "/home/hishida3/sdf_virtual_fixture/ADF/Galen/galen_anspoch_tilted.yaml" #3
