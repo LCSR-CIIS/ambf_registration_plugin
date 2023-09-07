@@ -290,12 +290,12 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 btTransform Tcommand;
 
                 btTransform currentTrans = m_registeringObject->m_bulletRigidBody->getWorldTransform();
-                Tcommand.mult(currentTrans, m_registeredTransform);
+                Tcommand = m_registeredTransform * currentTrans;
                 m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
                 m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
 
                 btScalar x, y, z;
-                m_registeringObject->m_bulletRigidBody->getWorldTransform().getBasis().getEulerZYX(z, y, x);;
+                m_registeringObject->m_bulletRigidBody->getWorldTransform().getBasis().getEulerZYX(z, y, x);
 
                 cerr << "Roll: " << x << "," << "Pitch: " << y << "," << "Yaw: " << z << endl; 
 
@@ -488,12 +488,11 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             // Tcommand.mult(currentTrans, m_btee2marker);
 
             // // // Use btTransform to move the Marker
-             btTransform Tcommand;
-             m_eeJointPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
-             Tcommand.mult(Tcommand, m_btee2marker);
-
-             m_markerPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-             m_markerPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
+            btTransform Tcommand;
+            m_eeJointPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
+            Tcommand.mult(Tcommand, m_btee2marker);
+            m_markerPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+            m_markerPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
         }
     }
 
@@ -507,7 +506,16 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         // m_ee2marker.mulr(m_eeJointPtr->getLocalTransform(), result);
         // result.mulr(m_marker2tip, tip);
 
-        m_burrMesh->setLocalPos(tip);
+        // m_burrMesh->setLocalPos(tip);
+        m_toolTipPtr->setLocalPos(tip);
+        btTransform Tcommand;
+        Tcommand.setOrigin(btVector3(tip.x(), tip.y(), tip.z()));
+        btTransform current_ee;
+        m_eeJointPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(current_ee);
+        Tcommand = current_ee * Tcommand;
+        m_toolTipPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+        m_toolTipPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
+        m_toolTipPtr->setLocalPos(tip);
     }
 
     if(m_flagHE && m_flagPivot){

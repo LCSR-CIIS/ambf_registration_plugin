@@ -55,6 +55,11 @@
 // For bullet related functions
 #include <afFramework.h>
 
+#include "opencv2/opencv.hpp"
+#include "opencv2/core.hpp"
+#include <opencv2/calib3d.hpp>
+#include <opencv2/core/eigen.hpp>
+
 using namespace chai3d;
 using namespace std;
 

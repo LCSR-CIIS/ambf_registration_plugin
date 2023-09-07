@@ -85,9 +85,30 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> pointsIn, vec
         cerr << "ERROR! The size of the input poin cloud does not match with the source point cloud." << endl;
         return -1;
     }
+
+    if (1){
+        vector<cVector3d> In;
+        In.push_back(cVector3d(0.05265, 0.05593, 0.12162));
+        In.push_back(cVector3d(0.05156, 0.05592, 0.05774));
+        In.push_back(cVector3d(-0.00250, 0.05485, 0.05883));
+        In.push_back(cVector3d(-0.00273, 0.05486, 0.12340));
+
+        vector<cVector3d> Out;
+        // Out.push_back(cVector3d(0.17722, -0.05181, -0.75032));
+        // Out.push_back(cVector3d(0.11920, -0.05530, -0.75301));
+        // Out.push_back(cVector3d(0.12326, 0.00385, -0.75118));
+        // Out.push_back(cVector3d(0.18432, 0.00502, -0.75278));
+
+        Out.push_back(cVector3d(0.08334, -0.10475, -0.69432));
+        Out.push_back(cVector3d(0.05163, -0.10482, -0.68682));
+        Out.push_back(cVector3d(0.05295, -0.05832, -0.68309));
+        Out.push_back(cVector3d(0.07777, -0.05469, -0.69322));
+
+        pointsIn = In;
+        pointsOut = Out;
+    }
+
     
-
-
     // 1. Get the center of the each point and align them
     vector<Eigen::Vector3d> vecPointIn;
     vector<Eigen::Vector3d> vecPointOut;
@@ -96,6 +117,8 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> pointsIn, vec
     Eigen::Vector3d aveOut;
 
     for (size_t i = 0; i < pointsIn.size(); i++){
+        cerr << "Points In:" << pointsIn[i].str(5) << endl;
+        cerr << "Points Out:" << pointsOut[i].str(5) << endl;
         aveIn += Eigen::Vector3d(pointsIn[i](0), pointsIn[i](1), pointsIn[i](2));
         aveOut += Eigen::Vector3d(pointsOut[i](0), pointsOut[i](1), pointsOut[i](2));
         vecPointIn.push_back(Eigen::Vector3d(pointsIn[i](0), pointsIn[i](1), pointsIn[i](2)));
@@ -123,10 +146,17 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> pointsIn, vec
     
     Eigen::JacobiSVD<Eigen::MatrixXd> svd(W, Eigen::ComputeThinU | Eigen::ComputeThinV);
     Eigen::Matrix3d R = svd.matrixU() * svd.matrixV().transpose();
+    cerr << "Rotational det:" << R.determinant() << endl;
     Eigen::Vector3d T = aveOut - R * aveIn;
     
     cerr << "Rotation Result: " << R << endl;
     cerr << "Translation Result: " << T << endl;
+
+    Eigen::Vector3d err;
+    for (size_t i = 0; i < pointsIn.size(); i++){
+        err += vecPointOut[i] - R * vecPointIn[i];
+    }
+    cerr << "Error: " << err << endl;
 
     Eigen::Affine3d aff = Eigen::Affine3d::Identity();
     aff.translation() = T;
@@ -137,6 +167,39 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> pointsIn, vec
 
     return 1;
 }
+
+// int PointCloudRegistration::PointSetRegistration(vector<cVector3d> pointsIn, vector<cVector3d> pointsOut, btTransform &trans){
+//     if (pointsIn.size() != pointsOut.size()){
+//         cerr << "ERROR! The size of the input poin cloud does not match with the source point cloud." << endl;
+//         return -1;
+//     }
+    
+//     // 1. Get the center of the each point and align them
+//     // vector<cv::Point3f> vecPointIn;
+//     // vector<cv::Point3f> vecPointOut;
+
+//     cv::Mat vecPointIn(1, 4, CV_32FC3);
+//     cv::Mat vecPointOut(1, 4, CV_32FC3);
+
+//     for (size_t i = 0; i < pointsIn.size(); i++){
+//         vecPointIn.ptr<cv::Point3f>()[i] = cv::Point3f(pointsIn[i](0),pointsIn[i](1),pointsIn[i](2));
+//         vecPointOut.ptr<cv::Point3f>()[i] = cv::Point3f(pointsOut[i](0),pointsOut[i](1),pointsOut[i](2));
+//     }
+
+//     cv::Mat cvaff(3,4,CV_64F); 
+//     vector<uchar> inliers;
+
+    
+//     cv::estimateAffine3D(vecPointIn, vecPointOut, cvaff, inliers);
+
+//     cerr << cvaff << endl;    
+//     Eigen::Matrix<float, 4, 4> Trans; 
+//     cv::cv2eigen(cvaff, Trans);
+//     eigenMatrixTobtTransform(Trans, trans);
+
+
+//     return 1;
+// }
 
 void PointCloudRegistration::cvectorToPointCloud(vector<cVector3d> points,  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud){
 
@@ -183,22 +246,27 @@ int main(){
     cout << "Hello from point_cloud_registration.cpp!" << endl;
 
     vector<cVector3d> In;
-    In.push_back(cVector3d(1.0, 2.0, 3.0));
-    In.push_back(cVector3d(1.0, 1.2, 3.0));
-    In.push_back(cVector3d(1.4, 2.0, 3.0));
-    In.push_back(cVector3d(1.0, 2.9, 3.0));
-    In.push_back(cVector3d(3.0, 2.0, 3.0));
-    In.push_back(cVector3d(1.0, 5.0, 3.0));
-    In.push_back(cVector3d(2.0, 4.0, 3.0));
+    In.push_back(cVector3d(0.05265, 0.05593, 0.12162));
+    In.push_back(cVector3d(0.05156, 0.05592, 0.05774));
+    In.push_back(cVector3d(-0.00250, 0.05485, 0.05883));
+    In.push_back(cVector3d(-0.00273, 0.05486, 0.12340));
+    // In.push_back(cVector3d(3.0, 2.0, 3.0));
+    // In.push_back(cVector3d(1.0, 5.0, 3.0));
+    // In.push_back(cVector3d(2.0, 4.0, 3.0));
 
     vector<cVector3d> Out;
-    Out.push_back(cVector3d(1.0, 2.0, -1.0));
-    Out.push_back(cVector3d(1.0, 1.2, -1.0));
-    Out.push_back(cVector3d(1.4, 2.0, -1.0));
-    Out.push_back(cVector3d(1.0, 2.9, -1.0));
-    Out.push_back(cVector3d(3.0, 2.0, -1.0));
-    Out.push_back(cVector3d(1.0, 5.0, -1.0));
-    Out.push_back(cVector3d(2.0, 4.0, -1.0));
+    // Out.push_back(cVector3d(0.17722, -0.05181, -0.75032));
+    // Out.push_back(cVector3d(0.11920, -0.05530, -0.75301));
+    // Out.push_back(cVector3d(0.12326, 0.00385, -0.75118));
+    // Out.push_back(cVector3d(0.18432, 0.00502, -0.75278));
+
+    Out.push_back(cVector3d(0.08334, -0.10475, -0.69432));
+    Out.push_back(cVector3d(0.05163, -0.10482, -0.68682));
+    Out.push_back(cVector3d(0.05295, -0.05832, -0.68309));
+    Out.push_back(cVector3d(0.07777, -0.05469, -0.69322));
+    // Out.push_back(cVector3d(3.0, 2.0, -1.0));
+    // Out.push_back(cVector3d(1.0, 5.0, -1.0));
+    // Out.push_back(cVector3d(2.0, 4.0, -1.0));
 
     cerr << In.size() << "|" << In[0].str(3) << endl;
     PointCloudRegistration pcr;
