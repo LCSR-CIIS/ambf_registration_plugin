@@ -265,6 +265,10 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             pointMesh->m_material->m_specular.set(0, 0, 0);
             pointMesh->setShowEnabled(true);
             pointMesh->setLocalPos(m_toolTipPtr->getLocalPos());
+
+            // Using btvector
+            // btVector3 tip = m_toolTipPtr->m_bulletRigidBody->getCenterOfMassPosition();
+            // pointMesh->setLocalPos(cVector3d(tip.x(), tip.y(), tip.z()));
             m_worldPtr->addSceneObjectToWorld(pointMesh);
             m_spheres.push_back(pointMesh);
 
@@ -507,15 +511,15 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         // result.mulr(m_marker2tip, tip);
 
         // m_burrMesh->setLocalPos(tip);
-        m_toolTipPtr->setLocalPos(tip);
-        btTransform Tcommand;
-        Tcommand.setOrigin(btVector3(tip.x(), tip.y(), tip.z()));
-        btTransform current_ee;
-        m_eeJointPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(current_ee);
-        Tcommand = current_ee * Tcommand;
-        m_toolTipPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-        m_toolTipPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
-        m_toolTipPtr->setLocalPos(tip);
+        // m_toolTipPtr->setLocalPos(tip);
+        // btTransform Tcommand;
+        // Tcommand.setOrigin(btVector3(tip.x(), tip.y(), tip.z()));
+        // btTransform current_ee;
+        // m_eeJointPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(current_ee);
+        // Tcommand = current_ee * Tcommand;
+        // m_toolTipPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+        // m_toolTipPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
+        // m_toolTipPtr->setLocalPos(tip);
     }
 
     if(m_flagHE && m_flagPivot){
