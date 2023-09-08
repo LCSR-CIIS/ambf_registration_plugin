@@ -86,7 +86,7 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> pointsIn, vec
         return -1;
     }
 
-    if (1){
+    if (0){
         vector<cVector3d> In;
         In.push_back(cVector3d(0.05265, 0.05593, 0.12162));
         In.push_back(cVector3d(0.05156, 0.05592, 0.05774));
@@ -118,12 +118,16 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> pointsIn, vec
 
     for (size_t i = 0; i < pointsIn.size(); i++){
         cerr << "Points In:" << pointsIn[i].str(5) << endl;
-        cerr << "Points Out:" << pointsOut[i].str(5) << endl;
-        aveIn += Eigen::Vector3d(pointsIn[i](0), pointsIn[i](1), pointsIn[i](2));
-        aveOut += Eigen::Vector3d(pointsOut[i](0), pointsOut[i](1), pointsOut[i](2));
-        vecPointIn.push_back(Eigen::Vector3d(pointsIn[i](0), pointsIn[i](1), pointsIn[i](2)));
-        vecPointOut.push_back(Eigen::Vector3d(pointsOut[i](0), pointsOut[i](1), pointsOut[i](2)));
+        aveIn += Eigen::Vector3d(pointsIn[i].x(), pointsIn[i].y(), pointsIn[i].z());
+        aveOut += Eigen::Vector3d(pointsOut[i].x(), pointsOut[i].y(), pointsOut[i].z());
+        vecPointIn.push_back(Eigen::Vector3d(pointsIn[i].x(), pointsIn[i].y(), pointsIn[i].z()));
+        vecPointOut.push_back(Eigen::Vector3d(pointsOut[i].x(), pointsOut[i].y(), pointsOut[i].z()));
     }
+
+    for (size_t i=0; i< pointsIn.size(); i++){
+        cerr << "Points Out:" << pointsOut[i].str(5) << endl;
+    }
+
     aveIn *= 1.0/pointsIn.size();
     aveOut *= 1.0/pointsOut.size();
 
@@ -145,8 +149,13 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> pointsIn, vec
     }
     
     Eigen::JacobiSVD<Eigen::MatrixXd> svd(W, Eigen::ComputeThinU | Eigen::ComputeThinV);
-    Eigen::Matrix3d R = svd.matrixU() * svd.matrixV().transpose();
+    Eigen::Matrix3d R = svd.matrixV() * svd.matrixU().transpose();
     cerr << "Rotational det:" << R.determinant() << endl;
+
+    if  (R.determinant() == -1){
+        return -1;
+    }
+
     Eigen::Vector3d T = aveOut - R * aveIn;
     
     cerr << "Rotation Result: " << R << endl;
@@ -157,6 +166,12 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> pointsIn, vec
         err += vecPointOut[i] - R * vecPointIn[i];
     }
     cerr << "Error: " << err << endl;
+    
+    Eigen::Vector3d origin(-0.010538679999999986 ,0.042189200474020215,0.06097157847505936);
+
+    Eigen::Vector3d newLocation = R * origin + T;
+
+    cerr << "New Location:" << newLocation << endl;
 
     Eigen::Affine3d aff = Eigen::Affine3d::Identity();
     aff.translation() = T;
@@ -260,13 +275,15 @@ int main(){
     // Out.push_back(cVector3d(0.12326, 0.00385, -0.75118));
     // Out.push_back(cVector3d(0.18432, 0.00502, -0.75278));
 
-    Out.push_back(cVector3d(0.08334, -0.10475, -0.69432));
-    Out.push_back(cVector3d(0.05163, -0.10482, -0.68682));
-    Out.push_back(cVector3d(0.05295, -0.05832, -0.68309));
-    Out.push_back(cVector3d(0.07777, -0.05469, -0.69322));
-    // Out.push_back(cVector3d(3.0, 2.0, -1.0));
-    // Out.push_back(cVector3d(1.0, 5.0, -1.0));
-    // Out.push_back(cVector3d(2.0, 4.0, -1.0));
+    // Out.push_back(cVector3d(0.14747, -0.14746, -0.59895));
+    // Out.push_back(cVector3d(0.08167, -0.14540, -0.60467));
+    // Out.push_back(cVector3d(0.08188, -0.09239, -0.60251));
+    // Out.push_back(cVector3d(0.14230, -0.09493, -0.59773));
+
+    Out.push_back(cVector3d(0.19723, -0.08322, -0.59143));
+    Out.push_back(cVector3d(0.13097, -0.08387, -0.59478));
+    Out.push_back(cVector3d(0.13078, -0.03173, -0.59273));
+    Out.push_back(cVector3d(0.190, -0.03564, -0.58880));
 
     cerr << In.size() << "|" << In[0].str(3) << endl;
     PointCloudRegistration pcr;

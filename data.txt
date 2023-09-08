@@ -90,3 +90,39 @@ Registration Transform:
 Translation: 0.123249, 0.012209, -0.690397
 Rotation: [ ( 0.069861, -0.996873, -0.036928 ) ( -0.298649, 0.014419, -0.954254 ) ( 0.951803, 0.077694, 0.077694 ) ]
 Roll: -1.62494,Pitch: 0.222621,Yaw: -1.31706
+
+egistration Mode changed to POINTER 
+Saving Tooltip location ...
+Saving Tooltip location ...
+Saving Tooltip location ...
+Saving Tooltip location ...
+Saving all the translational error.
+Points Out:0.14747, -0.14746, -0.59895
+Points Out:0.08167, -0.14540, -0.60467
+Points Out:0.08188, -0.09239, -0.60251
+Points Out:0.14230, -0.09493, -0.59773
+aveIn: 
+0.0247438
+0.0553901
+0.0903974
+aveOut: 
+ 0.145462
+-0.120045
+-0.600967
+Rotational det:1
+Rotation Result:   0.013515  -0.999794 -0.0151144
+ 0.0843945  0.0162024  -0.996301
+  0.996341  0.0121894  0.0845961
+Translation Result:  0.201873
+-0.032968
+-0.633943
+Error:    -0.128519
+-1.38778e-17
+-3.40006e-16
+New Location:  0.158628
+-0.0939199
+ -0.638771
+Registration Transform: 
+Translation: 0.201873, -0.032968, -0.633943
+Rotation: [ ( 0.013515, -0.999794, -0.015114 ) ( 0.084394, 0.016202, -0.996301 ) ( 0.996341, 0.012189, 0.012189 ) ]
+Roll: -1.5194,Pitch: -0.0183924,Yaw: -1.59309

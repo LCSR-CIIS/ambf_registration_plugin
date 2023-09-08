@@ -294,7 +294,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 btTransform Tcommand;
 
                 btTransform currentTrans = m_registeringObject->m_bulletRigidBody->getWorldTransform();
-                Tcommand = m_registeredTransform * currentTrans;
+                Tcommand =  currentTrans * m_registeredTransform;
                 m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
                 m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
 
