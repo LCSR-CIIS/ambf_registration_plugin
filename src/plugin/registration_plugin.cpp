@@ -287,21 +287,36 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
             // Perform ICP registration
             // bool resultPCRegist = m_pointCloudRegistration.ICPRegistration(m_pointsIn, m_pointsOut, m_registeredTransform);
-            bool resultPCRegist = m_pointCloudRegistration.PointSetRegistration(m_pointsIn, m_pointsOut, m_registeredTransform);
+
+            // Perform Point set Registration
+            vector<cVector3d> newPoints;
+            bool resultPCRegist = m_pointCloudRegistration.PointSetRegistration(m_pointsIn, m_pointsOut, m_registeredTransform, newPoints);
+
+            for (size_t i = 0; i < newPoints.size(); i++){
+                cerr << "Setting the points ..." << endl;   
+                cShapeSphere* point = new cShapeSphere(0.001);
+                point->setRadius(0.001);
+                point->m_material->setBlue();
+                point->m_material->setShininess(0);
+                point->m_material->m_specular.set(0, 0, 0);
+                point->setShowEnabled(true);
+                point->setLocalPos(newPoints[i]);
+                m_worldPtr->addSceneObjectToWorld(point);
+            }
 
             if (resultPCRegist){
                 // Change mode to "REGISTERED"
-                btTransform Tcommand;
+                // btTransform Tcommand;
 
-                btTransform currentTrans = m_registeringObject->m_bulletRigidBody->getWorldTransform();
-                Tcommand =  currentTrans * m_registeredTransform;
-                m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-                m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
+                // btTransform currentTrans = m_registeringObject->m_bulletRigidBody->getWorldTransform();
+                // Tcommand =  currentTrans * m_registeredTransform;
+                // m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
+                // m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
 
-                btScalar x, y, z;
-                m_registeringObject->m_bulletRigidBody->getWorldTransform().getBasis().getEulerZYX(z, y, x);
+                // btScalar x, y, z;
+                // m_registeringObject->m_bulletRigidBody->getWorldTransform().getBasis().getEulerZYX(z, y, x);
 
-                cerr << "Roll: " << x << "," << "Pitch: " << y << "," << "Yaw: " << z << endl; 
+                // cerr << "Roll: " << x << "," << "Pitch: " << y << "," << "Yaw: " << z << endl; 
 
                 m_activeMode = RegistrationMode::REGISTERED;
             }

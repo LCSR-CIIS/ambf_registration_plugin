@@ -67,7 +67,7 @@ class PointCloudRegistration{
     public:
         PointCloudRegistration();
         int ICPRegistration(vector<cVector3d> pointsIn, vector<cVector3d> pointsOut, btTransform& trans);
-        int PointSetRegistration(vector<cVector3d> pointsIn, vector<cVector3d> pointsOut, btTransform &trans);
+        int PointSetRegistration(vector<cVector3d> &pointsIn, vector<cVector3d> &pointsOut, btTransform &trans, vector<cVector3d> &points);
         void cvectorToPointCloud(vector<cVector3d> points,  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
         void eigenMatrixTocTransform(Eigen::Matrix<float, 4, 4> Trans, cTransform &trans);
         void eigenMatrixTobtTransform(Eigen::Matrix<float, 4, 4> Trans, btTransform &trans);
