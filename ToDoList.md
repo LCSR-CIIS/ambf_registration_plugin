@@ -28,16 +28,3 @@ These objects should be rigidBody. Need to be seperate ADF file. (Need to play w
  Check whether you are connected to the robot or not. (Status??)
  Galen does not publish meaning full topic now. Maybe we can use "REMS/Research/footpedal" value instead?
 
-
- ## ToDo
- - (Done) Add tracker for the anatomy
- - (Done) Check the ADF file for the robot
- - (Done) Verify the location of the tooltip
- - (Done) Redo the Hnadeye Calibration and pivot calibration
- - try Point Coud registration
- - Get/Print the calibratied transformation for the tooltip
- - Get the screws for the anatomy
-
- - Test Pivot registration
- - Test point-set registration
-

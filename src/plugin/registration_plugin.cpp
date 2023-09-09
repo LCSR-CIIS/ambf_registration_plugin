@@ -72,6 +72,11 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
 
     // Initialize Camera
     m_worldPtr = a_afWorld;
+
+    // Improve the constratint
+    m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  // improve out of plane error of joints
+    m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; // improve out of plane error of joints
+
     vector<string> cameraNames = {"main_camera", "cameraL", "cameraR", "stereoLR"};
     bool  initcam = initCamera(cameraNames);
     
@@ -521,6 +526,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         cVector3d tip;
         m_eeJointPtr->getLocalTransform().mulr(tmp, tip);
 
+        // Move the drill tip to the correct location.
         // cTransform result;
         // m_ee2marker.mulr(m_eeJointPtr->getLocalTransform(), result);
         // result.mulr(m_marker2tip, tip);
