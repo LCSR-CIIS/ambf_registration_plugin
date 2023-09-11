@@ -89,6 +89,15 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
         return -1;
     }
 
+    cShapeSphere* pointMesh = new cShapeSphere(0.001);
+    pointMesh->setRadius(0.001);
+    pointMesh->m_material->setRed();
+    pointMesh->m_material->setShininess(0);
+    pointMesh->m_material->m_specular.set(0, 0, 0);
+    pointMesh->setShowEnabled(true);
+    pointMesh->setLocalPos(cVector3d(0.168842, 0.138230, 1.257089));
+    m_worldPtr->addSceneObjectToWorld(pointMesh);
+
 
     // When config file was defined
     if(!config_filepath.empty()){
@@ -283,7 +292,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             pointMesh->m_material->m_specular.set(0, 0, 0);
             pointMesh->setShowEnabled(true);
             pointMesh->setLocalPos(m_toolTipPtr->getLocalPos());
-
+            
             // Using btvector
             // btVector3 tip = m_toolTipPtr->m_bulletRigidBody->getCenterOfMassPosition();
             // pointMesh->setLocalPos(cVector3d(tip.x(), tip.y(), tip.z()));
@@ -465,7 +474,8 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 m_registeredText = "Saving Points...\n";
 
                 // get trackerLocation data from rostopics
-                cTransform collectedPoint = m_toolInterface->measured_cp();
+                cTransform collectedPoint = m_worldPtr->getRigidBody("dovetail_male")->getLocalTransform();
+                // cTransform collectedPoint = m_toolInterface->measured_cp();
                 cTransform collectedReference = m_trackingInterfaces[0]->measured_cp();
                 collectedReference.invert();
 
@@ -477,6 +487,14 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                     // Save only the new collected points which are far enough from old points
                     if ((m_savedPivotPoints.back().getLocalPos() - collectedPoint.getLocalPos()).length() > m_pivotRes){
                         m_savedPivotPoints.push_back(collectedPoint);
+                        cShapeSphere* pointMesh = new cShapeSphere(0.001);
+                        pointMesh->setRadius(0.001);
+                        pointMesh->m_material->setBlue();
+                        pointMesh->m_material->setShininess(0);
+                        pointMesh->m_material->m_specular.set(0, 0, 0);
+                        pointMesh->setShowEnabled(true);
+                        pointMesh->setLocalPos(collectedPoint.getLocalPos());
+                        m_worldPtr->addSceneObjectToWorld(pointMesh);
                         m_savedRef2Points.push_back(collectedReference * collectedPoint);
                     }
                 }
@@ -489,7 +507,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                     m_pivotCalibration.calibrate(m_savedRef2Points, test, dimple);
 
                     // If you want to save the points
-                    if(1){
+                    if(0){
                         m_registeredText = "Saving Points into csv file.";
                         saveDataToCSV("Pivot_trackerTomarker.csv", m_savedPivotPoints);             
                         saveDataToCSV("Pivot_referenceTomarker.csv", m_savedRef2Points);             
@@ -632,7 +650,9 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         cVector3d tmp;
         m_ee2marker.mulr(m_marker2tip, tmp);
         cVector3d tip;
-        m_eeJointPtr->getLocalTransform().mulr(tmp, tip);
+        m_eeJointPtr->getLocalTransform().mulr(m_marker2tip, tip);
+        
+        m_burrMesh->setLocalPos(tip);
 
         // cerr << "Tip pose:" << tmp.str(8) << endl;
 

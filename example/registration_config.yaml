@@ -152,9 +152,9 @@ pivot:
   tooltip name: drill_tip
   namespace: /REMS/Research/ #namespace for the robot 
   marker name: atracsys/Anspoch_drill
-  resolution: 0.0001
-  number of points: 12
-  # registered pivot result:
+  resolution: 0.01
+  number of points: 400
+  registered pivot result:
     # Orignal Point
     # t_tip: 
     #   x: -0.077053
@@ -189,3 +189,15 @@ pivot:
     #   x: 0.112303
     #   y: -0.161753
     #   z:  0.084276
+
+    # 0910 Optical Tracker
+    t_tip:
+      x: 0.112229
+      y: -0.161895
+      z:  0.084108
+
+    # 0910 Rotbot Pivot Calibration
+    # t_tip: 
+    #   x: 0.070891 
+    #   y: -0.061150
+    #   z: -0.125319
