@@ -28,3 +28,15 @@ cd Twin-S/optical_tracking
 python3 sksurgery_pivot_calibration.py -i ~/ambf_registration_plugin/data/Pivot_trackerTomarker.csv -c ../config/ransac_config.json
 
 ```
+
+
+## Experiment 
+
+Change object name in "registration_config"
+```bash
+ambf_simulator --launch_file launch.yaml -l 4,7 --registration_config example/registration_config.yaml #TB0904
+ambf_simulator --launch_file launch.yaml -l 4,8 --registration_config example/registration_config.yaml #TB0909
+
+```
+
+Copy and paste the registration procedure

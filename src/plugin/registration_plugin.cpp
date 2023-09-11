@@ -299,6 +299,9 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             m_worldPtr->addSceneObjectToWorld(pointMesh);
             m_spheres.push_back(pointMesh);
 
+            cerr << "Tracker Points:" << m_toolInterface->measured_cp().str(6) << endl;
+            cerr << "Tracker RefPoints:" << m_trackingInterfaces[0]->measured_cp().str(6) << endl;
+
             m_savePoint = false;
         }
 
