@@ -17,5 +17,6 @@ multibody configs:
   - "./example/ADF/marker.yaml" #1
   - "./example/ADF/tracker.yaml" #2
   - "/home/hishida3/sdf_virtual_fixture/ADF/Galen/galen_anspoch.yaml" #3
-  - "/home/hishida3/sdf_virtual_fixture/ADF/Galen/anspoch.yaml" #4
-  - "/home/hishida3/sdf_virtual_fixture/ADF/DS0904_1.yaml" #5
+  - "/home/hishida3/sdf_virtual_fixture/ADF/drill/20230909_anspoch_drill.yaml" #4
+  - "/home/hishida3/sdf_virtual_fixture/ADF/drill/20230909_anspoch_drill_track.yaml" #5
+  - "/home/hishida3/sdf_virtual_fixture/ADF/DS0904_1.yaml" #6

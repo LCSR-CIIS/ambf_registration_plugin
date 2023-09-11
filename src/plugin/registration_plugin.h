@@ -166,6 +166,9 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         cVector3d m_marker2tip;
 
         cShapeSphere* m_burrMesh;
+        bool m_manualPivot = true;
+
+        cVector3d m_ee2tip;
 
 
         // These two pointers are for optional Objects

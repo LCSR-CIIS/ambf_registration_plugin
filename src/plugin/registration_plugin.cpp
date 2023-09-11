@@ -192,7 +192,7 @@ void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a
         }
     
         else if(a_key == GLFW_KEY_9){
-            if (m_activeMode == RegistrationMode::POINTER){
+            if (m_activeMode == RegistrationMode::POINTER || m_activeMode == RegistrationMode::PIVOT){
                 m_savePoint = true;
                 cerr << "Saving Tooltip location ..." << endl;
             }
@@ -236,6 +236,19 @@ void afRegistrationPlugin::graphicsUpdate(){
         case RegistrationMode::PIVOT:
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: PIVOT");
             m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
+            
+            if (m_manualPivot){
+                // Saving the saved points location as text and show on the screen.
+                for (int i=0; i < m_savedPivotPoints.size(); i++){   
+                    cVector3d trans = m_savedPivotPoints[i].getLocalPos();
+                    m_savedLocationText += "Point " + to_string(i) + ": " + trans.str(5);
+                    if(i < m_spheres.size()-1){
+                        m_savedLocationText += "\n";
+                    }
+                }
+            }
+            
+            m_panelManager.setText(m_savedPointsListLabel, m_savedLocationText);
             m_panelManager.setText(m_savedPointsListLabel, m_registeredText);
             m_panelManager.setFontColor(m_savedPointsListLabel, cColorf(0.,0.,0.));
 
@@ -440,53 +453,148 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     }
     
     else if (m_activeMode == RegistrationMode::PIVOT){
-        cTransform measured_cp = m_toolInterface->measured_cp();
+
+        cTransform measured_cp;
         m_registeredText = "WARNING! No tool location published \nCheck your tracker!!\n";
 
-        if (measured_cp.getLocalPos().length() > 0.0 && !m_flagPivot){
-            // Erase the warning if there is measured_cf
-            m_registeredText = "Saving Points...\n";
 
-            // get trackerLocation data from rostopics
-            cTransform collectedPoint = m_toolInterface->measured_cp();
-            cTransform collectedReference = m_trackingInterfaces[0]->measured_cp();
-            collectedReference.invert();
+        if(!m_manualPivot){
+            measured_cp = m_toolInterface->measured_cp();
+            if (measured_cp.getLocalPos().length() > 0.0 && !m_flagPivot){
+                // Erase the warning if there is measured_cf
+                m_registeredText = "Saving Points...\n";
 
-            if (m_savedPivotPoints.size() == 0){
-                m_savedPivotPoints.push_back(collectedPoint);
-                m_savedRef2Points.push_back(collectedReference * collectedPoint);
-            }
-            else {
-                // Save only the new collected points which are far enough from old points
-                if ((m_savedPivotPoints.back().getLocalPos() - collectedPoint.getLocalPos()).length() > m_pivotRes){
+                // get trackerLocation data from rostopics
+                cTransform collectedPoint = m_toolInterface->measured_cp();
+                cTransform collectedReference = m_trackingInterfaces[0]->measured_cp();
+                collectedReference.invert();
+
+                if (m_savedPivotPoints.size() == 0){
                     m_savedPivotPoints.push_back(collectedPoint);
                     m_savedRef2Points.push_back(collectedReference * collectedPoint);
                 }
+                else {
+                    // Save only the new collected points which are far enough from old points
+                    if ((m_savedPivotPoints.back().getLocalPos() - collectedPoint.getLocalPos()).length() > m_pivotRes){
+                        m_savedPivotPoints.push_back(collectedPoint);
+                        m_savedRef2Points.push_back(collectedReference * collectedPoint);
+                    }
+                }
+
+                // Once you collected enough points for the calibration
+                if (m_savedPivotPoints.size() > m_numPivot){
+                    cVector3d dimple;
+                    cVector3d test;
+                    m_pivotCalibration.calibrate(m_savedPivotPoints, m_marker2tip, dimple);
+                    m_pivotCalibration.calibrate(m_savedRef2Points, test, dimple);
+
+                    // If you want to save the points
+                    if(1){
+                        m_registeredText = "Saving Points into csv file.";
+                        saveDataToCSV("Pivot_trackerTomarker.csv", m_savedPivotPoints);             
+                        saveDataToCSV("Pivot_referenceTomarker.csv", m_savedRef2Points);             
+                        m_registeredText = "[INFO] Saved to /data/ folder!";
+                        cerr << "Saved to /data/ folder!" << endl;
+                    }
+                    
+                    m_flagPivot = true;
+                }
+
+                else if(m_savedPivotPoints.size() > 0){
+                    m_registeredText += "Number of saved Points: " + to_string(m_savedPivotPoints.size()) + "/" + to_string(m_numPivot);
+                }
+            }
+        }
+
+        if(m_manualPivot){
+            measured_cp = m_robotInterface->measured_cp();
+            if (measured_cp.getLocalPos().length() > 0.0 && !m_flagPivot){
+                // Erase the warning if there is measured_cf
+                m_registeredText = "Saving Points...\n";
+
+                if (m_savePoint){
+                    if (m_savedPivotPoints.size() == 0){
+                    m_savedPivotPoints.push_back(measured_cp);
+                    }
+                    else {
+                        // Save only the new collected points which are far enough from old points
+                        if ((m_savedPivotPoints.back().getLocalPos() - measured_cp.getLocalPos()).length() > m_pivotRes){
+                            m_savedPivotPoints.push_back(measured_cp);
+                        }
+                    }
+                    m_savePoint = false;
+                }
+                
             }
 
             // Once you collected enough points for the calibration
             if (m_savedPivotPoints.size() > m_numPivot){
                 cVector3d dimple;
                 cVector3d test;
-                m_pivotCalibration.calibrate(m_savedPivotPoints, m_marker2tip, dimple);
-                m_pivotCalibration.calibrate(m_savedRef2Points, test, dimple);
+                m_pivotCalibration.calibrate(m_savedPivotPoints, m_ee2tip, dimple);
 
                 // If you want to save the points
                 if(1){
                     m_registeredText = "Saving Points into csv file.";
                     saveDataToCSV("Pivot_trackerTomarker.csv", m_savedPivotPoints);             
-                    saveDataToCSV("Pivot_referenceTomarker.csv", m_savedRef2Points);             
                     m_registeredText = "[INFO] Saved to /data/ folder!";
                     cerr << "Saved to /data/ folder!" << endl;
                 }
                 
                 m_flagPivot = true;
+                m_activeMode = RegistrationMode::REGISTERED;
             }
 
             else if(m_savedPivotPoints.size() > 0){
                 m_registeredText += "Number of saved Points: " + to_string(m_savedPivotPoints.size()) + "/" + to_string(m_numPivot);
             }
+
         }
+
+        // if (measured_cp.getLocalPos().length() > 0.0 && !m_flagPivot){
+        //     // Erase the warning if there is measured_cf
+        //     m_registeredText = "Saving Points...\n";
+
+        //     // get trackerLocation data from rostopics
+        //     cTransform collectedPoint = m_toolInterface->measured_cp();
+        //     cTransform collectedReference = m_trackingInterfaces[0]->measured_cp();
+        //     collectedReference.invert();
+
+        //     if (m_savedPivotPoints.size() == 0){
+        //         m_savedPivotPoints.push_back(collectedPoint);
+        //         m_savedRef2Points.push_back(collectedReference * collectedPoint);
+        //     }
+        //     else {
+        //         // Save only the new collected points which are far enough from old points
+        //         if ((m_savedPivotPoints.back().getLocalPos() - collectedPoint.getLocalPos()).length() > m_pivotRes){
+        //             m_savedPivotPoints.push_back(collectedPoint);
+        //             m_savedRef2Points.push_back(collectedReference * collectedPoint);
+        //         }
+        //     }
+
+        //     // Once you collected enough points for the calibration
+        //     if (m_savedPivotPoints.size() > m_numPivot){
+        //         cVector3d dimple;
+        //         cVector3d test;
+        //         m_pivotCalibration.calibrate(m_savedPivotPoints, m_marker2tip, dimple);
+        //         m_pivotCalibration.calibrate(m_savedRef2Points, test, dimple);
+
+        //         // If you want to save the points
+        //         if(1){
+        //             m_registeredText = "Saving Points into csv file.";
+        //             saveDataToCSV("Pivot_trackerTomarker.csv", m_savedPivotPoints);             
+        //             saveDataToCSV("Pivot_referenceTomarker.csv", m_savedRef2Points);             
+        //             m_registeredText = "[INFO] Saved to /data/ folder!";
+        //             cerr << "Saved to /data/ folder!" << endl;
+        //         }
+                
+        //         m_flagPivot = true;
+        //     }
+
+        //     else if(m_savedPivotPoints.size() > 0){
+        //         m_registeredText += "Number of saved Points: " + to_string(m_savedPivotPoints.size()) + "/" + to_string(m_numPivot);
+        //     }
+        // }
     }
     
     else if (m_activeMode == RegistrationMode::REGISTERED){
@@ -525,6 +633,8 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         m_ee2marker.mulr(m_marker2tip, tmp);
         cVector3d tip;
         m_eeJointPtr->getLocalTransform().mulr(tmp, tip);
+
+        // cerr << "Tip pose:" << tmp.str(8) << endl;
 
         // Move the drill tip to the correct location.
         // cTransform result;

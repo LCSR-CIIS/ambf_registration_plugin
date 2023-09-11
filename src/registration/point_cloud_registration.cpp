@@ -86,7 +86,7 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, ve
         return -1;
     }
 
-    if (1){
+    if (0){
         cerr << "Using the predefined points:" << endl;
         vector<cVector3d> In;
         In.push_back(cVector3d(0.05265, 0.05593, 0.12162));
@@ -95,10 +95,10 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, ve
         In.push_back(cVector3d(-0.00273, 0.05486, 0.12340));
 
         vector<cVector3d> Out;
-        Out.push_back(cVector3d(0.19594, -0.12758, -0.60682));
-        Out.push_back(cVector3d(0.13310, -0.12639, -0.60527));
-        Out.push_back(cVector3d(0.13406, -0.07401, -0.60414));
-        Out.push_back(cVector3d(0.19731, -0.07508, -0.60583));
+        Out.push_back(cVector3d(0.16867, -0.03044, -0.65534));
+        Out.push_back(cVector3d(0.23257, -0.03034, -0.65667));
+        Out.push_back(cVector3d(0.23346, -0.08365, -0.65663));
+        Out.push_back(cVector3d(0.16971, -0.08453, -0.65422));
 
         pointsIn = In;
         pointsOut = Out;
@@ -156,12 +156,13 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, ve
     Eigen::Vector3d T = aveOut - R * aveIn;
     cerr << "Rotation Result: " << endl;
     cerr << R << endl;
-    // cerr << R.eulerAngles(0,1,2) << endl;
-    // cerr << R.eulerAngles(0,2,1) << endl;
-    // cerr << R.eulerAngles(1,0,2) << endl;
-    // cerr << R.eulerAngles(1,2,0) << endl;
-    // cerr << R.eulerAngles(2,1,0) << endl;
-    // cerr << R.eulerAngles(2,0,1) << endl;
+    cerr << "Euler Angle" << endl;
+    cerr << R.eulerAngles(0,1,2) << endl;
+    cerr << R.eulerAngles(0,2,1) << endl;
+    cerr << R.eulerAngles(1,0,2) << endl;
+    cerr << R.eulerAngles(1,2,0) << endl;
+    cerr << R.eulerAngles(2,1,0) << endl;
+    cerr << R.eulerAngles(2,0,1) << endl;
     cerr << "Translation Result: " << endl;
     cerr <<  T << endl;
 

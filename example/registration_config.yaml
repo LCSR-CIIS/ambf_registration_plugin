@@ -44,7 +44,7 @@ hand eye:
   joint name: dovetail_male
   optical tracker name: Tracker
   resolution: 0.001
-  number of points: 500
+  number of points: 2000
   registered HE result:
     # 0811
     # q_rot: 
@@ -120,17 +120,30 @@ hand eye:
     #   w: -0.00304229
 
     # 0828
+    # q_rot:
+    #   x: -0.20493657      
+    #   y: 0.86554729
+    #   z: 0.41228553 
+    #   w: 0.19710286
+
+    # q_dual:
+    #   x: -0.0418117          
+    #   y: -0.02558465  
+    #   z: 0.03405824
+    #   w: -0.00236295
+
+    # 0909
     q_rot:
-      x: -0.20493657      
-      y: 0.86554729
-      z: 0.41228553 
-      w: 0.19710286
+      x: -0.21229946
+      y: 0.8618833
+      z: 0.41732556 
+      w: 0.19474468
 
     q_dual:
-      x: -0.0418117          
-      y: -0.02558465  
-      z: 0.03405824
-      w: -0.00236295
+      x: -0.03906011        
+      y: -0.02503096  
+      z: 0.0335063
+      w: -0.00360324  
 
 
 
@@ -140,8 +153,8 @@ pivot:
   namespace: /REMS/Research/ #namespace for the robot 
   marker name: atracsys/Anspoch_drill
   resolution: 0.0001
-  number of points: 600
-  registered pivot result:
+  number of points: 12
+  # registered pivot result:
     # Orignal Point
     # t_tip: 
     #   x: -0.077053
@@ -166,7 +179,13 @@ pivot:
     #   z: 0.084349
 
     #0828
-    t_tip:
-      x: 0.11388708842    
-      y: -0.15785066246
-      z: 0.08484844486
+    # t_tip:
+    #   x: 0.11388708842    
+    #   y: -0.15785066246
+    #   z: 0.08484844486
+
+    # 0909
+    # t_tip:
+    #   x: 0.112303
+    #   y: -0.161753
+    #   z:  0.084276
