@@ -363,8 +363,6 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             m_registeredText = "";
         }
         
-        cVector3d measured_cf = m_robotInterface->measured_cf();
-
         m_registeredText += "WARNING! No robot related topic published";
         
         // ToDo: Change this to Robot Mode

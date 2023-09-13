@@ -45,7 +45,7 @@ hand eye:
   joint name: dovetail_male
   optical tracker name: Tracker
   resolution: 0.001
-  number of points: 2000
+  number of points: 1500
   registered HE result:
     # 0811
     # q_rot: 
