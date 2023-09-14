@@ -23,3 +23,5 @@ multibody configs:
   - "/home/hishida3/sdf_virtual_fixture/ADF/TB0904.yaml" #7
   - "/home/hishida3/sdf_virtual_fixture/ADF/TB0909.yaml" #8
   - "/home/hishida3/sdf_virtual_fixture/ADF/DS0911_1.yaml" #9
+  - "/home/hishida3/sdf_virtual_fixture/ADF/DS0913_1.yaml" #10
+  - "/home/hishida3/sdf_virtual_fixture/ADF/DS0913_2.yaml" #11
