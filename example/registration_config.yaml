@@ -30,6 +30,9 @@ pointer:
     # - Sphere_18
     # - Sphere_19
   object name: TB0904_anatomical_origin
+  # object name: TB0914_anatomical_origin
+  # object name: DS0913_1_anatomical_origin
+  # object name: DS0913_2_anatomical_origin
 
 ## Optical Tracker Registration
 optical tracker:
