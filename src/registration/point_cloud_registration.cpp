@@ -266,10 +266,11 @@ int main(){
     cout << "Hello from point_cloud_registration.cpp!" << endl;
 
     vector<cVector3d> In;
-    In.push_back(cVector3d(0.05265, 0.05593, 0.12162));
-    In.push_back(cVector3d(0.05156, 0.05592, 0.05774));
-    In.push_back(cVector3d(-0.00250, 0.05485, 0.05883));
-    In.push_back(cVector3d(-0.00273, 0.05486, 0.12340));
+    In.push_back(cVector3d(4.920494277905702, 58.60475209733417, 14.948238443598399));
+    In.push_back(cVector3d(3.4659557805886544, 59.132487607868188, 69.04268051934818));
+    In.push_back(cVector3d(67.55361872932189, 61.044666238953848, 70.75396294438771));
+    In.push_back(cVector3d(68.79610651794404, 60.256928977135618, 16.647292711491667));
+    In.push_back(cVector3d(86.5832974080235, 78.72463054414696, 70.50308478556933));
     // In.push_back(cVector3d(3.0, 2.0, 3.0));
     // In.push_back(cVector3d(1.0, 5.0, 3.0));
     // In.push_back(cVector3d(2.0, 4.0, 3.0));
@@ -285,16 +286,18 @@ int main(){
     // Out.push_back(cVector3d(0.08188, -0.09239, -0.60251));
     // Out.push_back(cVector3d(0.14230, -0.09493, -0.59773));
 
-    Out.push_back(cVector3d(0.19723, -0.08322, -0.59143));
-    Out.push_back(cVector3d(0.13097, -0.08387, -0.59478));
-    Out.push_back(cVector3d(0.13078, -0.03173, -0.59273));
-    Out.push_back(cVector3d(0.19712, -0.03364, -0.58880));
+    Out.push_back(cVector3d(45.86170654824281, 58.777294853528797, 56.23609511870866));
+    Out.push_back(cVector3d(48.82261827475217, 58.451551336325149, 2.150492959875387));
+    Out.push_back(cVector3d(-15.268402150099679, 56.525225704958319, -1.3218199748111));
+    Out.push_back(cVector3d(-18.060288791647748, 56.792963934219809, 52.7916527742573));
+    Out.push_back(cVector3d(-35.22673857682908, 72.90511749379054, -2.079712598254306));
 
     cerr << In.size() << "|" << In[0].str(3) << endl;
     PointCloudRegistration pcr;
     btTransform trans;
+    vector<cVector3d> newPoints;
     // pcr.ICPRegistration(In, Out, trans);
-    // pcr.PointSetRegistration(In, Out, trans);
+    pcr.PointSetRegistration(In, Out, trans, newPoints);
     // cerr << trans.getOrigin().x() << ", " << trans.getOrigin().y() << ", " << trans.getOrigin().z() << endl;
 
     return 1;
