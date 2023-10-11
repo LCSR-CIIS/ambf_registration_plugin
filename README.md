@@ -37,6 +37,9 @@ Change object name in "registration_config"
 ambf_simulator --launch_file launch.yaml -l 4,7 --registration_config example/registration_config.yaml #TB0904
 ambf_simulator --launch_file launch.yaml -l 4,8 --registration_config example/registration_config.yaml #TB0909
 
+ambf_simulator --launch_file launch.yaml -l 4,10 --registration_config example/registration_config.yaml #DS0913_1
+ambf_simulator --launch_file launch.yaml -l 4,11 --registration_config example/registration_config.yaml #DS0913_2
+
 ```
 
 Copy and paste the registration procedure
