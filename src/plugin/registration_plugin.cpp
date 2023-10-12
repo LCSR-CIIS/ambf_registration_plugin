@@ -291,7 +291,8 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             pointMesh->m_material->setShininess(0);
             pointMesh->m_material->m_specular.set(0, 0, 0);
             pointMesh->setShowEnabled(true);
-            pointMesh->setLocalPos(m_toolTipPtr->getLocalPos());
+            // pointMesh->setLocalPos(m_toolTipPtr->getLocalPos());
+            pointMesh->setLocalPos(m_burrMesh->getLocalPos());
             
             // Using btvector
             // btVector3 tip = m_toolTipPtr->m_bulletRigidBody->getCenterOfMassPosition();
