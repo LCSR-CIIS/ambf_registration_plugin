@@ -77,6 +77,7 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
     m_worldPtr->m_bulletWorld->getSolverInfo().m_erp = 1.0;  // improve out of plane error of joints
     m_worldPtr->m_bulletWorld->getSolverInfo().m_erp2 = 1.0; // improve out of plane error of joints
 
+    // Initiallize camera
     vector<string> cameraNames = {"main_camera", "cameraL", "cameraR", "stereoLR"};
     bool  initcam = initCamera(cameraNames);
     
@@ -89,6 +90,7 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
         return -1;
     }
 
+    // Create burr mesh
     cShapeSphere* pointMesh = new cShapeSphere(0.001);
     pointMesh->setRadius(0.001);
     pointMesh->m_material->setRed();
@@ -99,17 +101,19 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
     m_worldPtr->addSceneObjectToWorld(pointMesh);
 
 
-    // When config file was defined
+    // When config file is defined
     if(!config_filepath.empty()){
         return readConfigFile(config_filepath);
     }
 
+    // If the configuration file is not defined provide error
     else{
         cerr << "ERROR! NO configuration file specified." << endl;
         return -1;
     }
 }
 
+// Initialize labels and panel in the simulation
 bool afRegistrationPlugin::initLabels(){
     // create a font
     cFontPtr font = NEW_CFONTCALIBRI20();
@@ -138,6 +142,8 @@ bool afRegistrationPlugin::initLabels(){
     return true;
 
 }
+
+// Look for the camera and store as a "main camera"
 bool afRegistrationPlugin::initCamera(vector<string> cameraNames){
     cout << "> Initializing CAMERA ..." << endl;
     if (cameraNames.size() == 0){
@@ -145,7 +151,7 @@ bool afRegistrationPlugin::initCamera(vector<string> cameraNames){
         return false;
     }
     
-
+    // Loop around the cameras and look for the "main camera"
     for (int i = 0 ; i < cameraNames.size() ; i++){
         afCameraPtr cam = m_worldPtr->getCamera(cameraNames[i]);
         if (cam){
@@ -167,6 +173,7 @@ bool afRegistrationPlugin::initCamera(vector<string> cameraNames){
         m_panelManager.addCamera(m_cameras["main_camera"]);
     }
 
+    // Set background
     cBackground* background = new cBackground();
     background->setCornerColors(cColorf(1.0f, 1.0f, 1.0f),
                                 cColorf(1.0f, 1.0f, 1.0f),
@@ -178,6 +185,7 @@ bool afRegistrationPlugin::initCamera(vector<string> cameraNames){
 }
 
 
+// Define Key board shortcuts
 void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, int a_mods){
     if (a_mods == GLFW_MOD_CONTROL){
         if (a_key == GLFW_KEY_1){
@@ -209,6 +217,7 @@ void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a
     }
 }
 
+// Graphics related updates
 void afRegistrationPlugin::graphicsUpdate(){
 
     string m_savedLocationText = "--- List of Saved Locations --- \n";
@@ -246,7 +255,7 @@ void afRegistrationPlugin::graphicsUpdate(){
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: PIVOT");
             m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
             
-            if (m_manualPivot){
+            if (m_robotPivot){
                 // Saving the saved points location as text and show on the screen.
                 for (int i=0; i < m_savedPivotPoints.size(); i++){   
                     cVector3d trans = m_savedPivotPoints[i].getLocalPos();
@@ -282,26 +291,36 @@ void afRegistrationPlugin::graphicsUpdate(){
 
 }
 
+// Physics related updates
 void afRegistrationPlugin::physicsUpdate(double dt){
     if (m_activeMode == RegistrationMode::POINTER){
+        
+        // Generate and store the location when the keyboard shortcut is pressed
         if (m_savePoint){
+            // Create red sphere when the saving the location
             cShapeSphere* pointMesh = new cShapeSphere(0.001);
             pointMesh->setRadius(0.001);
             pointMesh->m_material->setRed();
             pointMesh->m_material->setShininess(0);
             pointMesh->m_material->m_specular.set(0, 0, 0);
             pointMesh->setShowEnabled(true);
-            // pointMesh->setLocalPos(m_toolTipPtr->getLocalPos());
-            pointMesh->setLocalPos(m_burrMesh->getLocalPos());
+
+            // pointMesh->setLocalPos(m_toolTipPtr->getLocalPos()); // Save tooltip location (CAD model)
+            pointMesh->setLocalPos(m_burrMesh->getLocalPos()); // Save burr mesh location
             
             // Using btvector
             // btVector3 tip = m_toolTipPtr->m_bulletRigidBody->getCenterOfMassPosition();
             // pointMesh->setLocalPos(cVector3d(tip.x(), tip.y(), tip.z()));
+            
+            // Add the mesh to the world
             m_worldPtr->addSceneObjectToWorld(pointMesh);
+            
+            // Store the points
             m_spheres.push_back(pointMesh);
 
-            cerr << "Tracker Points:" << m_toolInterface->measured_cp().str(6) << endl;
-            cerr << "Tracker RefPoints:" << m_trackingInterfaces[0]->measured_cp().str(6) << endl;
+            // Sanity check
+            // cerr << "Tracker Points:" << m_toolInterface->measured_cp().str(6) << endl;
+            // cerr << "Tracker RefPoints:" << m_trackingInterfaces[0]->measured_cp().str(6) << endl;
 
             m_savePoint = false;
         }
@@ -309,7 +328,9 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         // TODO: Add/Remove saved Points if needed
         // Once all the points are saved
         if (m_spheres.size() == m_pointsPtr.size()){
-            cerr << "Saving all the translational error." << endl;
+            cerr << "Successfully collected " << m_pointsPtr.size() << " points..." << endl;
+
+
             for (int idx=0; idx<m_spheres.size(); idx++){
                 m_savedError.push_back(m_pointsPtr[idx]->getLocalPos() - m_spheres[idx]->getLocalPos());
                 m_pointsIn.push_back(m_pointsPtr[idx]->getLocalPos());
@@ -317,28 +338,33 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             }
 
             // Perform ICP registration
-            // bool resultPCRegist = m_pointCloudRegistration.ICPRegistration(m_pointsIn, m_pointsOut, m_registeredTransform);
+            // bool resultRegist = m_pointCloudRegistration.ICPRegistration(m_pointsIn, m_pointsOut, m_registeredTransform);
 
             // Perform Point set Registration
-            vector<cVector3d> newPoints;
-            bool resultPCRegist = m_pointCloudRegistration.PointSetRegistration(m_pointsIn, m_pointsOut, m_registeredTransform, newPoints);
+            vector<cVector3d> registeredPoints;
+            bool resultRegist = m_pointCloudRegistration.PointSetRegistration(m_pointsIn, m_pointsOut, m_registeredTransform, registeredPoints);
 
-            for (size_t i = 0; i < newPoints.size(); i++){
-                cerr << "Setting the points ..." << endl;   
+            // Visualize the registered points
+            for (size_t i = 0; i < registeredPoints.size(); i++){
                 cShapeSphere* point = new cShapeSphere(0.001);
                 point->setRadius(0.001);
                 point->m_material->setBlue();
                 point->m_material->setShininess(0);
                 point->m_material->m_specular.set(0, 0, 0);
                 point->setShowEnabled(true);
-                point->setLocalPos(newPoints[i]);
+                point->setLocalPos(registeredPoints[i]);
                 m_worldPtr->addSceneObjectToWorld(point);
             }
 
-            if (resultPCRegist){
+            if (resultRegist){
                 // Change mode to "REGISTERED"
-                // btTransform Tcommand;
+                m_activeMode = RegistrationMode::REGISTERED;
 
+
+                // Move the object to the registered location
+                // TODO: Need some debugging
+
+                // btTransform Tcommand;
                 // btTransform currentTrans = m_registeringObject->m_bulletRigidBody->getWorldTransform();
                 // Tcommand =  currentTrans * m_registeredTransform;
                 // m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
@@ -349,7 +375,6 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
                 // cerr << "Roll: " << x << "," << "Pitch: " << y << "," << "Yaw: " << z << endl; 
 
-                m_activeMode = RegistrationMode::REGISTERED;
             }
 
         }
@@ -468,8 +493,8 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         cTransform measured_cp;
         m_registeredText = "WARNING! No tool location published \nCheck your tracker!!\n";
 
-
-        if(!m_manualPivot){
+        // Perform Pivot calibration method using Optical Tracker
+        if(!m_robotPivot){
             measured_cp = m_toolInterface->measured_cp();
             if (measured_cp.getLocalPos().length() > 0.0 && !m_flagPivot){
                 // Erase the warning if there is measured_cf
@@ -509,7 +534,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                     m_pivotCalibration.calibrate(m_savedRef2Points, test, dimple);
 
                     // If you want to save the points
-                    if(0){
+                    if(1){
                         m_registeredText = "Saving Points into csv file.";
                         saveDataToCSV("Pivot_trackerTomarker.csv", m_savedPivotPoints);             
                         saveDataToCSV("Pivot_referenceTomarker.csv", m_savedRef2Points);             
@@ -526,7 +551,9 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             }
         }
 
-        if(m_manualPivot){
+
+        // Perform pivot calibration without optical tracker. Robot base pivot calibration
+        if(m_robotPivot){
             measured_cp = m_robotInterface->measured_cp();
             if (measured_cp.getLocalPos().length() > 0.0 && !m_flagPivot){
                 // Erase the warning if there is measured_cf
@@ -556,7 +583,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 // If you want to save the points
                 if(1){
                     m_registeredText = "Saving Points into csv file.";
-                    saveDataToCSV("Pivot_trackerTomarker.csv", m_savedPivotPoints);             
+                    saveDataToCSV("Pivot_robotTomarker.csv", m_savedPivotPoints);             
                     m_registeredText = "[INFO] Saved to /data/ folder!";
                     cerr << "Saved to /data/ folder!" << endl;
                 }
@@ -568,53 +595,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             else if(m_savedPivotPoints.size() > 0){
                 m_registeredText += "Number of saved Points: " + to_string(m_savedPivotPoints.size()) + "/" + to_string(m_numPivot);
             }
-
         }
-
-        // if (measured_cp.getLocalPos().length() > 0.0 && !m_flagPivot){
-        //     // Erase the warning if there is measured_cf
-        //     m_registeredText = "Saving Points...\n";
-
-        //     // get trackerLocation data from rostopics
-        //     cTransform collectedPoint = m_toolInterface->measured_cp();
-        //     cTransform collectedReference = m_trackingInterfaces[0]->measured_cp();
-        //     collectedReference.invert();
-
-        //     if (m_savedPivotPoints.size() == 0){
-        //         m_savedPivotPoints.push_back(collectedPoint);
-        //         m_savedRef2Points.push_back(collectedReference * collectedPoint);
-        //     }
-        //     else {
-        //         // Save only the new collected points which are far enough from old points
-        //         if ((m_savedPivotPoints.back().getLocalPos() - collectedPoint.getLocalPos()).length() > m_pivotRes){
-        //             m_savedPivotPoints.push_back(collectedPoint);
-        //             m_savedRef2Points.push_back(collectedReference * collectedPoint);
-        //         }
-        //     }
-
-        //     // Once you collected enough points for the calibration
-        //     if (m_savedPivotPoints.size() > m_numPivot){
-        //         cVector3d dimple;
-        //         cVector3d test;
-        //         m_pivotCalibration.calibrate(m_savedPivotPoints, m_marker2tip, dimple);
-        //         m_pivotCalibration.calibrate(m_savedRef2Points, test, dimple);
-
-        //         // If you want to save the points
-        //         if(1){
-        //             m_registeredText = "Saving Points into csv file.";
-        //             saveDataToCSV("Pivot_trackerTomarker.csv", m_savedPivotPoints);             
-        //             saveDataToCSV("Pivot_referenceTomarker.csv", m_savedRef2Points);             
-        //             m_registeredText = "[INFO] Saved to /data/ folder!";
-        //             cerr << "Saved to /data/ folder!" << endl;
-        //         }
-                
-        //         m_flagPivot = true;
-        //     }
-
-        //     else if(m_savedPivotPoints.size() > 0){
-        //         m_registeredText += "Number of saved Points: " + to_string(m_savedPivotPoints.size()) + "/" + to_string(m_numPivot);
-        //     }
-        // }
     }
     
     else if (m_activeMode == RegistrationMode::REGISTERED){
@@ -648,6 +629,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         }
     }
 
+    // If pivot calibration is done
     if (m_flagPivot){
         cVector3d tmp;
         m_ee2marker.mulr(m_marker2tip, tmp);
@@ -674,7 +656,8 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         // m_toolTipPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
         // m_toolTipPtr->setLocalPos(tip);
     }
-
+    
+    // If both Handeye calibration and pivot calibration are done
     if(m_flagHE && m_flagPivot){
         cVector3d finalTransform;
         m_ee2marker.mulr(m_marker2tip, finalTransform);

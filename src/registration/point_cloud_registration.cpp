@@ -86,6 +86,7 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, ve
         return -1;
     }
 
+    // If using the predefined points
     if (0){
         cerr << "Using the predefined points:" << endl;
         vector<cVector3d> In;
@@ -245,9 +246,10 @@ void PointCloudRegistration::eigenMatrixTobtTransform(Eigen::Matrix<float, 4, 4>
     cTransform tmp_trans;
     eigenMatrixTocTransform(Trans, tmp_trans);
 
-    cerr << "Registration Transform: " << endl;
-    cerr << "Translation: " << tmp_trans.getLocalPos().str(6) << endl;
-    cerr << "Rotation: " << tmp_trans.getLocalRot().str(6) << endl;
+    // Samity check
+    // cerr << "Registration Transform: " << endl;
+    // cerr << "Translation: " << tmp_trans.getLocalPos().str(6) << endl;
+    // cerr << "Rotation: " << tmp_trans.getLocalRot().str(6) << endl;
 
     // Convert Rotation into quaternion
     cQuaternion chai_qr;
@@ -266,27 +268,13 @@ int main(){
     cout << "Hello from point_cloud_registration.cpp!" << endl;
 
     vector<cVector3d> In;
-
     In.push_back(cVector3d(50.22696175918109, 8.231692163672769, 31.502069387933646));
     In.push_back(cVector3d(51.90740351077355, 27.0052798094135, -5.86047397545072));
     In.push_back(cVector3d(27.212162335048867, 15.287892392436995, -33.555376203331629));
     In.push_back(cVector3d(32.855994893548537, 21.15143555110042, -47.523740918907808));
     In.push_back(cVector3d(21.217579339364997, -40.63420309135226, -28.595321655273439));
-    // In.push_back(cVector3d(3.0, 2.0, 3.0));
-    // In.push_back(cVector3d(1.0, 5.0, 3.0));
-    // In.push_back(cVector3d(2.0, 4.0, 3.0));
 
     vector<cVector3d> Out;
-    // Out.push_back(cVector3d(0.17722, -0.05181, -0.75032));
-    // Out.push_back(cVector3d(0.11920, -0.05530, -0.75301));
-    // Out.push_back(cVector3d(0.12326, 0.00385, -0.75118));
-    // Out.push_back(cVector3d(0.18432, 0.00502, -0.75278));
-
-    // Out.push_back(cVector3d(0.14747, -0.14746, -0.59895));
-    // Out.push_back(cVector3d(0.08167, -0.14540, -0.60467));
-    // Out.push_back(cVector3d(0.08188, -0.09239, -0.60251));
-    // Out.push_back(cVector3d(0.14230, -0.09493, -0.59773));
-
     Out.push_back(cVector3d(-23.80691248628502, 35.95571905029042, 8.690858961048278));
     Out.push_back(cVector3d(6.7387153977493778, 33.362047891099638, -19.73423526129451));
     Out.push_back(cVector3d(34.13796921107674, 6.482549060020069, -15.175312662720775));

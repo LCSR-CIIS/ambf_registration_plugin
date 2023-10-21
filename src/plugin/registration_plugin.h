@@ -166,7 +166,7 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         cVector3d m_marker2tip;
 
         cShapeSphere* m_burrMesh;
-        bool m_manualPivot = false;
+        bool m_robotPivot = false;
 
         cVector3d m_ee2tip;
 

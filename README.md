@@ -22,6 +22,8 @@ cd hand_eye_calibration/hand_eye_calibration/bin
 python3 compute_hand_eye_calibration.py --aligned_poses_B_H_csv_file ~/ambf_registration_plugin/data/HE_worldToEE.csv --aligned_poses_W_E_csv_file ~/ambf_registration_plugin/data/HE_trackerTomarker.csv --visualize VIZULALIZE
 ```
 
+
+## Perform Pivot calibration
 Pivot Calibration
 ```bash
 cd Twin-S/optical_tracking          
@@ -41,5 +43,3 @@ ambf_simulator --launch_file launch.yaml -l 4,10 --registration_config example/r
 ambf_simulator --launch_file launch.yaml -l 4,11 --registration_config example/registration_config.yaml #DS0913_2
 
 ```
-
-Copy and paste the registration procedure
