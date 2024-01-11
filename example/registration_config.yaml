@@ -1,7 +1,6 @@
 ## Pointer based registration
 pointer:
   tooltip name: drill_tip # Rigid body that is attached to the tip of the tool
-  number of points: 5
   name of points:
     - F1
     - F2

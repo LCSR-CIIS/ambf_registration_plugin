@@ -1,0 +1,56 @@
+# AMBF Registration configuration file template 
+# Author: Hisashi Ishida
+# Date: 01.10.2024
+
+## Pointer based registration
+pointer:
+  tooltip name: drill_tip # Rigid body that is attached to the tip of the tool
+  name of points:
+    - F1
+    - F2
+    - F3
+    - F4
+    - F5
+
+  object name: TB04_anatomical_origin
+
+## Optical Tracker Registration
+optical tracker:
+  namespace: /atracsys #rostopic name for the optical marker
+  name of points:
+    - anatomy
+
+## Hand-Eye Regisration
+hand eye:
+  # Both the robot and the marker status should be published using CRTK
+  namespace: /REMS/Research/ #namespace for the robot 
+  marker name: atracsys/Anspoch_drill # This name should used for both rostopic name and object name in AMBF
+  joint name: dovetail_male
+  optical tracker name: Tracker
+  resolution: 0.001
+  number of points: 1500
+  registered HE result:
+    q_rot:
+      x: -0.21229946
+      y: 0.8618833
+      z: 0.41732556 
+      w: 0.19474468
+
+    q_dual:
+      x: -0.03906011        
+      y: -0.02503096  
+      z: 0.0335063
+      w: -0.00360324  
+
+## Pivot calibration
+pivot:
+  tooltip name: drill_tip
+  namespace: /REMS/Research/ #namespace for the robot 
+  marker name: atracsys/Anspoch_drill
+  resolution: 0.01
+  number of points: 150
+  registered pivot result:
+    t_tip: 
+      x: -0.077053
+      y:  0.150933
+      z:  0.043711
