@@ -188,7 +188,7 @@ bool afRegistrationPlugin::initCamera(vector<string> cameraNames){
 // Define Key board shortcuts
 void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, int a_mods){
     if (a_mods == GLFW_MOD_CONTROL){
-        if (a_key == GLFW_KEY_1){
+        if (a_key == GLFW_KEY_4){
             m_activeMode = RegistrationMode::HANDEYE;
             cerr << "Registration Mode changed to HANDEYE " << endl;
         }
@@ -203,7 +203,7 @@ void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a
             cerr << "Registration Mode changed to POINTER " << endl;
         }
 
-        else if (a_key == GLFW_KEY_4){
+        else if (a_key == GLFW_KEY_1){
             m_activeMode = RegistrationMode::TRACKER;
             cerr << "Registration Mode changed to TRACKER " << endl;
         }
@@ -305,8 +305,8 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             pointMesh->m_material->m_specular.set(0, 0, 0);
             pointMesh->setShowEnabled(true);
 
-            // pointMesh->setLocalPos(m_toolTipPtr->getLocalPos()); // Save tooltip location (CAD model)
-            pointMesh->setLocalPos(m_burrMesh->getLocalPos()); // Save burr mesh location
+            pointMesh->setLocalPos(m_toolTipPtr->getLocalPos()); // Save tooltip location (CAD model)
+            // pointMesh->setLocalPos(m_burrMesh->getLocalPos()); // Save burr mesh location/
             
             // Using btvector
             // btVector3 tip = m_toolTipPtr->m_bulletRigidBody->getCenterOfMassPosition();
@@ -658,10 +658,24 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     }
     
     // If both Handeye calibration and pivot calibration are done
-    if(m_flagHE && m_flagPivot){
+    if(m_flagHE ){
         cVector3d finalTransform;
         m_ee2marker.mulr(m_marker2tip, finalTransform);
         m_registeredText += "EE2Tooltip: " + finalTransform.str(6);
+
+        cTransform anatomy;
+        cTransform marker2anatomy;
+        cQuaternion quat(1,0,0,0);
+        cMatrix3d rot;
+        quat.toRotMat(rot);
+        marker2anatomy.setLocalPos(cVector3d(0.0, 0.0, 0.0));
+        marker2anatomy.setLocalRot(rot);
+        anatomy = m_eeJointPtr->getLocalTransform() * m_ee2marker * marker2anatomy;
+
+        cout << anatomy.getLocalPos().str(4) << endl;
+        cout << anatomy.getLocalRot().str(4) << endl;
+
+        
         // cout << "Final Registration result: " << endl;
         // cout << "EE2Tooltip: "  << finalTransform.str(6) << endl;
     }

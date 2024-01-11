@@ -42,4 +42,6 @@ ambf_simulator --launch_file launch.yaml -l 4,8 --registration_config example/re
 ambf_simulator --launch_file launch.yaml -l 4,10 --registration_config example/registration_config.yaml #DS0913_1
 ambf_simulator --launch_file launch.yaml -l 4,11 --registration_config example/registration_config.yaml #DS0913_2
 
+ambf_simulator --launch_file launch.yaml -l 4,14 --registration_config example/registration_config.yaml #DS0913_2
+
 ```
