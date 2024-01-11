@@ -133,10 +133,13 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, ve
         vecPointOut[i] = vecPointOut[i] - aveOut;
     }
 
-    cerr << "aveIn: " << endl;
-    cerr << aveIn << endl;
-    cerr << "aveOut: " << endl;
-    cerr << aveOut << endl;
+    bool verbose = false;
+    if (verbose){
+        cerr << "aveIn: " << endl;
+        cerr << aveIn << endl;
+        cerr << "aveOut: " << endl;
+        cerr << aveOut << endl;
+    }
 
     // 2. Get W = sum(x' p')
     Eigen::MatrixXd W;
@@ -155,17 +158,22 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, ve
     }
 
     Eigen::Vector3d T = aveOut - R * aveIn;
-    cerr << "Rotation Result: " << endl;
-    cerr << R << endl;
-    cerr << "Euler Angle" << endl;
-    cerr << R.eulerAngles(0,1,2) << endl;
-    cerr << R.eulerAngles(0,2,1) << endl;
-    cerr << R.eulerAngles(1,0,2) << endl;
-    cerr << R.eulerAngles(1,2,0) << endl;
-    cerr << R.eulerAngles(2,1,0) << endl;
-    cerr << R.eulerAngles(2,0,1) << endl;
-    cerr << "Translation Result: " << endl;
-    cerr <<  T << endl;
+    if (verbose){
+        cerr << "Rotation Result: " << endl;
+        cerr << R << endl;
+        cerr << "Euler Angle" << endl;
+        cerr << R.eulerAngles(0,1,2) << endl;
+        cerr << R.eulerAngles(0,2,1) << endl;
+        cerr << R.eulerAngles(1,0,2) << endl;
+        cerr << R.eulerAngles(1,2,0) << endl;
+        cerr << R.eulerAngles(2,1,0) << endl;
+        cerr << R.eulerAngles(2,0,1) << endl;
+        cerr << "Translation Result: " << endl;
+        cerr <<  T << endl;
+    }
+
+    cerr << "translation: {x: " << T[0] << ", y: " << T[1] << ", z: " << T[2] << "}" << endl;
+    cerr << "rotation: {r: " << R.eulerAngles(2,1,0)[2] << ", p: " << R.eulerAngles(2,1,0)[1] << ", y: " << R.eulerAngles(2,1,0)[0] << "}" << endl;
 
     Eigen::Vector3d err;
     for (size_t i = 0; i < pointsIn.size(); i++){
