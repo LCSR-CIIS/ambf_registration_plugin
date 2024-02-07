@@ -33,3 +33,7 @@ multibody configs:
   - "/home/hishida3/sdf_virtual_fixture/ADF/drill/20231023_FSD4mm_track.yaml" #17
   - "/home/hishida3/sdf_virtual_fixture/ADF/drill/20231023_FSD6mm_track.yaml" #18
 
+  - "/home/hishida3/sdf_virtual_fixture/ADF/TB0114_1.yaml" #19
+  - "/home/hishida3/sdf_virtual_fixture/ADF/TB0114_2.yaml" #20
+
+
