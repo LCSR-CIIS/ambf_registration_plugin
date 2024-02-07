@@ -172,8 +172,8 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, ve
         cerr <<  T << endl;
     }
 
-    cerr << "translation: {x: " << T[0] << ", y: " << T[1] << ", z: " << T[2] << "}" << endl;
-    cerr << "rotation: {r: " << R.eulerAngles(2,1,0)[2] << ", p: " << R.eulerAngles(2,1,0)[1] << ", y: " << R.eulerAngles(2,1,0)[0] << "}" << endl;
+    cerr << "position: {x: " << T[0] << ", y: " << T[1] << ", z: " << T[2] << "}" << endl;
+    cerr << "orientation: {r: " << R.eulerAngles(2,1,0)[2] << ", p: " << R.eulerAngles(2,1,0)[1] << ", y: " << R.eulerAngles(2,1,0)[0] << "}" << endl;
 
     Eigen::Vector3d err;
     for (size_t i = 0; i < pointsIn.size(); i++){
