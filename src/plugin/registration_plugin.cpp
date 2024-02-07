@@ -658,7 +658,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     }
     
     // If both Handeye calibration and pivot calibration are done
-    if(m_flagHE ){
+    if(m_flagHE && m_flagPivot){
         cVector3d finalTransform;
         m_ee2marker.mulr(m_marker2tip, finalTransform);
         m_registeredText += "EE2Tooltip: " + finalTransform.str(6);
@@ -672,10 +672,8 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         marker2anatomy.setLocalRot(rot);
         anatomy = m_eeJointPtr->getLocalTransform() * m_ee2marker * marker2anatomy;
 
-        cout << anatomy.getLocalPos().str(4) << endl;
-        cout << anatomy.getLocalRot().str(4) << endl;
-
-        
+        // cout << anatomy.getLocalPos().str(4) << endl;
+        // cout << anatomy.getLocalRot().str(4) << endl; 
         // cout << "Final Registration result: " << endl;
         // cout << "EE2Tooltip: "  << finalTransform.str(6) << endl;
     }
