@@ -111,6 +111,8 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
         cerr << "ERROR! NO configuration file specified." << endl;
         return -1;
     }
+
+    cerr << "SUCCESSFULLY Initialized plugin!!" << endl;
 }
 
 // Initialize labels and panel in the simulation
@@ -398,6 +400,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
             // get trackerLocation data from rostopics
             cTransform collectedPoint = m_toolInterface->measured_cp();
+            collectedPoint.setLocalPos(0.001 * collectedPoint.getLocalPos());
             cTransform collectedReference = m_trackingInterfaces[0]->measured_cp();
             collectedReference.invert();
 
@@ -501,8 +504,8 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 m_registeredText = "Saving Points...\n";
 
                 // get trackerLocation data from rostopics
-                cTransform collectedPoint = m_worldPtr->getRigidBody("dovetail_male")->getLocalTransform();
-                // cTransform collectedPoint = m_toolInterface->measured_cp();
+                // cTransform collectedPoint = m_worldPtr->getRigidBody("dovetail_male")->getLocalTransform();
+                cTransform collectedPoint = m_toolInterface->measured_cp();
                 cTransform collectedReference = m_trackingInterfaces[0]->measured_cp();
                 collectedReference.invert();
 
@@ -554,7 +557,12 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
         // Perform pivot calibration without optical tracker. Robot base pivot calibration
         if(m_robotPivot){
-            measured_cp = m_robotInterface->measured_cp();
+            // With real robot
+            // measured_cp = m_robotInterface->measured_cp();
+
+            // With AMBF robot
+            cTransform measured_cp = m_worldPtr->getRigidBody("BODY Tilt Distal Linkage and Force Sensor")->getLocalTransform();
+
             if (measured_cp.getLocalPos().length() > 0.0 && !m_flagPivot){
                 // Erase the warning if there is measured_cf
                 m_registeredText = "Saving Points...\n";
@@ -634,8 +642,10 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         cVector3d tmp;
         m_ee2marker.mulr(m_marker2tip, tmp);
         cVector3d tip;
-        m_eeJointPtr->getLocalTransform().mulr(m_marker2tip, tip);
-        
+
+        // m_eeJointPtr->getLocalTransform().mulr(m_marker2tip, tip);
+
+        m_worldPtr->getRigidBody("BODY Tilt Distal Linkage and Force Sensor")->getLocalTransform().mulr(m_ee2tip, tip);
         m_burrMesh->setLocalPos(tip);
 
         // cerr << "Tip pose:" << tmp.str(8) << endl;
@@ -759,7 +769,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
             m_toolPtr = m_worldPtr->getRigidBody(markerName);
             
             if(!m_toolPtr){
-                cerr << "WARNING! No marker named " << markerName << "found." << endl;
+                cerr << "WARNING! No marker named " << markerName << " found." << endl;
             }
 
             // Setting up CRTK communication
@@ -772,7 +782,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
             m_eeJointPtr = m_worldPtr->getRigidBody(jointName);
             
             if(!m_eeJointPtr){
-                cerr << "ERROR! No Endeffector pose named " << jointName << "found." << endl;
+                cerr << "ERROR! No Endeffector pose named " << jointName << " found." << endl;
             }
 
 

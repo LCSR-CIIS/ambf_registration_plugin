@@ -36,4 +36,10 @@ multibody configs:
   - "/home/hishida3/sdf_virtual_fixture/ADF/TB0114_1.yaml" #19
   - "/home/hishida3/sdf_virtual_fixture/ADF/TB0114_2.yaml" #20
 
+  - "/home/hishida3/3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/20240228_galen_endo0.yaml" #21
+  - "/home/hishida3/3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/Sinus.yaml" #22
+
+  - "/home/hishida3/3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/20240227_EndoscopeTracker.yaml" #23
+  - "/home/hishida3/3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/Sinus_clean.yaml" #24
+
 

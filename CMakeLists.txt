@@ -67,6 +67,7 @@ add_definitions(${OpenCV_DEFINITIONS})
 add_library(registration_plugin SHARED
     src/plugin/registration_plugin.cpp
     src/plugin/registration_plugin.h
+    src/plugin/registration_plugin.h
     src/utils/camera_panel_manager.cpp
     src/utils/camera_panel_manager.h
     src/utils/CRTKInterface.cpp
@@ -95,3 +96,18 @@ endif()
 
 add_executable(TestPointCloud src/registration/point_cloud_registration.cpp)
 target_link_libraries(TestPointCloud ${AMBF_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES})
+
+
+# For robot contorl plugin
+add_library(control_plugin SHARED    
+    src/plugin/robot_control.cpp
+    src/plugin/robot_control.h
+    # src/utils/CRTKInterface.cpp
+    # src/utils/CRTKInterface.h
+    /home/hishida3/3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/plugins/control/CRTKInterface.cpp
+    /home/hishida3/3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/plugins/control/CRTKInterface.h
+    )
+
+# add_dependencies(control_plugin ${catkin_EXPORTED_TARGETS})
+target_link_libraries (control_plugin ${AMBF_LIBRARIES})
+set_property(TARGET control_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)

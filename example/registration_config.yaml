@@ -30,14 +30,14 @@ pointer:
     # - Sphere_19
   # object name: TB04_anatomical_origin
   # object name: TB0114_1_anatomical_origin
-  object name: TB0114_2_anatomical_origin
+  # object name: TB0114_2_anatomical_origin
 
 
   # object name: TB1011_anatomical_origin
   # object name: TB0904_anatomical_origin
   # object name: TB0914_anatomical_origin
   # object name: DS0913_1_anatomical_origin
-  # object name: DS0913_2_anatomical_origin
+  object name: DS0913_2_anatomical_origin
 
 ## Optical Tracker Registration
 optical tracker:
@@ -163,7 +163,7 @@ pivot:
   marker name: atracsys/Anspoch_drill
   resolution: 0.01
   number of points: 150
-  registered pivot result:
+  # registered pivot result:
     # Orignal Point
     # t_tip: 
     #   x: -0.077053
@@ -212,7 +212,7 @@ pivot:
     #   z: -0.125319 
     
     # 1011 Rotbot Pivot Calibration
-    t_tip: {x: -0.104696, y: 0.142219, z: 0.030938} # 2mm
+    # t_tip: {x: -0.104696, y: 0.142219, z: 0.030938} # 2mm
 
     # 1012 Pivot calibration
     # t_tip: {x: -0.094091, y: 0.129397, z: 0.024572} # 3mm
