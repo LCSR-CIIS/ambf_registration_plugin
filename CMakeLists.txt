@@ -67,7 +67,6 @@ add_definitions(${OpenCV_DEFINITIONS})
 add_library(registration_plugin SHARED
     src/plugin/registration_plugin.cpp
     src/plugin/registration_plugin.h
-    src/plugin/registration_plugin.h
     src/utils/camera_panel_manager.cpp
     src/utils/camera_panel_manager.h
     src/utils/CRTKInterface.cpp
