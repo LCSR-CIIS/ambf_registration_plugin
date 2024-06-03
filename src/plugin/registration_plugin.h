@@ -177,6 +177,12 @@ class afRegistrationPlugin: public afSimulatorPlugin{
 
         vector<cTransform> m_savedPoints;
 
+        // Flag used to check if the mode was defined in the config file.
+        bool m_isPivot = false;
+        bool m_isHE = false; 
+        bool m_isPointer = false;
+        bool m_isOT = false;
+
 };
 
 

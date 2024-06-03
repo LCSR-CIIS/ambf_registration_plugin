@@ -86,7 +86,7 @@ python3 sksurgery_pivot_calibration.py -i ~/ambf_registration_plugin/data/Pivot_
 ```
 
 
-![Pivot_calibration](/figs/) <!-- Add figure here to describe the hardware setup used for pivot calibration -->
+<!-- ![Pivot_calibration](/figs/) Add figure here to describe the hardware setup used for pivot calibration -->
 
 ### 2.4 Hand-Eye Calibration
 To complete the whole kinematic chain up to the tip of the tool. Hand-Eye calibration is needed to calculate the frame transformation for the End-Effector(EE) frame to the marker on the tool.
@@ -96,7 +96,7 @@ Please clone the repo using the following command:
 git clone git@github.com:ethz-asl/hand_eye_calibration.git
 ```
 
-![Hand-eye_calibration](/figs/) <!-- Add figure here to describe the hardware setup used for pivot calibration -->
+<!-- ![Hand-eye_calibration](/figs/) Add figure here to describe the hardware setup used for pivot calibration -->
 
 
 
@@ -106,6 +106,11 @@ To add a volume to the scene, you can either include an ADF file in the launch f
 ```bash
 ambf_simulator --launch_file launch.yaml -l 0,1 -a ~/sdf_virtual_fixture/ADF/Galen/galen_stryker_tilted.yaml --registration_config example/registration_config.yaml
 ```
+
+Command line options:
+- `-l 5, 7`: will add object defined in `launch.yaml`. The number corresponds with the index in `multibody configs:`. For examle, `5` is optical tracked drill and `7` is volume `TB0904`. 
+- `--registration_config`: path to the registration configuration file.
+
 
 ### 3.0 Registration configuration file
 Begin by creating a registration configuration file, using the example provided in "example/template_config.yaml".
@@ -158,8 +163,13 @@ pivot:
 ```
 
 ### 3.1 Perform Pin-base registration
-Press `[Ctrl + 1]` to activate pin-base registration mode.
-
+Press `[Ctrl + 1]` to activate pin-base registration mode. Press `[Ctrl + 9]` to store the points.
+[Caution] Sampling order matters!! Make sure to sample the points in the same order as the points in `launch.yaml`.
+The calibration results will be printed in the terminal. Copy and paste the results in the ADF: 
+```bash
+position: {x: 0.0, y:0.0, z:0.0}
+orientation: {r: 0.0, p: 0.0, y:0.0}
+```
 
 
 ### 3.2 Perform Hand-Eye calibration

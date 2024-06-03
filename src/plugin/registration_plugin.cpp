@@ -191,23 +191,43 @@ bool afRegistrationPlugin::initCamera(vector<string> cameraNames){
 void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, int a_mods){
     if (a_mods == GLFW_MOD_CONTROL){
         if (a_key == GLFW_KEY_4){
-            m_activeMode = RegistrationMode::HANDEYE;
-            cerr << "Registration Mode changed to HANDEYE " << endl;
+            if (m_isHE){
+                m_activeMode = RegistrationMode::HANDEYE;
+                cerr << "Registration Mode changed to HANDEYE " << endl;
+            }
+            else{
+                m_activeMode = RegistrationMode::UNREGISTERED;
+            }
         }
 
         else if (a_key == GLFW_KEY_2){
-            m_activeMode = RegistrationMode::PIVOT;
-            cerr << "Registration Mode changed to PIVOT " << endl;
+            if(m_isPivot){
+                m_activeMode = RegistrationMode::PIVOT;
+                cerr << "Registration Mode changed to PIVOT " << endl;
+            }
+            else{
+                m_activeMode = RegistrationMode::UNREGISTERED;
+            }
         }
         
         else if (a_key == GLFW_KEY_3){
-            m_activeMode = RegistrationMode::POINTER;
-            cerr << "Registration Mode changed to POINTER " << endl;
+            if(m_isPointer){
+                m_activeMode = RegistrationMode::POINTER;
+                cerr << "Registration Mode changed to POINTER " << endl;
+            }
+            else{
+                m_activeMode = RegistrationMode::UNREGISTERED;
+            }
         }
 
         else if (a_key == GLFW_KEY_1){
-            m_activeMode = RegistrationMode::TRACKER;
-            cerr << "Registration Mode changed to TRACKER " << endl;
+            if(m_isOT){
+                m_activeMode = RegistrationMode::TRACKER;
+                cerr << "Registration Mode changed to TRACKER " << endl;
+            }
+            else{
+                m_activeMode = RegistrationMode::UNREGISTERED;
+            }
         }
     
         else if(a_key == GLFW_KEY_9){
@@ -345,6 +365,12 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             // Perform Point set Registration
             vector<cVector3d> registeredPoints;
             bool resultRegist = m_pointCloudRegistration.PointSetRegistration(m_pointsIn, m_pointsOut, m_registeredTransform, registeredPoints);
+
+            // If the result was not correct erase the collected points
+            if (!resultRegist){
+                m_spheres.clear();
+                cerr << "Point set registration failed. Try again." << endl;
+            }
 
             // Visualize the registered points
             for (size_t i = 0; i < registeredPoints.size(); i++){
@@ -699,6 +725,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
         // Check whether pointer based registration is needed or not
         if (node["pointer"]){
             cout << "Pointer based Registration" << endl;
+            m_isPointer = true;
             // Get the name of the tooltip object
             string toolTipName = node["pointer"]["tooltip name"].as<string>();
 
@@ -738,6 +765,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
         // Check whether optical tracker based registration is needed or not
         if (node["optical tracker"]){
             cout << "Optical Tracker based registration" << endl;
+            m_isOT = true;
 
             string nspace = node["optical tracker"]["namespace"].as<string>();
             m_numTrackingPoints = node["optical tracker"]["name of points"].size();
@@ -763,6 +791,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
 
         if (node["hand eye"]){
             cout << "Hand Eye Calibration" << endl;
+            m_isHE = true;
 
             // Get marker in AMBF
             string markerName = node["hand eye"]["marker name"].as<string>();
@@ -842,6 +871,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
 
         if (node["pivot"]){
             cout << "Pivot Calibration" << endl;
+            m_isPointer = true;
 
             string toolTipName = node["pivot"]["tooltip name"].as<string>();
             m_toolTipPtr = m_worldPtr->getRigidBody(toolTipName);
