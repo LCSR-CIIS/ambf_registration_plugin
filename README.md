@@ -192,13 +192,11 @@ Once you are done with the pivot calibration. You can copy the result (t_tip) an
 
 Change object name in "registration_config"
 ```bash
-ambf_simulator --launch_file launch.yaml -l 4,7 --registration_config example/registration_config.yaml #TB0904
-ambf_simulator --launch_file launch.yaml -l 4,8 --registration_config example/registration_config.yaml #TB0909
+ambf_simulator --launch_file launch.yaml -l 5,7 --registration_config example/registration_config.yaml #TB0904
+ambf_simulator --launch_file launch.yaml -l 5,8 --registration_config example/registration_config.yaml #TB0909
 
-ambf_simulator --launch_file launch.yaml -l 4,10 --registration_config example/registration_config.yaml #DS0913_1
-ambf_simulator --launch_file launch.yaml -l 4,11 --registration_config example/registration_config.yaml #DS0913_2
-
-ambf_simulator --launch_file launch.yaml -l 4,14 --registration_config example/registration_config.yaml #DS0913_2
+ambf_simulator --launch_file launch.yaml -l 5,10 --registration_config example/registration_config.yaml #DS0913_1
+ambf_simulator --launch_file launch.yaml -l 5,11 --registration_config example/registration_config.yaml #DS0913_2
 
 ```
 
