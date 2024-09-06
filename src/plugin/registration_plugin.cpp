@@ -90,20 +90,30 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
         return -1;
     }
 
-    // Create burr mesh
-    cShapeSphere* pointMesh = new cShapeSphere(0.001);
-    pointMesh->setRadius(0.001);
-    pointMesh->m_material->setRed();
-    pointMesh->m_material->setShininess(0);
-    pointMesh->m_material->m_specular.set(0, 0, 0);
-    pointMesh->setShowEnabled(true);
-    pointMesh->setLocalPos(cVector3d(0.168842, 0.138230, 1.257089));
-    m_worldPtr->addSceneObjectToWorld(pointMesh);
-
-
     // When config file is defined
     if(!config_filepath.empty()){
-        return readConfigFile(config_filepath);
+        if(readConfigFile(config_filepath)){
+            // Add Registration camera 
+            // The camera should face the anatomy
+            afModelPtr envModel;
+            afCameraPtr cameraPtr = new afCamera(m_worldPtr, envModel);
+            afCameraAttributes camAttribs;
+            camAttribs.m_lookAt.set(-1, 0, 0);
+            camAttribs.m_identificationAttribs.m_name = "registration_camera";
+
+
+            cVector3d cameraLocation = m_registeringObject->getLocalPos() + cVector3d(1.5, 0, 0);
+
+            if (cameraPtr->createFromAttribs(&camAttribs)){
+                cameraPtr->setView(cameraLocation, cameraPtr->getLookVector(), cameraPtr->getUpVector());
+                cerr << "Camera Location:" << cameraPtr->getLocalPos().str() << endl;
+                m_worldPtr->addCamera(cameraPtr);
+            }      
+            return 0;
+        }
+        else{
+            return -1;
+        }     
     }
 
     // If the configuration file is not defined provide error
@@ -111,8 +121,6 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
         cerr << "ERROR! NO configuration file specified." << endl;
         return -1;
     }
-
-    cerr << "SUCCESSFULLY Initialized plugin!!" << endl;
 }
 
 // Initialize labels and panel in the simulation
@@ -126,7 +134,6 @@ bool afRegistrationPlugin::initLabels(){
     m_registrationStatusLabel->setCornerRadius(5, 5, 5, 5);
     m_registrationStatusLabel->setShowPanel(true);
     m_registrationStatusLabel->setColor(cColorf(1.0, 1.0, 1.0, 1.0));
-
     m_panelManager.addPanel(m_registrationStatusLabel, 0.8, 0.9, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
     m_panelManager.setVisible(m_registrationStatusLabel, true);
 
@@ -137,12 +144,10 @@ bool afRegistrationPlugin::initLabels(){
     m_savedPointsListLabel->setCornerRadius(5, 5, 5, 5);
     m_savedPointsListLabel->setShowPanel(true);
     m_savedPointsListLabel->setColor(cColorf(1.0, 1.0, 1.0, 1.0));
-
     m_panelManager.addPanel(m_savedPointsListLabel, 0.8, 0.8, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
     m_panelManager.setVisible(m_savedPointsListLabel, true);
 
     return true;
-
 }
 
 // Look for the camera and store as a "main camera"

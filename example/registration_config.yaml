@@ -37,7 +37,7 @@ pointer:
   # object name: TB0904_anatomical_origin
   # object name: TB0914_anatomical_origin
   # object name: DS0913_1_anatomical_origin
-  object name: DS0913_2_anatomical_origin
+  object name: DS0913_1_anatomical_origin 
 
 ## Optical Tracker Registration
 optical tracker:
@@ -144,7 +144,7 @@ hand eye:
     # 0909
     q_rot:
       x: -0.21229946
-      y: 0.8618833
+      y: 0.8618833  
       z: 0.41732556 
       w: 0.19474468
 
