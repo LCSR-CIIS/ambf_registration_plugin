@@ -1,0 +1,38 @@
+# AMBF Registration configuration file template 
+# Author: Hisashi Ishida
+# Date: 01.10.2024
+
+## Hand-Eye Regisration
+hand eye:
+  # Both the robot and the marker status should be published using CRTK
+  namespace: /REMS/Research/ #namespace for the robot 
+  marker name: atracsys/Anspoch_drill # This name should used for both rostopic name and object name in AMBF
+  joint name: marker_body
+  optical tracker name: Tracker
+  resolution: 0.001
+  number of points: 1500
+  registered HE result:
+    q_rot: {x: -0.22256591,  y: 0.86461114,  z: 0.4124701, w: 0.1810536 }
+    q_dual: {x: -0.03664884, y: -0.02461595, z: 0.03310982, w: -0.00292933}
+
+# 0.06298618 -0.01934302  0.08873717 -0.22256591  0.86461114  0.4124701, 0.1810536   
+
+## Optical Tracker Registration
+optical tracker:
+  namespace: /atracsys #rostopic name for the optical marker
+  name of points:
+    - anatomy # Add one more if you want to save the reference
+
+
+## Pivot calibration
+pivot:
+  tooltip name: drill_tip
+  namespace: /REMS/Research/ #namespace for the robot 
+  marker name: atracsys/Anspoch_drill
+  resolution: 0.01
+  number of points: 150
+  # registered pivot result:
+  #   t_tip: 
+  #     x: -0.077053
+  #     y:  0.150933
+  #     z:  0.043711

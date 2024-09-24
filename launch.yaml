@@ -12,35 +12,7 @@ plugins: [
 ]
 
 multibody configs:
-  # - "./example/ADF/registration_cube.yaml" #0
-  - "/home/hishida3/sdf_virtual_fixture/ADF/RT147_256.yaml" #0
+  - "./example/ADF/registration_cube.yaml" #0
   - "./example/ADF/marker.yaml" #1
   - "./example/ADF/tracker.yaml" #2
-  - "/home/hishida3/sdf_virtual_fixture/ADF/Galen/galen_anspoch.yaml" #3
-  - "/home/hishida3/sdf_virtual_fixture/ADF/drill/20230909_anspoch_drill.yaml" #4
-  - "/home/hishida3/sdf_virtual_fixture/ADF/drill/20230910_anspoch_drill_track.yaml" #5
-  - "/home/hishida3/sdf_virtual_fixture/ADF/DS0904_1.yaml" #6
-  - "/home/hishida3/sdf_virtual_fixture/ADF/TB0904.yaml" #7
-  - "/home/hishida3/sdf_virtual_fixture/ADF/TB0909.yaml" #8
-  - "/home/hishida3/sdf_virtual_fixture/ADF/DS0911_1.yaml" #9
-  - "/home/hishida3/sdf_virtual_fixture/ADF/DS0913_1.yaml" #10
-  - "/home/hishida3/sdf_virtual_fixture/ADF/DS0913_2.yaml" #11
-  - "/home/hishida3/sdf_virtual_fixture/ADF/TB0914.yaml" #12  
-  - "/home/hishida3/sdf_virtual_fixture/ADF/TB1011.yaml" #13
-  - "/home/hishida3/sdf_virtual_fixture/ADF/TB04.yaml" #14
-  - "/home/hishida3/sdf_virtual_fixture/ADF/drill/20231023_FSD2mm_track.yaml" #15
-  - "/home/hishida3/sdf_virtual_fixture/ADF/drill/20231023_FSD3mm_track.yaml" #16
-  - "/home/hishida3/sdf_virtual_fixture/ADF/drill/20231023_FSD4mm_track.yaml" #17
-  - "/home/hishida3/sdf_virtual_fixture/ADF/drill/20231023_FSD6mm_track.yaml" #18
-
-  - "/home/hishida3/sdf_virtual_fixture/ADF/TB0114_1.yaml" #19
-  - "/home/hishida3/sdf_virtual_fixture/ADF/TB0114_2.yaml" #20
-
-  - "/home/hishida3/3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/20240228_galen_endo0.yaml" #21
-  - "/home/hishida3/3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/Sinus.yaml" #22
-
-  - "/home/hishida3/3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/20240227_EndoscopeTracker.yaml" #23
-  - "/home/hishida3/3D-Slicer_ROS_Module_with_AMBF/AMBF_Plugin_3DSlicer/ADF/Sinus_clean.yaml" #24
-
-
-  - "/home/hishida3/sdf_virtual_fixture/ADF/drill/20240423_anspoch_drill_track.yaml" #25
+  - "./example/ADF/stryker_drill.yaml" #3

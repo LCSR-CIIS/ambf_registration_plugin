@@ -82,11 +82,11 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
     bool  initcam = initCamera(cameraNames);
     
     if (initcam && initLabels()){
-        cerr << "SUCCESSFULLY Initialize Camera and Labels" << endl;
+        std::cerr << "SUCCESSFULLY Initialize Camera and Labels" << std::endl;
     }
     
     else{
-        cerr << "ERROR! FAILED To Initialize Camera and/or Lables" << endl;
+        std::cerr << "ERROR! FAILED To Initialize Camera and/or Lables" << std::endl;
         return -1;
     }
 
@@ -122,12 +122,12 @@ bool afRegistrationPlugin::initLabels(){
 
     // Active Object panel
     m_registrationStatusLabel = new cLabel(font);
-    m_registrationStatusLabel->m_fontColor.setRedCrimson();
+    m_registrationStatusLabel->m_fontColor.setBlack();
     m_registrationStatusLabel->setCornerRadius(5, 5, 5, 5);
     m_registrationStatusLabel->setShowPanel(true);
     m_registrationStatusLabel->setColor(cColorf(1.0, 1.0, 1.0, 1.0));
 
-    m_panelManager.addPanel(m_registrationStatusLabel, 0.8, 0.9, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
+    m_panelManager.addPanel(m_registrationStatusLabel, 0.7, 0.85, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
     m_panelManager.setVisible(m_registrationStatusLabel, true);
 
     // Objects List panel
@@ -138,7 +138,7 @@ bool afRegistrationPlugin::initLabels(){
     m_savedPointsListLabel->setShowPanel(true);
     m_savedPointsListLabel->setColor(cColorf(1.0, 1.0, 1.0, 1.0));
 
-    m_panelManager.addPanel(m_savedPointsListLabel, 0.8, 0.8, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
+    m_panelManager.addPanel(m_savedPointsListLabel, 0.7, 0.8, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
     m_panelManager.setVisible(m_savedPointsListLabel, true);
 
     return true;
@@ -239,21 +239,56 @@ void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a
     }
 }
 
+void afRegistrationPlugin::addOptionDescription(string & text){
+    if(m_isOT){
+        text += "[Ctrl + 1]: Optical Tracker,";
+    }
+    else{
+        text += "[Ctrl + 1]: None, ";
+    }
+    if(m_isPivot){
+        text += "[Ctrl + 2]: Pivot Calibration, ";
+    }
+    else{
+        text += "[Ctrl + 2]: None, ";
+    }
+    if(m_isPointer){
+        text += "[Ctrl + 3]: Ponter Based Registration, ";
+    }
+    else{
+        text += "[Ctrl + 3]: None, ";
+    }
+    if (m_isHE){
+        text += "[Ctrl + 4]: Hand-Eye Registraion\n";
+    }
+    else{
+        text += "[Ctrl + 4]: None \n";
+    }
+    if(m_isPointer){
+        text += "[Ctrl + 9]: Sample Point";
+    }
+    else{
+        text += "[Ctrl + 9]: None";
+    }
+}
+
 // Graphics related updates
 void afRegistrationPlugin::graphicsUpdate(){
 
-    string m_savedLocationText = "--- List of Saved Locations --- \n";
-
+    string m_savedLocationText = "--- List of Saved Locations ([Ctrl + 9] to sample Point) --- \n";
+    string text;
     // For Registration Status Label
     switch (m_activeMode){
         case RegistrationMode::UNREGISTERED:
-            m_panelManager.setText(m_registrationStatusLabel, "Registration Status: UNREGISTER");
-            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
+            text = "Registration Status: UNREGISTER \n";
+            addOptionDescription(text);
+            m_panelManager.setText(m_registrationStatusLabel, text);
+            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(0.,0.0,0.0));
             break;
         
         case RegistrationMode::POINTER:
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: POINTER");
-            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
+            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(0.,0.,0.));
 
             // Saving the saved points location as text and show on the screen.
             for (int i=0; i < m_spheres.size(); i++){   
@@ -268,14 +303,14 @@ void afRegistrationPlugin::graphicsUpdate(){
 
         case RegistrationMode::TRACKER:
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: TRACKER");
-            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
+            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(0.,0.,0.));
             m_panelManager.setText(m_savedPointsListLabel, m_registeredText);
 
             break;
 
         case RegistrationMode::PIVOT:
             m_panelManager.setText(m_registrationStatusLabel, "Registration Status: PIVOT");
-            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
+            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(0.,0.,0.));
             
             if (m_robotPivot){
                 // Saving the saved points location as text and show on the screen.
@@ -419,16 +454,24 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         
         m_registeredText += "WARNING! No robot related topic published";
         
+        cerr << measured_cp.getLocalPos().str() << endl;
+
         // ToDo: Change this to Robot Mode
         if(measured_cp.getLocalPos().length() > 0.0 && !m_flagTrack){
             // Erase the warning if there is measured_cf
             m_registeredText = "Saving Points...\n";
 
+
             // get trackerLocation data from rostopics
             cTransform collectedPoint = m_toolInterface->measured_cp();
-            collectedPoint.setLocalPos(0.001 * collectedPoint.getLocalPos());
-            cTransform collectedReference = m_trackingInterfaces[0]->measured_cp();
-            collectedReference.invert();
+            collectedPoint.setLocalPos(collectedPoint.getLocalPos());
+
+            cTransform collectedReference;
+            if (m_trackingInterfaces.size() > 2){
+                collectedReference = m_trackingInterfaces[0]->measured_cp();
+                collectedReference.invert();
+            }
+            collectedReference.identity();
 
             if (m_savedPoints.size() == 0){
                 m_savedPoints.push_back(collectedPoint);
@@ -532,8 +575,13 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 // get trackerLocation data from rostopics
                 // cTransform collectedPoint = m_worldPtr->getRigidBody("dovetail_male")->getLocalTransform();
                 cTransform collectedPoint = m_toolInterface->measured_cp();
-                cTransform collectedReference = m_trackingInterfaces[0]->measured_cp();
-                collectedReference.invert();
+
+                cTransform collectedReference;
+                if (m_trackingInterfaces.size() > 2){
+                    collectedReference = m_trackingInterfaces[0]->measured_cp();
+                    collectedReference.invert();
+                }
+                collectedReference.identity();
 
                 if (m_savedPivotPoints.size() == 0){
                     m_savedPivotPoints.push_back(collectedPoint);
@@ -871,7 +919,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
 
         if (node["pivot"]){
             cout << "Pivot Calibration" << endl;
-            m_isPointer = true;
+            m_isPivot = true;
 
             string toolTipName = node["pivot"]["tooltip name"].as<string>();
             m_toolTipPtr = m_worldPtr->getRigidBody(toolTipName);

@@ -87,6 +87,8 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         bool initCamera(vector<string> cameraNames);
         int readConfigFile(string config_filepath);
 
+        void addOptionDescription(string & text);
+
     // private:
         // Pointer to the world
         afWorldPtr m_worldPtr;
