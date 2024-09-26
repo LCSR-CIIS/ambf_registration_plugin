@@ -50,7 +50,7 @@ int PointCloudRegistration::ICPRegistration(vector<cVector3d> pointsIn, vector<c
 {   
     if (pointsIn.size() != pointsOut.size()){
         cerr << "ERROR! The size of the input poin cloud does not match with the source point cloud." << endl;
-        return -1;
+        return 0;
     }
 
     // Convert the Points to the Pcl::pointXYZ data type
@@ -83,28 +83,8 @@ int PointCloudRegistration::ICPRegistration(vector<cVector3d> pointsIn, vector<c
 int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, vector<cVector3d> &pointsOut, btTransform &trans, vector<cVector3d> &newPoints){
     if (pointsIn.size() != pointsOut.size()){
         cerr << "ERROR! The size of the input poin cloud does not match with the source point cloud." << endl;
-        return -1;
+        return 0;
     }
-
-    // If using the predefined points
-    if (0){
-        cerr << "Using the predefined points:" << endl;
-        vector<cVector3d> In;
-        In.push_back(cVector3d(0.05265, 0.05593, 0.12162));
-        In.push_back(cVector3d(0.05156, 0.05592, 0.05774));
-        In.push_back(cVector3d(-0.00250, 0.05485, 0.05883));
-        In.push_back(cVector3d(-0.00273, 0.05486, 0.12340));
-
-        vector<cVector3d> Out;
-        Out.push_back(cVector3d(0.16867, -0.03044, -0.65534));
-        Out.push_back(cVector3d(0.23257, -0.03034, -0.65667));
-        Out.push_back(cVector3d(0.23346, -0.08365, -0.65663));
-        Out.push_back(cVector3d(0.16971, -0.08453, -0.65422));
-
-        pointsIn = In;
-        pointsOut = Out;
-    }
-
     
     // 1. Get the center of the each point and align them
     vector<Eigen::Vector3d> vecPointIn;
@@ -154,7 +134,7 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, ve
     cerr << "Rotational det:" << R.determinant() << endl;
 
     if  (R.determinant() == -1){
-        return -1;
+        return 0;
     }
 
     Eigen::Vector3d T = aveOut - R * aveIn;
@@ -192,7 +172,6 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, ve
     aff.linear() = R;
     Eigen::Matrix<float, 4, 4> Trans = aff.matrix().cast <float> (); ;
     eigenMatrixTobtTransform(Trans, trans);
-
 
     return 1;
 }
