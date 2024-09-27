@@ -130,8 +130,9 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, ve
     Eigen::Matrix3d rotation = svd.matrixV() * svd.matrixU().transpose();
 
     // Check for the determinant
-    if (rotation.determinant() != 1){
-        return 0;
+    if (rotation.determinant() < 0){
+        cerr << "Reflection detected. Fixing the rotation ..." << endl;
+        rotation.col(2) = -rotation.col(2);
     }
 
     // Compute translation

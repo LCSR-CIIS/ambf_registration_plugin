@@ -103,6 +103,9 @@ int PivotCalibration::calibrate(vector<cTransform> transIn, cVector3d& tipPos, c
     cerr << "Tip Pose: " << tipPos.str(6) << endl;
     markerPos.set(markerEigen(0), markerEigen(1), markerEigen(2));
     cerr << "Dimple Pose: " << markerPos.str(6) << endl;
+    
+    cerr << "position: {x: " << tipPos.x() << ", y: " << tipPos.y() << ", z: " << tipPos.z() << "}" << endl;
+
 
 
     return 1;
