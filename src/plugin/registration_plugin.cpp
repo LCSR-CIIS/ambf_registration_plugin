@@ -92,12 +92,13 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
     }
 
     // Create burr mesh
-    cShapeSphere* m_burrMesh = new cShapeSphere(0.001);
+    m_burrMesh = new cShapeSphere(0.001);
     m_burrMesh->setRadius(0.001);
     m_burrMesh->m_material->setRed();
     m_burrMesh->m_material->setShininess(0);
     m_burrMesh->m_material->m_specular.set(0, 0, 0);
-    m_burrMesh->setShowEnabled(false);
+    m_burrMesh->setLocalPos(cVector3d(0.0, 0.0, 0.0));
+    m_burrMesh->setShowEnabled(false);  
     m_worldPtr->addSceneObjectToWorld(m_burrMesh);
 
     // When config file is defined
@@ -110,8 +111,6 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
         cerr << "ERROR! NO configuration file specified." << endl;
         return -1;
     }
-
-    cerr << "SUCCESSFULLY Initialized plugin!!" << endl;
 }
 
 // Initialize labels and panel in the simulation
@@ -135,7 +134,7 @@ bool afRegistrationPlugin::initLabels(){
     m_savedPointsListLabel->setCornerRadius(5, 5, 5, 5);
     m_savedPointsListLabel->setShowPanel(true);
     m_savedPointsListLabel->setColor(cColorf(1.0, 1.0, 1.0, 1.0));
-    m_panelManager.addPanel(m_savedPointsListLabel, 0.7, 0.8, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
+    m_panelManager.addPanel(m_savedPointsListLabel, 0.7, 0.75, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
     m_panelManager.setVisible(m_savedPointsListLabel, true);
 
     return true;
@@ -333,15 +332,17 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             savedPointMesh->m_material->m_specular.set(0, 0, 0);
             savedPointMesh->setShowEnabled(true);
 
-            // If the HE and pivot registration is being done and specified in the config file
-            if ((m_HEDone && m_pivotDone) || (m_HEDefined && m_pivotDefined)){
-                savedPointMesh->setLocalPos(m_burrMesh->getLocalPos()); // Save burr mesh location/
-                m_burrMesh->setShowEnabled(false);
-            }
             // If there is a pointerToolTip rigid body specified
-            else if (m_pointerToolTipPtr){
+            if (m_pointerToolTipPtr){
                 savedPointMesh->setLocalPos(m_pointerToolTipPtr->getLocalPos()); // Save tooltip location (CAD model)
             }
+
+            // If the HE and pivot registration is being done and specified in the config file
+            else if ((m_HEDone && m_pivotDone) || (m_HEDefined && m_pivotDefined)){
+                savedPointMesh->setLocalPos(m_burrMesh->getLocalPos()); // Save burr mesh location/
+                m_burrMesh->setShowEnabled(true);
+            }
+
             // Add the saved point mesh to the world
             m_worldPtr->addSceneObjectToWorld(savedPointMesh);
             
@@ -393,8 +394,11 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
                 // Move the object to the registered location
                 btTransform Tcommand;
-                btTransform currentTrans = m_registeringObject->m_bulletRigidBody->getWorldTransform();
-                Tcommand =  currentTrans * m_registeredTransform;
+                btTransform currentTrans;
+
+                m_registeringObject->m_bulletRigidBody->getMotionState()->getWorldTransform(currentTrans);
+                
+                Tcommand =  m_registeredTransform * currentTrans;
                 m_registeringObject->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
                 m_registeringObject->m_bulletRigidBody->setWorldTransform(Tcommand);
             }
@@ -480,7 +484,6 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 m_registeredText = "Saving Points...\n";
 
                 // get trackerLocation data from rostopics
-                // cTransform collectedPoint = m_worldPtr->getRigidBody("dovetail_male")->getLocalTransform();
                 cTransform collectedPoint = m_pivotToolInterface->measured_cp();
 
                 cTransform collectedReference;
@@ -589,7 +592,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
     // Once you finish HandEye registration
     if (m_HEDone || m_HEDefined){
-        if(m_HEmarkerPtr){
+        if(m_HEeePtr && m_HEmarkerPtr){
             // Use btTransform to move the Marker
             btTransform Tcommand;
             m_HEeePtr->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
@@ -607,7 +610,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             cVector3d tip;
             m_pivotMarkerPtr->getLocalTransform().mulr(m_ee2tip, tip);
             m_burrMesh->setLocalPos(tip);
-            m_burrMesh->setShowEnabled(false);
+            m_burrMesh->setShowEnabled(true);
         }
     }
     
@@ -628,7 +631,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
         
         // Check whether pointer based registration is needed or not
         if (node["pointer"]){
-            cout << "Pointer based Registration" << endl;
+            cout << "> Pointer based Registration" << endl;
             m_isPointer = true;
             // Get the name of the tooltip object
             string toolTipName = node["pointer"]["tooltip name"].as<string>();
@@ -641,7 +644,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
             }
 
             int numPoints = node["pointer"]["name of points"].size();
-            // Load alll the points
+            // Load all the points
             for (int i=0; i < numPoints; i++){
 
                 afRigidBodyPtr objectPtr;
@@ -655,7 +658,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 }
             }
 
-            cerr << numPoints << "Points are specified as Keypoints" << endl;
+            cerr << numPoints << " points are specified as Keypoints" << endl;
             
             m_registeringObject = m_worldPtr->getRigidBody(node["pointer"]["object name"].as<string>());
 
@@ -668,7 +671,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
 
         // Check whether hand-eye calibration is needed or not
         if (node["hand eye"]){
-            cout << "Hand Eye Calibration" << endl;
+            cout << "> Hand Eye Calibration" << endl;
             m_isHE = true;
 
             // Get marker in AMBF
@@ -747,7 +750,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
         }
 
         if (node["pivot"]){
-            cout << "Pivot Calibration" << endl;
+            cout << "> Pivot Calibration" << endl;
             m_isPivot = true;
 
             // Setting up CRTK communication
@@ -796,6 +799,8 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 m_pivotDefined = true;
             }
         }
+        cerr << "SUCCESSFULLY Initialized plugin!!" << endl;
+
         return 1;
 
 }

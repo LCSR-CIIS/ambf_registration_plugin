@@ -75,139 +75,97 @@ int PointCloudRegistration::ICPRegistration(vector<cVector3d> pointsIn, vector<c
     Trans = icp.getFinalTransformation();
     
     // Convert Eigen Matrix4 to btTransform
-    eigenMatrixTobtTransform(Trans, trans);
+    // eigenMatrixTobtTransform(Trans, trans);
 
     return 1;
 } 
 
-int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, vector<cVector3d> &pointsOut, btTransform &trans, vector<cVector3d> &newPoints){
-    if (pointsIn.size() != pointsOut.size()){
-        cerr << "ERROR! The size of the input poin cloud does not match with the source point cloud." << endl;
-        return 0;
+// Function to compute the centroid of a set of points
+Eigen::Vector3d PointCloudRegistration::computeCentroid(const std::vector<Eigen::Vector3d> &points) {
+    Eigen::Vector3d centroid(0, 0, 0);
+    for (const auto &point : points) {
+        centroid += point;
     }
-    
+    centroid /= points.size();
+    return centroid;
+}
+
+// Function to apply transformation to a point
+Eigen::Vector3d PointCloudRegistration::applyTransformation(const Eigen::Matrix4d &transformation, const Eigen::Vector3d &point) {
+    Eigen::Vector4d homogenousPoint(point(0), point(1), point(2), 1.0); // Make it a homogeneous coordinate
+    Eigen::Vector4d transformedPoint = transformation * homogenousPoint;
+    return transformedPoint.head<3>(); // Return the x, y, z parts
+}
+
+// Function to align two sets of points using the point-to-point registration method
+int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, vector<cVector3d> &pointsOut, btTransform &btTrans, vector<cVector3d> &estimatedPoints) {
     // 1. Get the center of the each point and align them
-    vector<Eigen::Vector3d> vecPointIn;
-    vector<Eigen::Vector3d> vecPointOut;
-
-    Eigen::Vector3d aveIn;
-    Eigen::Vector3d aveOut;
+    vector<Eigen::Vector3d> sourcePoints;
+    vector<Eigen::Vector3d> targetPoints;
 
     for (size_t i = 0; i < pointsIn.size(); i++){
-        cerr << "Points In:" << pointsIn[i].str(5) << endl;
-        aveIn += Eigen::Vector3d(pointsIn[i].x(), pointsIn[i].y(), pointsIn[i].z());
-        aveOut += Eigen::Vector3d(pointsOut[i].x(), pointsOut[i].y(), pointsOut[i].z());
-        vecPointIn.push_back(Eigen::Vector3d(pointsIn[i].x(), pointsIn[i].y(), pointsIn[i].z()));
-        vecPointOut.push_back(Eigen::Vector3d(pointsOut[i].x(), pointsOut[i].y(), pointsOut[i].z()));
+        sourcePoints.push_back(Eigen::Vector3d(pointsIn[i].x(), pointsIn[i].y(), pointsIn[i].z()));
+        targetPoints.push_back(Eigen::Vector3d(pointsOut[i].x(), pointsOut[i].y(), pointsOut[i].z()));
     }
 
-    for (size_t i=0; i< pointsIn.size(); i++){
-        cerr << "Points Out:" << pointsOut[i].str(5) << endl;
+    // Compute centroids of source and target points
+    Eigen::Vector3d sourceCentroid = computeCentroid(sourcePoints);
+    Eigen::Vector3d targetCentroid = computeCentroid(targetPoints);
+
+    // Subtract centroids to create zero-centered point sets
+    std::vector<Eigen::Vector3d> sourceCentered, targetCentered;
+    for (size_t i = 0; i < sourcePoints.size(); ++i) {
+        sourceCentered.push_back(sourcePoints[i] - sourceCentroid);
+        targetCentered.push_back(targetPoints[i] - targetCentroid);
     }
 
-    aveIn *= 1.0/pointsIn.size();
-    aveOut *= 1.0/pointsOut.size();
-
-    for (size_t i = 0; i < pointsIn.size(); i++){
-        vecPointIn[i] = vecPointIn[i] - aveIn;
-        vecPointOut[i] = vecPointOut[i] - aveOut;
+    // Compute covariance matrix
+    Eigen::Matrix3d covariance = Eigen::Matrix3d::Zero();
+    for (size_t i = 0; i < sourceCentered.size(); ++i) {
+        covariance += sourceCentered[i] * targetCentered[i].transpose();
     }
 
-    bool verbose = false;
-    if (verbose){
-        cerr << "aveIn: " << endl;
-        cerr << aveIn << endl;
-        cerr << "aveOut: " << endl;
-        cerr << aveOut << endl;
-    }
+    // Compute SVD of the covariance matrix
+    Eigen::JacobiSVD<Eigen::Matrix3d> svd(covariance, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    Eigen::Matrix3d rotation = svd.matrixV() * svd.matrixU().transpose();
 
-    // 2. Get W = sum(x' p')
-    Eigen::MatrixXd W;
-    W.setZero(3,3);
-    for (size_t i = 0; i < pointsIn.size(); i++){
-        W += vecPointIn[i] * vecPointOut[i].transpose();
-    }
-    
-    Eigen::JacobiSVD<Eigen::MatrixXd> svd(W, Eigen::ComputeThinU | Eigen::ComputeThinV);
-    // Eigen::Matrix3d R = svd.matrixU() * svd.matrixV().transpose(); // Wrong!!
-    Eigen::Matrix3d R = svd.matrixV() * svd.matrixU().transpose(); // Correct!!
-    cerr << "Rotational det:" << R.determinant() << endl;
-
-    if  (R.determinant() == -1){
+    // Check for the determinant
+    if (rotation.determinant() != 1){
         return 0;
     }
 
-    Eigen::Vector3d T = aveOut - R * aveIn;
-    if (verbose){
-        cerr << "Rotation Result: " << endl;
-        cerr << R << endl;
-        cerr << "Euler Angle" << endl;
-        cerr << R.eulerAngles(0,1,2) << endl;
-        cerr << R.eulerAngles(0,2,1) << endl;
-        cerr << R.eulerAngles(1,0,2) << endl;
-        cerr << R.eulerAngles(1,2,0) << endl;
-        cerr << R.eulerAngles(2,1,0) << endl;
-        cerr << R.eulerAngles(2,0,1) << endl;
-        cerr << "Translation Result: " << endl;
-        cerr <<  T << endl;
+    // Compute translation
+    Eigen::Vector3d translation = targetCentroid - rotation * sourceCentroid;
+
+    // Build the transformation matrix (4x4 homogeneous matrix)
+    Eigen::Matrix4d transformation = Eigen::Matrix4d::Identity();
+    transformation.block<3, 3>(0, 0) = rotation;
+    transformation.block<3, 1>(0, 3) = translation;
+
+    // Convert to bullet
+    eigenMatrixTobtTransform(transformation, btTrans);
+
+    // Print the result
+    cerr << "position: {x: " << translation[0] << ", y: " << translation[1] << ", z: " << translation[2] << "}" << endl;
+    cerr << "orientation: {r: " << rotation.eulerAngles(2,1,0)[2] << ", p: " << rotation.eulerAngles(2,1,0)[1] << ", y: " << rotation.eulerAngles(2,1,0)[0] << "}" << endl;
+
+    // Print Error
+    vector<Eigen::Vector3d> transformedPoints;
+    for (const auto &point : sourcePoints) {
+        transformedPoints.push_back(applyTransformation(transformation, point));
     }
 
-    cerr << "position: {x: " << T[0] << ", y: " << T[1] << ", z: " << T[2] << "}" << endl;
-    cerr << "orientation: {r: " << R.eulerAngles(2,1,0)[2] << ", p: " << R.eulerAngles(2,1,0)[1] << ", y: " << R.eulerAngles(2,1,0)[0] << "}" << endl;
-
-    Eigen::Vector3d err;
-    for (size_t i = 0; i < pointsIn.size(); i++){
-        err += vecPointOut[i] - R * vecPointIn[i];
+    Eigen::Vector3d totalError = Eigen::Vector3d::Zero();
+    for (size_t i = 0; i < transformedPoints.size(); ++i) {
+        estimatedPoints.push_back(cVector3d(transformedPoints[i](0),transformedPoints[i](1),transformedPoints[i](2)));
+        Eigen::Vector3d errorVector = transformedPoints[i] - targetPoints[i];
+        totalError += errorVector.cwiseAbs();  // Accumulate absolute errors in x, y, z directions
     }
-    cerr << "Error: " << err << endl;
+    cout << "Total error in x, y, z directions: [" << totalError.transpose() << "]" << std::endl;
     
-    for (size_t i = 0; i < pointsIn.size(); i++){
-        Eigen::Vector3d newPointseigen;
-        newPointseigen = R * (vecPointIn[i] + aveIn) + T;
-        newPoints.push_back(cVector3d(newPointseigen.x(), newPointseigen.y(), newPointseigen.z()));
-
-    }
-    Eigen::Affine3d aff = Eigen::Affine3d::Identity();
-    aff.translation() = T;
-    aff.linear() = R;
-    Eigen::Matrix<float, 4, 4> Trans = aff.matrix().cast <float> (); ;
-    eigenMatrixTobtTransform(Trans, trans);
-
     return 1;
 }
 
-// int PointCloudRegistration::PointSetRegistration(vector<cVector3d> pointsIn, vector<cVector3d> pointsOut, btTransform &trans){
-//     if (pointsIn.size() != pointsOut.size()){
-//         cerr << "ERROR! The size of the input poin cloud does not match with the source point cloud." << endl;
-//         return -1;
-//     }
-    
-//     // 1. Get the center of the each point and align them
-//     // vector<cv::Point3f> vecPointIn;
-//     // vector<cv::Point3f> vecPointOut;
-
-//     cv::Mat vecPointIn(1, 4, CV_32FC3);
-//     cv::Mat vecPointOut(1, 4, CV_32FC3);
-
-//     for (size_t i = 0; i < pointsIn.size(); i++){
-//         vecPointIn.ptr<cv::Point3f>()[i] = cv::Point3f(pointsIn[i].x(),pointsIn[i].y(),pointsIn[i].z());
-//         vecPointOut.ptr<cv::Point3f>()[i] = cv::Point3f(pointsOut[i].x(),pointsOut[i].y(),pointsOut[i].z());
-//     }
-
-//     cv::Mat cvaff(3,4,CV_64F); 
-//     vector<uchar> inliers;
-
-    
-//     cv::estimateAffine3D(vecPointIn, vecPointOut, cvaff, inliers);
-
-//     cerr << cvaff << endl;    
-//     Eigen::Matrix<float, 4, 4> Trans; 
-//     cv::cv2eigen(cvaff, Trans);
-//     eigenMatrixTobtTransform(Trans, trans);
-
-
-//     return 1;
-// }
 
 void PointCloudRegistration::cvectorToPointCloud(vector<cVector3d> points,  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud){
 
@@ -218,36 +176,38 @@ void PointCloudRegistration::cvectorToPointCloud(vector<cVector3d> points,  pcl:
     }
 }
 
-void PointCloudRegistration::eigenMatrixTocTransform(Eigen::Matrix<float, 4, 4> Trans, cTransform &trans){
+void PointCloudRegistration::eigenMatrixTocTransform(Eigen::Matrix4d& Trans, cTransform &trans){
     // Chai3d related dataType
     cVector3d chai_T(Trans(0,3), Trans(1,3), Trans(2,3));
-    cMatrix3d chai_R(Trans(0,0),Trans(1,0),Trans(2,0), Trans(0,1), Trans(1,1), Trans(2,1), Trans(0,2), Trans(1,2), Trans(2,1));
-    
+    cMatrix3d chai_R(Trans(0,0),Trans(1,0),Trans(2,0), Trans(0,1), Trans(1,1), Trans(2,1), Trans(0,2), Trans(1,2), Trans(2,2));
     trans.setLocalPos(chai_T);
     trans.setLocalRot(chai_R);
 }
 
-void PointCloudRegistration::eigenMatrixTobtTransform(Eigen::Matrix<float, 4, 4> Trans, btTransform &trans){
+void PointCloudRegistration::convertChaiToBulletTransform(chai3d::cTransform& cTrans, btTransform& btTrans){
+    // Set translation
+    btVector3 translation;
+    translation.setValue(cTrans.getLocalPos().x(), cTrans.getLocalPos().y(), cTrans.getLocalPos().z());
+
+    // Set rotation
+    btMatrix3x3 btRotationMatrix;
+    btRotationMatrix.setValue(
+        cTrans.getLocalRot().getRow(0).x(), cTrans.getLocalRot().getRow(0).y(), cTrans.getLocalRot().getRow(0).z(),
+        cTrans.getLocalRot().getRow(1).x(), cTrans.getLocalRot().getRow(1).y(), cTrans.getLocalRot().getRow(1).z(),
+        cTrans.getLocalRot().getRow(2).x(), cTrans.getLocalRot().getRow(2).y(), cTrans.getLocalRot().getRow(2).z()
+    );
+
+    btTrans.setOrigin(translation);
+    btTrans.setBasis(btRotationMatrix);
+}
+void PointCloudRegistration::eigenMatrixTobtTransform(Eigen::Matrix4d& Trans, btTransform &trans){
     
     // Converted to Chai3d data type first
     cTransform tmp_trans;
     eigenMatrixTocTransform(Trans, tmp_trans);
-
-    // Samity check
-    // cerr << "Registration Transform: " << endl;
-    // cerr << "Translation: " << tmp_trans.getLocalPos().str(6) << endl;
-    // cerr << "Rotation: " << tmp_trans.getLocalRot().str(6) << endl;
-
-    // Convert Rotation into quaternion
-    cQuaternion chai_qr;
-    chai_qr.fromRotMat(tmp_trans.getLocalRot());
-
-    // Change to btVector and Matrix
-    btVector3 btTrans;
-    btTrans.setValue(tmp_trans.getLocalPos().x(), tmp_trans.getLocalPos().y(), tmp_trans.getLocalPos().z());   
-    btQuaternion btRot(chai_qr.x,chai_qr.y, chai_qr.z, chai_qr.w);
-    trans.setOrigin(btTrans);
-    trans.setRotation(btRot);
+    
+    // Convert Chai3d to bullet
+    convertChaiToBulletTransform(tmp_trans, trans);
 }
 
 // For debugging purpose

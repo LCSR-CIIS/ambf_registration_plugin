@@ -120,7 +120,7 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         bool m_savePoint = false;
         vector<cShapeSphere*> m_savedPointMeshList;
         cTransform m_registerdTrans;
-        afRigidBodyPtr m_registeringObject;
+        afRigidBodyPtr m_registeringObject = nullptr;
        
 
         // Point cloud registration
@@ -131,9 +131,9 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         CRTKInterface * m_HErobotInterface;
         CRTKInterface * m_HEtoolInterface;
         CRTKInterface * m_HEreferenceInterface = nullptr;
-        afRigidBodyPtr m_HEeePtr;
-        afRigidBodyPtr m_HEmarkerPtr;
-        afRigidBodyPtr m_HEtrackerPtr;
+        afRigidBodyPtr m_HEeePtr = nullptr;
+        afRigidBodyPtr m_HEmarkerPtr = nullptr;
+        afRigidBodyPtr m_HEtrackerPtr = nullptr;
         vector<cTransform> m_savedTracker2Points;
         vector<cTransform> m_savedRef2Points;
         vector<cTransform> m_savedAMBFPoints;
@@ -148,7 +148,7 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         // Pivot-calibration
         PivotCalibration m_pivotCalibration;
         afRigidBodyPtr m_pivotToolTipPtr = nullptr;
-        afRigidBodyPtr m_pivotMarkerPtr;
+        afRigidBodyPtr m_pivotMarkerPtr  = nullptr;
         CRTKInterface * m_pivotToolInterface;
         CRTKInterface * m_pivotReferenceInterface = nullptr;
 
@@ -170,8 +170,6 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         // Check if the config file has results
         bool m_pivotDefined = false;
         bool m_HEDefined = false;
-
-
 };
 
 
