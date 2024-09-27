@@ -7,7 +7,7 @@ hand eye:
   # Both the robot and the marker status should be published using CRTK
   robot namespace: /REMS/Research/ # namespace for the robot 
   marker namespace: /atracsys/Anspoch_drill # namespace for the marker
-  # referece namespace: /atracsys/Anatomy # [Optional] namespace for the reference
+  # reference namespace: /atracsys/Anatomy # [Optional] namespace for the reference
   EE name: marker_body
   marker name: marker_body # [Optional] Name of the rigid body for the marker body
   optical tracker name: Tracker  # [Optional] Name of the rigid body for the tracker
@@ -22,7 +22,7 @@ hand eye:
 ## Pivot calibration
 pivot:
   marker namespace: /atracsys/Anspoch_drill # namespace for the marker
-  # referece namespace: /atracsys/Anatomy # [Optional] namespace for the reference
+  # reference namespace: /atracsys/Anatomy # [Optional] namespace for the reference
   marker name: atracsys/Anspoch_drill
   type: AUTO # AUTO: Reads the value all the time, MANUAL: Sample points
   resolution: 0.01

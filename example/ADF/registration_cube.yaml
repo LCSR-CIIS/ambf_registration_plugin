@@ -25,24 +25,24 @@ bodies:
 - BODY Sphere_18
 - BODY Sphere_19
 joints:
-- JOINT Registration Cube-Sphere_00
-- JOINT Registration Cube-Sphere_01
-- JOINT Registration Cube-Sphere_02
-- JOINT Registration Cube-Sphere_03
-- JOINT Registration Cube-Sphere_04
-- JOINT Registration Cube-Sphere_05
-- JOINT Registration Cube-Sphere_06
-- JOINT Registration Cube-Sphere_07
-- JOINT Registration Cube-Sphere_08
-- JOINT Registration Cube-Sphere_09
-- JOINT Registration Cube-Sphere_11
-- JOINT Registration Cube-Sphere_12
-- JOINT Registration Cube-Sphere_13
-- JOINT Registration Cube-Sphere_14
-- JOINT Registration Cube-Sphere_15
-- JOINT Registration Cube-Sphere_16
-- JOINT Registration Cube-Sphere_17
-- JOINT Registration Cube-Sphere_18
+# - JOINT Registration Cube-Sphere_00
+# - JOINT Registration Cube-Sphere_01
+# - JOINT Registration Cube-Sphere_02
+# - JOINT Registration Cube-Sphere_03
+# - JOINT Registration Cube-Sphere_04
+# - JOINT Registration Cube-Sphere_05
+# - JOINT Registration Cube-Sphere_06
+# - JOINT Registration Cube-Sphere_07
+# - JOINT Registration Cube-Sphere_08
+# - JOINT Registration Cube-Sphere_09
+# - JOINT Registration Cube-Sphere_11
+# - JOINT Registration Cube-Sphere_12
+# - JOINT Registration Cube-Sphere_13
+# - JOINT Registration Cube-Sphere_14
+# - JOINT Registration Cube-Sphere_15
+# - JOINT Registration Cube-Sphere_16
+# - JOINT Registration Cube-Sphere_17
+# - JOINT Registration Cube-Sphere_18
 high resolution path: ./high_res/
 low resolution path: ./low_res/
 ignore inter-collision: true
@@ -61,7 +61,7 @@ BODY Registration Cube:
       z: -0.93023
     orientation:
       r: 1.5708
-      p: -0.0
+      p: 0.0
       y: 0.0
   inertial offset:
     position:
