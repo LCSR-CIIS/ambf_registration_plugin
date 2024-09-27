@@ -88,6 +88,8 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         int readConfigFile(string config_filepath);
 
         void addOptionDescription(string & text);
+        void applybtTransformToRigidBody(afRigidBodyPtr bodyPtr, btTransform& trans);
+
 
     // private:
         // Pointer to the world
