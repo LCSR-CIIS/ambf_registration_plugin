@@ -326,7 +326,10 @@ void afRegistrationPlugin::applybtTransformToRigidBody(afRigidBodyPtr bodyPtr, b
     // Tcommand.mult(Tcommand, trans);
     Tcommand.mult(trans,Tcommand);
     bodyPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-    bodyPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
+    bodyPtr->m_bulletRigidBody->setCenterOfMassTransform(Tcommand);
+
+    // bodyPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
+    bodyPtr->setLocalTransform(to_cTransform(Tcommand));
 }
 
 // Physics related updates

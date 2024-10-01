@@ -56,6 +56,7 @@
 
 #include <fstream>
 #include <ctime>
+#include <afConversions.h>
 
 namespace boost{
     namespace program_options{
