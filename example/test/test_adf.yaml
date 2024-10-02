@@ -1,0 +1,52 @@
+bodies:
+  - BODY test_origin
+  - BODY F01
+joints: []
+volumes: []
+high resolution path: ../ADF/high_res/
+low resolution path: ../ADF//low_res/
+ignore inter-collision: true
+namespace: /ambf/env/
+
+BODY test_origin_origin: # This is a dummy body that can be used to represent the anatomical origin for easy reference
+  name: test_origin_origin
+  mass: 0.0
+  location:
+     position:
+       x: 0.0
+       y: 0.0
+       z: 0.0
+     orientation:
+       r: 0.0
+       p: 0.0
+       y: 0.0
+
+BODY F01:
+  name: F01
+  mesh: Sphere_0.OBJ # Generate sphere in Blender or use any mesh.
+  collision mesh type: CONCAVE_MESH
+  mass: 0.0
+  # collision margin:
+  scale: 5.0
+  location:
+    position:
+      x: -0.016240286707845
+      y: 0.072239239255007
+      z: 0.080447365387631
+    orientation: { r: 0.0, p: -0.0, y: 0.0 }
+  passive: true
+  visible: true
+  collision groups: []
+  color components: # You can change the color here
+    ambient:
+      level: 1.0
+    diffuse:
+      b: 0.0
+      g: 0.8
+      r: 0.0
+    specular:
+      b: 0.0
+      g: 0.0
+      r: 0.0
+    transparency: 0.5
+

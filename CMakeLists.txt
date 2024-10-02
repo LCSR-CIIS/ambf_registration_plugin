@@ -63,7 +63,7 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 add_definitions(${OpenCV_DEFINITIONS})
 
 
-# For spacenav control plugin
+# For registration plugin
 add_library(registration_plugin SHARED
     src/plugin/registration_plugin.cpp
     src/plugin/registration_plugin.h
@@ -81,6 +81,16 @@ add_library(registration_plugin SHARED
 
 target_link_libraries (registration_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES})
 set_property(TARGET registration_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+
+
+# For transform testing plugin
+add_library(test_plugin SHARED
+    src/plugin/test_plugin.cpp
+    src/plugin/test_plugin.h
+    )
+
+target_link_libraries (test_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES})
+set_property(TARGET test_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 if(NOT BUILD_PLUGIN_WITH_ROS)
     set(BUILD_PLUGIN_WITH_ROS TRUE)
