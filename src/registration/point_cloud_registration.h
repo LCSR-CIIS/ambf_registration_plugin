@@ -69,8 +69,12 @@ class PointCloudRegistration{
         int ICPRegistration(vector<cVector3d> pointsIn, vector<cVector3d> pointsOut, btTransform& trans);
         int PointSetRegistration(vector<cVector3d> &pointsIn, vector<cVector3d> &pointsOut, btTransform &trans, vector<cVector3d> &points);
         void cvectorToPointCloud(vector<cVector3d> points,  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
-        void eigenMatrixTocTransform(Eigen::Matrix<float, 4, 4> Trans, cTransform &trans);
-        void eigenMatrixTobtTransform(Eigen::Matrix<float, 4, 4> Trans, btTransform &trans);
+        void eigenMatrixTocTransform(Eigen::Matrix4d& Trans, cTransform &trans);
+        void eigenMatrixTobtTransform(Eigen::Matrix4d& Trans, btTransform &trans);
+        void convertChaiToBulletTransform(chai3d::cTransform& cTrans, btTransform& btTrans);
+
+        Eigen::Vector3d computeCentroid(const std::vector<Eigen::Vector3d> &points);
+        Eigen::Vector3d applyTransformation(const Eigen::Matrix4d &transformation, const Eigen::Vector3d &point);        
 };
 
 int main();

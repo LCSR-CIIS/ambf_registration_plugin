@@ -1,0 +1,15 @@
+# AMBF Registration configuration file template 
+# Author: Hisashi Ishida
+# Date: 01.10.2024
+
+## Pointer based registration
+pointer:
+  tooltip name: stryker_drill # Rigid body that is attached to the tip of the tool
+  name of points:
+    - Sphere_00
+    - Sphere_07
+    - Sphere_10
+    - Sphere_13
+    - Sphere_18
+
+  object name: Registration Cube

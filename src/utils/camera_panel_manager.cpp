@@ -51,9 +51,6 @@ CameraPanel::CameraPanel(cPanel *a_panel, afCameraPtr a_camera, double a_xpos, d
     m_ypos = a_ypos;
     m_referenceOrigin = a_reference;
     m_referenceType = a_refType;
-
-    std::cerr << "Label Location: " << m_xpos << "," << m_ypos << endl;
-
     m_camera->getFrontLayer()->addChild(m_panel);
 }
 

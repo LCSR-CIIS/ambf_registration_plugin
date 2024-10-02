@@ -56,6 +56,7 @@
 
 #include <fstream>
 #include <ctime>
+#include <afConversions.h>
 
 namespace boost{
     namespace program_options{
@@ -69,7 +70,7 @@ using namespace std;
 using namespace ambf;
 
 enum class RegistrationMode{
-    UNREGISTERED=0, POINTER=1, TRACKER=2, PIVOT=3, HANDEYE=4, REGISTERED=5 
+    UNREGISTERED=0, POINTER=1, PIVOT=2, HANDEYE=3, REGISTERED=5 
 };
 
 class afRegistrationPlugin: public afSimulatorPlugin{
@@ -86,6 +87,10 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         bool initLabels();
         bool initCamera(vector<string> cameraNames);
         int readConfigFile(string config_filepath);
+
+        void addOptionDescription(string & text);
+        void applybtTransformToRigidBody(afRigidBodyPtr bodyPtr, btTransform& trans);
+
 
     // private:
         // Pointer to the world
@@ -104,85 +109,70 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         bool m_enableList = true;
         // string m_savedLocationText;
 
-
-        RegistrationMode m_activeMode = RegistrationMode::UNREGISTERED;
-
-        // Pointer based registration
-        afRigidBodyPtr m_toolTipPtr = nullptr;
-        int m_numPoints = 0;
-        int m_numTrackingPoints = 0;
-
-        vector<afRigidBodyPtr> m_pointsPtr; 
-        vector<afRigidBodyPtr> m_trackingPointsPtr; 
-        
-        // Pointer based Registration
-        bool m_savePoint = false;
-        vector<cShapeSphere*> m_spheres;
-        vector<cVector3d> m_savedPositions;
-        vector<cVector3d> m_savedError;
-
-        vector<cVector3d> m_pointsIn;
-        vector<cVector3d> m_pointsOut;
-        cTransform m_registerdTrans;
-
-        // Tracker based Registration
-        vector<CRTKInterface*> m_trackingInterfaces;
-        vector<cTransform> m_savedAMBFPoints;
-        vector<cTransform> m_savedRef2Points;
-        bool m_flagTrack = false;
+        cShapeSphere* m_burrMesh;
 
         // Registered Statistics Text
         string m_registeredText;
         btTransform m_registeredTransform;
+        RegistrationMode m_activeMode = RegistrationMode::UNREGISTERED;
 
-        afRigidBodyPtr m_registeringObject;
-        vector<cVector3d> m_result;
+        // Pointer based registration
+        afRigidBodyPtr m_pointerToolTipPtr = nullptr;
+        vector<afRigidBodyPtr> m_pointsPtr; 
+        vector<afRigidBodyPtr> m_trackingPointsPtr; 
+        bool m_savePoint = false;
+        vector<cShapeSphere*> m_savedPointMeshList;
+        cTransform m_registerdTrans;
+        afRigidBodyPtr m_registeringObject = nullptr;
        
+
         // Point cloud registration
         PointCloudRegistration m_pointCloudRegistration;
 
-
         // Hand-eye Registration
         HandEyeCalibration m_handEyeCalibration;
-        CRTKInterface * m_robotInterface;
-        CRTKInterface * m_toolInterface;
-        afRigidBodyPtr m_eeJointPtr;
-        afRigidBodyPtr m_markerPtr;
+        CRTKInterface * m_HErobotInterface;
+        CRTKInterface * m_HEtoolInterface;
+        CRTKInterface * m_HEreferenceInterface = nullptr;
+        afRigidBodyPtr m_HEeePtr = nullptr;
+        afRigidBodyPtr m_HEmarkerPtr = nullptr;
+        afRigidBodyPtr m_HEtrackerPtr = nullptr;
+        vector<cTransform> m_savedTracker2Points;
+        vector<cTransform> m_savedRef2Points;
+        vector<cTransform> m_savedAMBFPoints;
         vector<cTransform> m_savedRobotPoints;
+
         cTransform m_ee2marker;
         btTransform m_btee2marker;
-        cTransform m_tracker;
         double m_trackRes = 0.001;
         int m_numHE = 1000;
-        bool m_flagHE = false;
+        bool m_HEDone = false;
         
         // Pivot-calibration
         PivotCalibration m_pivotCalibration;
+        afRigidBodyPtr m_pivotToolTipPtr = nullptr;
+        afRigidBodyPtr m_pivotMarkerPtr  = nullptr;
+        CRTKInterface * m_pivotToolInterface;
+        CRTKInterface * m_pivotReferenceInterface = nullptr;
+
         vector<cTransform> m_savedPivotPoints;
+        vector<cTransform> m_savedPivotRef2Points;
         double m_pivotRes = 0.001;
         int m_numPivot = 1000;
-        bool m_flagPivot = false;
+        bool m_pivotDone = false;
 
         cVector3d m_marker2tip;
-
-        cShapeSphere* m_burrMesh;
-        bool m_robotPivot = false;
-
+        bool m_manualPivot = false;
         cVector3d m_ee2tip;
-
-
-        // These two pointers are for optional Objects
-        afRigidBodyPtr m_toolPtr; 
-        afRigidBodyPtr m_trackerPtr;
-
-        vector<cTransform> m_savedPoints;
 
         // Flag used to check if the mode was defined in the config file.
         bool m_isPivot = false;
         bool m_isHE = false; 
         bool m_isPointer = false;
-        bool m_isOT = false;
 
+        // Check if the config file has results
+        bool m_pivotDefined = false;
+        bool m_HEDefined = false;
 };
 
 
