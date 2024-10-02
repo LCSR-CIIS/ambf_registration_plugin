@@ -1,6 +1,6 @@
 enclosure size: {length: 10.0, width: 10.0, height: 3.0}
 lights: [light1]
-cameras: [main_camera]
+cameras: [main_camera, model_camera]
 environment: ./checkered_floor.yaml
 namespace: /ambf/env/
 max iterations: 50
@@ -15,16 +15,6 @@ light1:
   spot exponent: 0.3
   shadow quality: 0
   cutoff angle: 1.5
-
-camera1:
-  namespace: cameras/
-  name: default_camera
-  location: {x: 4.0, y: 0.0, z: 2.0}
-  look at: {x: 0.0, y: 0.0, z: -0.5}
-  up: {x: 0.0, y: 0.0, z: 1.0}
-  clipping plane: {near: 0.1, far: 10.0}
-  field view angle: 0.8
-  monitor: 0
 
 main_camera:
   namespace: cameras/
@@ -55,3 +45,25 @@ main_camera:
   #    fragment: shader.fs
 
   # multipass: true
+
+model_camera:
+  namespace: cameras/
+  name: main_camera
+  location: {x: 0.5, y: 0.0, z: -0.25}
+  look at: {x: 0.0, y: 0.0, z: -0.5}
+  up: {x: 0.0, y: 0.0, z: 1.0}
+  clipping plane: {near: 0.0, far: 3.0}
+  field view angle: 0.7 # so that focal length is approximately 1000px and phantom is 250 mm away
+  monitor: 0
+  # multipass: true
+  visible: true
+  # publish image: true
+  # preprocessing shaders:
+  #    path: ../shaders/preprocessing/
+  #    vertex: shader.vs
+  #    fragment: shader.fs
+  # publish image interval: 5   # Publish every nth scene update
+  # publish depth: true
+  # publish depth noise: {mean: 0.1, std_dev: 0.01, bias: 0.0}
+  # publish depth interval: 1 # Publish every nth scene update
+  #  publish image resolution: {width: 640, height: 480}

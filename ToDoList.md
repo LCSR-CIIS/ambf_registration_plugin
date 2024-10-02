@@ -1,8 +1,5 @@
 # ToDoList
 
-## Blender
-- Check the Sphere_00 and Sphere_19 and their joints
-
 
 ## registration_plugin.cpp/h
 - Create functionalities to add/edit the collected pooints
@@ -11,20 +8,18 @@
 
 ## registration
 - Add other methods for registration in the folder.
-    - (Done) PointCloud Registration
-    - (Done) Pivot Calibration
-    - (In progress)Hand-Eye Calibration
+    - [x] PointCloud Registration
+    - [x] Pivot Calibration
+    - [] Hand-Eye Calibration
 
 - Add Tracker and marker in the AMBF world
-These objects should be rigidBody. Need to be seperate ADF file. (Need to play with Blender)
--> Need to match the origin and the frame (May be for later???)
--> Change the geometry file can be easier??
+[]Add moving functionality (-> ambf_tf_plugin??)
 
 
 ## general
-- camera_panel_manager.cpp/h and CRTKInterface.cpp/h should be in the ambf main branch to avoid local copies.
+[] Add model view window and show only the model.
+[] Move the model view camera to see the sampling points
+[] Change the color of the point you are sampling
 
-- CRTKInterface
- Check whether you are connected to the robot or not. (Status??)
- Galen does not publish meaning full topic now. Maybe we can use "REMS/Research/footpedal" value instead?
-
+Slicer
+[] Add fiducial output functionality

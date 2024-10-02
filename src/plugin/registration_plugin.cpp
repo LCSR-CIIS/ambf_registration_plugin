@@ -279,6 +279,15 @@ void afRegistrationPlugin::graphicsUpdate(){
                 }
             }
             m_panelManager.setText(m_savedPointsListLabel, m_savedLocationText);
+
+            for (size_t i = 0; i < m_visualPointsInModel.size(); i++){
+                if (i == m_savedPointMeshList.size())
+                    m_visualPointsInModel[i]->m_material->setRed();
+                else{
+                    m_visualPointsInModel[i]->m_material->setGreen();
+                }
+            }
+            
             break;
 
         case RegistrationMode::PIVOT:
@@ -403,6 +412,10 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 // Change mode to "REGISTERED"
                 m_activeMode = RegistrationMode::REGISTERED;
                 applybtTransformToRigidBody(m_registeringObject, m_registeredTransform);
+
+                for (const auto visualSphere : m_visualPointsInModel){
+                    visualSphere->setShowEnabled(false);
+                }
             }
         }
     }
@@ -524,7 +537,11 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                     cVector3d dimple;
                     cVector3d test;
                     m_pivotCalibration.calibrate(m_savedPivotPoints, m_marker2tip, dimple);
-                    m_pivotCalibration.calibrate(m_savedPivotRef2Points, test, dimple);
+
+                    if (m_pivotReferenceInterface){
+                        cout << "Pivot calibration result w.r.t reference." << endl;
+                        m_pivotCalibration.calibrate(m_savedPivotRef2Points, test, dimple);
+                    }
 
                     // If you want to save the points
                     m_registeredText = "Saving Points into csv file.";
@@ -652,12 +669,26 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 afRigidBodyPtr objectPtr;
                 objectPtr = m_worldPtr->getRigidBody(node["pointer"]["name of points"][i].as<string>());
                 
+                
                 if(objectPtr){
                     m_pointsPtr.push_back(objectPtr);
+
+                    // Create visual green sphere
+                    cShapeSphere* visualMesh = new cShapeSphere(0.001);
+                    visualMesh->setRadius(0.001);
+                    visualMesh->m_material->setGreen();
+                    visualMesh->m_material->setShininess(0.5);
+                    visualMesh->setLocalPos(objectPtr->getLocalPos());
+                    visualMesh->setShowEnabled(true);  
+                    m_worldPtr->addSceneObjectToWorld(visualMesh);
+
+                    // Store visualPoints in the vector
+                    m_visualPointsInModel.push_back(visualMesh);
                 }
                 else{
                     cerr << "WARNING! No point named " << node["pointer"]["name of points"][i].as<string>() << " found." << endl;
                 }
+
             }
 
             cerr << numPoints << " points are specified as Keypoints" << endl;
@@ -668,6 +699,31 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 cerr << "ERROR! No object named " << node["pointer"]["object name"].as<string>() << " found." << endl;
                 
                 return -1;
+            }
+            else{
+                // Get pointer to camera
+                afCameraPtr model_camera = m_worldPtr->getCamera("model_camera");
+
+                // Load Camera related parameters
+                cVector3d camLocation;
+                cVector3d camLookAt;
+                cVector3d camUp;
+                if (node["pointer"]["camera"].IsDefined()){
+                    YAML::Node camLocationNode = node["pointer"]["camera"]["location_offset"];
+                    camLocation = m_registeringObject->getLocalPos() + to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camLocationNode));
+                    YAML::Node camLookAtNode = node["pointer"]["camera"]["look at"];
+                    camLookAt = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camLookAtNode));
+                    YAML::Node camUpNode = node["pointer"]["camera"]["up"];
+                    camUp = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camUpNode));
+                }
+                else{
+                    camLocation = m_registeringObject->getLocalPos() + 0.5 * cVector3d(0, 1.0, 0.0);
+                    camLookAt = cVector3d(0, -1.0, 0.0);
+                    camUp = cVector3d(0, 0.0, 1.0);
+                }
+
+                // Set camera related parameters
+                model_camera->setView(camLocation, camLookAt, camUp);
             }
         }
 
@@ -726,7 +782,6 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 double w = node["hand eye"]["registered HE result"]["q_rot"]["w"].as<double>();
                 cQuaternion q_rot(w, x, y, z);
                 cerr << "Quaternion Rot: " << q_rot.str(5) << endl;
-                // q_rot.invert();
                 btQuaternion btRot(q_rot.x, q_rot.y, q_rot.z, q_rot.w);
                 m_btee2marker.setRotation(btRot);  
 

@@ -12,4 +12,9 @@ pointer:
     - Sphere_13
     - Sphere_18
 
-  object name: Registration Cube
+  object name: Registration Cube # Registering object name
+  
+  camera:
+    location_offset: {x: 0.5, y: 0.0, z: -0.25} # Offset from the registering object
+    look at: {x: 0.0, y: 0.0, z: -0.5} # Camera look at vector
+    up: {x: 0.0, y: 0.0, z: 1.0} # Camera up vector

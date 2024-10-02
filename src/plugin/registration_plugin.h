@@ -57,6 +57,8 @@
 #include <fstream>
 #include <ctime>
 #include <afConversions.h>
+#include <version_1_0/adf_loader_1_0.h>
+
 
 namespace boost{
     namespace program_options{
@@ -119,6 +121,7 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         // Pointer based registration
         afRigidBodyPtr m_pointerToolTipPtr = nullptr;
         vector<afRigidBodyPtr> m_pointsPtr; 
+        vector<cShapeSphere *> m_visualPointsInModel;
         vector<afRigidBodyPtr> m_trackingPointsPtr; 
         bool m_savePoint = false;
         vector<cShapeSphere*> m_savedPointMeshList;

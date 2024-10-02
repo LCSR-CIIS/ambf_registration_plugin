@@ -1,6 +1,6 @@
 # AMBF Registration Plugin
 This document provides instructions and details for using the AMBF Registration Plugin, developed for integration with the Asynchronous Multibody Framework ([AMBF](https://github.com/WPI-AIM/ambf)) developed by Munawar et al.
-this plugin facilitates various registration and calibration methodologies, including Pin Base Registration, Point Cloud Registration, Hand-Eye calibration and Pivot Calibration.
+this plugin facilitates various registration and calibration methods, including Pointer Base Registration, Point Cloud Registration, Hand-Eye calibration and Pivot Calibration.
 
 ## 1. Installation Instructions:
 Let's call the absolute location of this package as **<plugin_path>**. E.g. if you cloned this repo in your home folder, **<plugin_path>** = `~/ambf_registration_plugin/` OR `/home/<username>/ambf_registration_plugin`.
@@ -17,7 +17,7 @@ make
 For Pin Base Registration, it's essential to rigidly attach CT-opaque fiducials that are clearly visible and reachable by the tool/drill. After obtaining the CT scan of the anatomy, segment it using  [3D Slicer](https://www.slicer.org/) and employ its [markups functionality](https://slicer.readthedocs.io/en/latest/user_guide/modules/markups.html) to save the fiducial points.
 
 ### 2.1 Generating ADF for AMBF
-To generate ADF, please refer to [AMBF Slicer Plugin](https://github.com/LCSR-CIIS/ambf_util_slicer_plugin). You can also save the markups location and generate this plugin.
+To generate ADF, please refer to [AMBF Slicer Plugin](https://github.com/LCSR-CIIS/ambf_util_slicer_plugin). You can also save the markups location and generate csv file.
 Once you generated the anatomy, attach multiple points in the ADF file by editing the ADF by following lines:
 
 ''' ADF file
@@ -33,32 +33,12 @@ bodies:
 '''
 For each of the fiducial define the locations by adding following lines in the ADF file:
 ``` ADF file
-BODY F1:
-  name: F1
-  mesh: Sphere.OBJ # Generate shpere in Blender or use any mesh.
-  collision mesh type: CONCAVE_MESH
-  mass: 0.0
-  collision margin:
-  scale: 1.0
+BODY F01:
+  name: F01
+  mass: 0.001
   location:
-    position: {x: -0.02749, y: -0.00057, z: -0.89238} 
-    orientation: {r: 0.0, p: -0.0, y: 0.0}
-  passive: true
-  visible: true
-  collision groups: []
-  color components: # You can change the color here
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.0
-      g: 0.0
-      r: 0.8
-    specular:
-      b: 0.0
-      g: 0.0
-      r: 0.0
-    transparency: 1.0
-
+    position: {x: 0.0, y: 0.0, z: 0.0} # CHANGE this value by markups.csv file.
+    orientation: {r: 0.0, p: 0.0, y: 0.0 }
 ```
 
 ## 2. Registration/Calibration methods
@@ -67,7 +47,7 @@ The implementation details for the Pin Base (point-set) method are available in 
 
 This method assumes the use of a calibrated drill, which touches the fiducials and is tracked by an optical tracker in real-time.
 
-In order to implement the plugin for moving the rigidBody in AMBF according to tracker reading, please refer to [robot_control_plugin](https://github.com/LCSR-CIIS/sdf_virtual_fixture/blob/main/plugins/control/robot_control.cpp). 
+In order to implement the plugin for moving the rigidBody in AMBF according to tracker reading, please refer to [ambf_tf_plugin](https://github.com/LCSR-CIIS/ambf_tf_plugin). 
 
 ### 2.2 Point Cloud Registration (Not currently used)
 [Point Cloud Library(PCL)](https://pcl.readthedocs.io/projects/tutorials/en/latest/compiling_pcl_posix.html) was used to implement Point Cloud Registration. We are currently not using this method, but code can be found in "src/point_cloud_registration.cpp". [Caution] Validation is recommended before use!!
@@ -78,13 +58,11 @@ While pivoting the tool around the fiduical, we record the locations of the mark
 You can also use the python code developed for [Twin-S](git@github.com:Rxliang/Twin-S.git) to try alternative way.
 
 ```bash
-
 git clone git@github.com:Rxliang/Twin-S.git
 cd Twin-S/optical_tracking   
 python3 sksurgery_pivot_calibration.py -i ~/ambf_registration_plugin/data/Pivot_trackerTomarker.csv -c ../config/ransac_config.json
 
 ```
-
 
 <!-- ![Pivot_calibration](/figs/) Add figure here to describe the hardware setup used for pivot calibration -->
 
@@ -154,6 +132,12 @@ pointer:
 
   object name: TB04_anatomical_origin
 
+  ## Model camera related region
+  camera:
+    location_offset: {x: 0.5, y: 0.0, z: -0.25} # Offset from the registering object
+    look at: {x: 0.0, y: 0.0, z: -0.5} # Camera look at vector
+    up: {x: 0.0, y: 0.0, z: 1.0} # Camera up vector
+
 ```
 
 ### 3.1 Perform Hand-Eye calibration
@@ -176,9 +160,11 @@ Press `[Ctrl + 3]` to activate pin-base registration mode. Press `[Ctrl + 9]` to
 [Caution] Sampling order matters!! Make sure to sample the points in the same order as the points in `launch.yaml`.
 The calibration results will be printed in the terminal. Copy and paste the results in the ADF: 
 ```bash
-position: {x:0.0, y: 0.0, z: 0.0}
+position: {x: 0.0, y: 0.0, z: 0.0}
 orientation: {r: 0.0, p:0.0, y: 0.0}
 ```
+
+![Pivot_calibration](media/PointerRegistrationTest.mp4)
 
 ## Trouble shooting
 Please refer to [AMBF helper](https://github.com/LCSR-CIIS/AMBF_helper) for installation procedure and how to debug the plugins.
