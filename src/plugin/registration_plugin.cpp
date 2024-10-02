@@ -320,16 +320,13 @@ void afRegistrationPlugin::graphicsUpdate(){
 
 void afRegistrationPlugin::applybtTransformToRigidBody(afRigidBodyPtr bodyPtr, btTransform& trans){
     // Move the object to the registered location
-    btTransform Tcommand;
+    btTransform currentTransform, Tcommand;
 
-    bodyPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(Tcommand);
-    // Tcommand.mult(Tcommand, trans);
-    Tcommand.mult(trans,Tcommand);
+    bodyPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(currentTransform);
+    Tcommand.mult(currentTransform, trans); 
+
     bodyPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
-    bodyPtr->m_bulletRigidBody->setCenterOfMassTransform(Tcommand);
-
-    // bodyPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
-    bodyPtr->setLocalTransform(to_cTransform(Tcommand));
+    bodyPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
 }
 
 // Physics related updates
@@ -406,10 +403,6 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 // Change mode to "REGISTERED"
                 m_activeMode = RegistrationMode::REGISTERED;
                 applybtTransformToRigidBody(m_registeringObject, m_registeredTransform);
-
-                for (const afRigidBodyPtr pointPtr : m_pointsPtr) {
-                    applybtTransformToRigidBody(pointPtr, m_registeredTransform);
-                }
             }
         }
     }

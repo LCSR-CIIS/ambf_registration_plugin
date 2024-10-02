@@ -206,12 +206,25 @@ void PointCloudRegistration::convertChaiToBulletTransform(chai3d::cTransform& cT
 }
 void PointCloudRegistration::eigenMatrixTobtTransform(Eigen::Matrix4d& Trans, btTransform &trans){
     
-    // Converted to Chai3d data type first
-    cTransform tmp_trans;
-    eigenMatrixTocTransform(Trans, tmp_trans);
-    
-    // Convert Chai3d to bullet
-    convertChaiToBulletTransform(tmp_trans, trans);
+    // Extract the rotation matrix (top-left 3x3)
+    Eigen::Matrix3d eigenRotation = Trans.block<3, 3>(0, 0);
+
+    // Convert Eigen::Matrix3d to btMatrix3x3
+    btMatrix3x3 btRotation(
+        eigenRotation(0, 0), eigenRotation(0, 1), eigenRotation(0, 2),
+        eigenRotation(1, 0), eigenRotation(1, 1), eigenRotation(1, 2),
+        eigenRotation(2, 0), eigenRotation(2, 1), eigenRotation(2, 2)
+    );
+
+    // Extract the translation vector (last column of the matrix)
+    Eigen::Vector3d eigenTranslation = Trans.block<3, 1>(0, 3);
+
+    // Convert Eigen::Vector3d to btVector3
+    btVector3 btTranslation(eigenTranslation(0), eigenTranslation(1), eigenTranslation(2));
+
+    // Create the btTransform using the rotation and translation
+    btTransform btTransform(btRotation, btTranslation);
+    trans = btTransform;
 }
 
 // For debugging purpose
