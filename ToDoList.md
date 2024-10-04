@@ -2,24 +2,30 @@
 
 
 ## registration_plugin.cpp/h
-- Create functionalities to add/edit the collected pooints
-- Create a coloroverlay that shows the which point is being registered
+[] Create functionalities to add/edit the collected pooints
+[x] Create a coloroverlay that shows the which point is being registered
 
 
 ## registration
 - Add other methods for registration in the folder.
-    - [x] PointCloud Registration
+    - [x] PointCloud Registration -> Point set based registration
     - [x] Pivot Calibration
-    - [] Hand-Eye Calibration
+    - [x] Hand-Eye Calibration 
+
+- Add improved version of registration method.
+[] For pointer based registration, sample and pivot around the dimple. For each point, average during the sampling.
 
 - Add Tracker and marker in the AMBF world
-[]Add moving functionality (-> ambf_tf_plugin??)
+[x] Add moving functionality (-> ambf_tf_plugin??)
 
 
 ## general
-[] Add model view window and show only the model.
-[] Move the model view camera to see the sampling points
-[] Change the color of the point you are sampling
+[x] Add model view window.
+[] Make small window within the main_camera rather than having seperate camera
+[] Only render the CT model
+[x] Move the model view camera to see the sampling points -> Mouse motion
+[x] Change the color of the point you are sampling
+[] Attach the light on the camera
 
 Slicer
 [] Add fiducial output functionality
