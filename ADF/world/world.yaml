@@ -1,5 +1,5 @@
 enclosure size: {length: 10.0, width: 10.0, height: 3.0}
-lights: [light1]
+lights: [light1, model_light]
 cameras: [main_camera, model_camera]
 environment: ./checkered_floor.yaml
 namespace: /ambf/env/
@@ -15,6 +15,15 @@ light1:
   spot exponent: 0.3
   shadow quality: 0
   cutoff angle: 1.5
+
+model_light:
+  namespace: lights/
+  name: model_light
+  location: {x: 0.0, y: 0.0, z: 3.5}
+  direction: {x: 0.0, y: 0.0, z: -1.0}
+  spot exponent: 0.3
+  shadow quality: 0
+  cutoff angle: 10
 
 main_camera:
   namespace: cameras/

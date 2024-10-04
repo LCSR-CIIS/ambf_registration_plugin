@@ -677,7 +677,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                     cShapeSphere* visualMesh = new cShapeSphere(0.001);
                     visualMesh->setRadius(0.001);
                     visualMesh->m_material->setGreen();
-                    visualMesh->m_material->setShininess(0.5);
+                    visualMesh->m_material->setShininess(0.0);
                     visualMesh->setLocalPos(objectPtr->getLocalPos());
                     visualMesh->setShowEnabled(true);  
                     m_worldPtr->addSceneObjectToWorld(visualMesh);
@@ -724,6 +724,11 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
 
                 // Set camera related parameters
                 model_camera->setView(camLocation, camLookAt, camUp);
+
+                // Set light at the same location
+                afLightPtr model_light = m_worldPtr->getLight("model_light");
+                model_light->setLocalPos(model_camera->getLocalPos());
+                model_light->setDir(camLookAt);
             }
         }
 
