@@ -2,6 +2,8 @@
 This document provides instructions and details for using the AMBF Registration Plugin, developed for integration with the Asynchronous Multibody Framework ([AMBF](https://github.com/WPI-AIM/ambf)) developed by Munawar et al.
 this plugin facilitates various registration and calibration methods, including Pointer Base Registration, Point Cloud Registration, Hand-Eye calibration and Pivot Calibration.
 
+https://github.com/user-attachments/assets/98d52432-d8ca-4ddc-8234-8a789d029b29
+
 ## 1. Installation Instructions:
 Let's call the absolute location of this package as **<plugin_path>**. E.g. if you cloned this repo in your home folder, **<plugin_path>** = `~/ambf_registration_plugin/` OR `/home/<username>/ambf_registration_plugin`.
 
@@ -163,8 +165,8 @@ The calibration results will be printed in the terminal. Copy and paste the resu
 position: {x: 0.0, y: 0.0, z: 0.0}
 orientation: {r: 0.0, p:0.0, y: 0.0}
 ```
-
-![Pivot_calibration](media/PointerRegistrationTest.mp4)
+In the simulation, green points are the points defined in the registering model (ex. CT scan), red points are the points sampled by `[Ctrl + 9]`, and blue points are registered points.
+https://github.com/user-attachments/assets/d14efbcf-4a87-4084-be2e-f6f2472448cc
 
 ## Trouble shooting
 Please refer to [AMBF helper](https://github.com/LCSR-CIIS/AMBF_helper) for installation procedure and how to debug the plugins.
