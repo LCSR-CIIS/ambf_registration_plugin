@@ -239,7 +239,7 @@ void afRegistrationPlugin::addOptionDescription(string & text){
         text += "[Ctrl + 2]: None, ";
     }
     if(m_isPointer){
-        text += "[Ctrl + 3]: Ponter Based Registration, ";
+        text += "[Ctrl + 3]: Pointer Based Registration, ";
     }
     else{
         text += "[Ctrl + 3]: None, ";
