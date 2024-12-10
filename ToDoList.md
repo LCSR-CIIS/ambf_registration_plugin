@@ -25,7 +25,8 @@
 [] Only render the CT model
 [x] Move the model view camera to see the sampling points -> Mouse motion
 [x] Change the color of the point you are sampling
-[] Attach the light on the camera
+[x] Attach the light on the camera
+[] Use cmultipoints rather than cShere for the visualizing points.
 
 Slicer
 [] Add fiducial output functionality
