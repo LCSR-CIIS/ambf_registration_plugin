@@ -13,7 +13,6 @@ plugins: [
 
 multibody configs:
   - "./example/ADF/registration_cube.yaml" #0
-  - "./example/ADF/marker.yaml" #1
-  - "./example/ADF/tracker.yaml" #2
-  - "./example/ADF/stryker_drill.yaml" #3
+  - "./example/ADF/tracker.yaml" #1
+  - "./example/ADF/stryker_drill.yaml" #2
 

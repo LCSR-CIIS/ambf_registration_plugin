@@ -131,16 +131,19 @@ pointer:
     - F3
     - F4
     - F5
-
   object name: TB04_anatomical_origin
 
-  ## Model camera related region
+```
+
+You can modify the location/direction of the model camera by adding the following section in the registration configuration file.
+```
+## Model camera related region
   camera:
     location_offset: {x: 0.5, y: 0.0, z: -0.25} # Offset from the registering object
     look at: {x: 0.0, y: 0.0, z: -0.5} # Camera look at vector
     up: {x: 0.0, y: 0.0, z: 1.0} # Camera up vector
-
 ```
+
 
 ### 3.1 Perform Hand-Eye calibration
 Press `[Ctrl + 1]` to activate Hand-Eye calibration mode.

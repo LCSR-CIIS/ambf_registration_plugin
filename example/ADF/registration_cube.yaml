@@ -133,7 +133,7 @@ BODY Sphere_00:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -183,7 +183,7 @@ BODY Sphere_01:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -233,7 +233,7 @@ BODY Sphere_02:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -283,7 +283,7 @@ BODY Sphere_03:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -333,7 +333,7 @@ BODY Sphere_04:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -383,7 +383,7 @@ BODY Sphere_05:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -433,7 +433,7 @@ BODY Sphere_06:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -483,7 +483,7 @@ BODY Sphere_07:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -533,7 +533,7 @@ BODY Sphere_08:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -583,7 +583,7 @@ BODY Sphere_09:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -633,7 +633,7 @@ BODY Sphere_10:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -683,7 +683,7 @@ BODY Sphere_11:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -733,7 +733,7 @@ BODY Sphere_12:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -783,7 +783,7 @@ BODY Sphere_13:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -833,7 +833,7 @@ BODY Sphere_14:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -883,7 +883,7 @@ BODY Sphere_15:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -933,7 +933,7 @@ BODY Sphere_16:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -983,7 +983,7 @@ BODY Sphere_17:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -1033,7 +1033,7 @@ BODY Sphere_18:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:
@@ -1083,7 +1083,7 @@ BODY Sphere_19:
   damping:
     angular: 0.1
     linear: 0.04
-  visible: true
+  visible: false
   collision groups: []
   color components:
     ambient:

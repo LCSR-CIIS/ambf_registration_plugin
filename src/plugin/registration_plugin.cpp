@@ -676,8 +676,9 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                     // Create visual green sphere
                     cShapeSphere* visualMesh = new cShapeSphere(0.001);
                     visualMesh->setRadius(0.001);
-                    visualMesh->m_material->setGreen();
-                    visualMesh->m_material->setShininess(0.0);
+                    visualMesh->m_material->setColorf(0,1,0,1);
+                    visualMesh->m_material->setShininess(0);
+                    visualMesh->m_material->m_specular.set(0, 0, 0);
                     visualMesh->setLocalPos(objectPtr->getLocalPos());
                     visualMesh->setShowEnabled(true);  
                     m_worldPtr->addSceneObjectToWorld(visualMesh);
@@ -704,31 +705,41 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 // Get pointer to camera
                 afCameraPtr model_camera = m_worldPtr->getCamera("model_camera");
 
-                // Load Camera related parameters
-                cVector3d camLocation;
-                cVector3d camLookAt;
-                cVector3d camUp;
-                if (node["pointer"]["camera"].IsDefined()){
-                    YAML::Node camLocationNode = node["pointer"]["camera"]["location_offset"];
-                    camLocation = m_registeringObject->getLocalPos() + to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camLocationNode));
-                    YAML::Node camLookAtNode = node["pointer"]["camera"]["look at"];
-                    camLookAt = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camLookAtNode));
-                    YAML::Node camUpNode = node["pointer"]["camera"]["up"];
-                    camUp = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camUpNode));
-                }
-                else{
-                    camLocation = m_registeringObject->getLocalPos() + 0.5 * cVector3d(0, 1.0, 0.0);
-                    camLookAt = cVector3d(0, -1.0, 0.0);
-                    camUp = cVector3d(0, 0.0, 1.0);
-                }
+                if (model_camera){
+                    // Set background
+                    cBackground* background = new cBackground();
+                    background->setCornerColors(cColorf(0.2f, 0.2f, 0.2f),
+                                                cColorf(0.2f, 0.2f, 0.2f),
+                                                cColorf(0.2f, 0.2f, 0.2f),
+                                                cColorf(0.2f, 0.2f, 0.2f));
+                    model_camera->getBackLayer()->addChild(background);
 
-                // Set camera related parameters
-                model_camera->setView(camLocation, camLookAt, camUp);
+                    // Load Camera related parameters
+                    cVector3d camLocation;
+                    cVector3d camLookAt;
+                    cVector3d camUp;
+                    if (node["pointer"]["camera"].IsDefined()){
+                        YAML::Node camLocationNode = node["pointer"]["camera"]["location_offset"];
+                        camLocation = m_registeringObject->getLocalPos() + to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camLocationNode));
+                        YAML::Node camLookAtNode = node["pointer"]["camera"]["look at"];
+                        camLookAt = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camLookAtNode));
+                        YAML::Node camUpNode = node["pointer"]["camera"]["up"];
+                        camUp = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camUpNode));
+                    }
+                    else{
+                        camLocation = m_registeringObject->getLocalPos() + 0.5 * cVector3d(0, 1.0, 0.0);
+                        camLookAt = cVector3d(0, -1.0, 0.0);
+                        camUp = cVector3d(0, 0.0, 1.0);
+                    }
 
-                // Set light at the same location
-                afLightPtr model_light = m_worldPtr->getLight("model_light");
-                model_light->setLocalPos(model_camera->getLocalPos());
-                model_light->setDir(camLookAt);
+                    // Set camera related parameters
+                    model_camera->setView(camLocation, camLookAt, camUp);
+
+                    // Set light at the same location
+                    afLightPtr model_light = m_worldPtr->getLight("model_light");
+                    model_light->setLocalPos(model_camera->getLocalPos());
+                    model_light->setDir(camLookAt);
+                }
             }
         }
 
