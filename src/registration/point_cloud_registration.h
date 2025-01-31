@@ -75,6 +75,7 @@ class PointCloudRegistration{
 
         Eigen::Vector3d computeCentroid(const std::vector<Eigen::Vector3d> &points);
         Eigen::Vector3d applyTransformation(const Eigen::Matrix4d &transformation, const Eigen::Vector3d &point);        
+        void outputJsonFile(const Eigen::Vector3d translation, const Eigen::Vector3d rotation);
 };
 
 int main();

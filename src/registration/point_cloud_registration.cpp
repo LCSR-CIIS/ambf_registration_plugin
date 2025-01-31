@@ -165,7 +165,10 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, ve
         Eigen::Vector3d errorVector = transformedPoints[i] - targetPoints[i];
         totalError += errorVector.cwiseAbs();  // Accumulate absolute errors in x, y, z directions
     }
-    cout << "Total error in x, y, z directions: [" << totalError.transpose() << "]" << std::endl;
+    cout << "Total error in x, y, z directions: [" << totalError.transpose() << "]" << endl;
+
+    // Output results in json file
+    outputJsonFile(translation, rotation.eulerAngles(2,1,0));
     
     return 1;
 }
@@ -227,31 +230,28 @@ void PointCloudRegistration::eigenMatrixTobtTransform(Eigen::Matrix4d& Trans, bt
     trans = btTransform;
 }
 
+void PointCloudRegistration::outputJsonFile(const Eigen::Vector3d translation, const Eigen::Vector3d rotation){
+     // Manually format the JSON string
+    string jsonContent = 
+        "{\n"
+        "    \"position\": { \"x\": " + to_string(translation[0]) + ", \"y\": " + to_string(translation[1]) + ", \"z\": " + to_string(translation[2]) + " },\n"
+        "    \"orientation\": { \"r\": " + to_string(rotation[2]) + ", \"p\": " + to_string(rotation[1]) + ", \"y\": " + to_string(rotation[0]) + "}, \n"
+        "}";
+
+    // Write JSON string to a file
+    ofstream file("output.json");
+    if (file.is_open()) {
+        file << jsonContent;
+        file.close();
+        cout << "JSON file created: output.json" << endl;
+    } else {
+        cerr << "Error opening file!" << endl;
+    }
+}
+
+
 // For debugging purpose
 int main(){
     cout << "Hello from point_cloud_registration.cpp!" << endl;
-
-    vector<cVector3d> In;
-    In.push_back(cVector3d(50.22696175918109, 8.231692163672769, 31.502069387933646));
-    In.push_back(cVector3d(51.90740351077355, 27.0052798094135, -5.86047397545072));
-    In.push_back(cVector3d(27.212162335048867, 15.287892392436995, -33.555376203331629));
-    In.push_back(cVector3d(32.855994893548537, 21.15143555110042, -47.523740918907808));
-    In.push_back(cVector3d(21.217579339364997, -40.63420309135226, -28.595321655273439));
-
-    vector<cVector3d> Out;
-    Out.push_back(cVector3d(-23.80691248628502, 35.95571905029042, 8.690858961048278));
-    Out.push_back(cVector3d(6.7387153977493778, 33.362047891099638, -19.73423526129451));
-    Out.push_back(cVector3d(34.13796921107674, 6.482549060020069, -15.175312662720775));
-    Out.push_back(cVector3d(46.21870841942769, 10.372429240986998, -25.031828075643995));
-    Out.push_back(cVector3d(45.812564336155428, 3.427106906541246, 40.14368713291309));
-
-    cerr << In.size() << "|" << In[0].str(3) << endl;
-    PointCloudRegistration pcr;
-    btTransform trans;
-    vector<cVector3d> newPoints;
-    // pcr.ICPRegistration(In, Out, trans);
-    pcr.PointSetRegistration(In, Out, trans, newPoints);
-    // cerr << trans.getOrigin().x() << ", " << trans.getOrigin().y() << ", " << trans.getOrigin().z() << endl;
-
     return 1;
 }
