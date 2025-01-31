@@ -239,7 +239,7 @@ void PointCloudRegistration::outputJsonFile(const Eigen::Vector3d translation, c
         "}";
 
     // Write JSON string to a file
-    ofstream file("output.json");
+    std::ofstream file("output.json");
     if (file.is_open()) {
         file << jsonContent;
         file.close();
