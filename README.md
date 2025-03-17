@@ -85,7 +85,7 @@ git clone git@github.com:ethz-asl/hand_eye_calibration.git
 To add a volume to the scene, you can either include an ADF file in the launch file or specify it using the "-a <path_to_Anatomy_ADF_file>" option. Adjust the number after "-l" based on the desired ADF import for your AMBF setup.
 
 ```bash
-ambf_simulator --launch_file launch.yaml -l 0,1,2,3 --registration_config example/registration_config.yaml
+ambf_simulator --launch_file launch.yaml -l 0,1,2,3 --registration_config example/template_config.yaml
 ```
 
 Command line options:
