@@ -11,7 +11,7 @@ Let's call the absolute location of this package as **<plugin_path>**. E.g. if y
 ```bash
 git clone git@github.com:LCSR-CIIS/ambf_registration_plugin.git
 cd ambf_registration_plugin
-mkdir build && cd
+mkdir build && cd build
 cmake ..
 make
 ```
