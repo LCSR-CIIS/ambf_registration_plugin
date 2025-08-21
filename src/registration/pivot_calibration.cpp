@@ -103,6 +103,22 @@ int PivotCalibration::calibrate(vector<cTransform> transIn, cVector3d& tipPos, c
     // cerr << "Dimple Pose: " << markerPos.str(6) << endl;
     cerr << "Tip location w.r.t. marker:" << endl;
     cerr << "position: {x: " << tipPos.x() << ", y: " << tipPos.y() << ", z: " << tipPos.z() << "}" << endl;
+    
+    // Estimate error 
+    double errSum = 0.0;
+    for (size_t i = 0; i < vec_R.size(); i++) {
+        // predicted marker position from tip and transformation
+        Eigen::Vector3d pred = vec_R[i] * tipEigen + vec_P[i];
+
+        // residual = difference between predicted and solved marker
+        Eigen::Vector3d res = pred - markerEigen;
+
+        double err = res.norm(); // Euclidean error
+        errSum += err;
+        // cerr << "Frame " << i << " error: " << err << endl;
+    }
+    double meanErr = errSum / vec_R.size();
+    cerr << "Mean calibration error: " << meanErr << endl;
 
     return 1;
 }
