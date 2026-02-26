@@ -6,30 +6,45 @@ CRTKInterface::CRTKInterface(string a_namespace){
 }
 
 CRTKInterface::~CRTKInterface(){
-    m_poseSub.shutdown();
-    m_servoJPPub.shutdown();
-    
-    m_poseSub.shutdown();
-    m_servoJPPub.shutdown();
+    #if AMBF_ROS1
+        m_jointStateSub.shutdown();
+        m_forceSub.shutdown();
+        m_poseSub.shutdown();
+        m_servoCPPub.shutdown();
+        m_servoJPPub.shutdown();
+    #elif AMBF_ROS2
+        m_jointStateSub.reset();
+        m_forceSub.reset();
+        m_poseSub.reset();
+        m_servoCPPub.reset();
+        m_servoJPPub.reset();
+    #endif
 }
 
 void CRTKInterface::init(string a_namespace){
-    m_rosNode = afROSNode::getNode();
+    m_rosNode = afROSNode::getNodeAndRegister(a_namespace);
     string baseName = a_namespace;
     cout << "Base Name:" << baseName << endl;
-    m_poseSub = m_rosNode->subscribe(baseName + "/measured_cp", 1, &CRTKInterface::poseCallback, this);
-    m_jointStateSub = m_rosNode->subscribe(baseName + "/measured_js", 1, &CRTKInterface::jointStateCallback, this);
-    m_forceSub = m_rosNode->subscribe(baseName + "/measured_cf", 1 , &CRTKInterface::forceCallback, this);
+
+    ambf_ral::create_subscriber<AMBF_RAL_MSG(geometry_msgs, PoseStamped), CRTKInterface>
+      (m_poseSub, m_rosNode, baseName + "/measured_cp", 1, &CRTKInterface::poseCallback, this);
+    ambf_ral::create_subscriber<AMBF_RAL_MSG(sensor_msgs, JointState), CRTKInterface>
+      (m_jointStateSub, m_rosNode, baseName + "/measured_js", 1, &CRTKInterface::jointStateCallback, this);
+    ambf_ral::create_subscriber<AMBF_RAL_MSG(geometry_msgs, WrenchStamped), CRTKInterface>
+      (m_forceSub, m_rosNode, baseName + "/measured_cf", 1 , &CRTKInterface::forceCallback, this);
     
-    
-    m_servoCPPub = m_rosNode->advertise<geometry_msgs::TransformStamped>(baseName + "/servo_cp", 1);
-    m_servoCFPub = m_rosNode->advertise<geometry_msgs::WrenchStamped>(baseName + "/compliance/servo_cf", 1);
-    m_servoJPPub = m_rosNode->advertise<sensor_msgs::JointState>(baseName+ "/servo_jp", 1);
-    m_moveJPPub = m_rosNode->advertise<sensor_msgs::JointState>(baseName+ "/move_jp", 1);
+    ambf_ral::create_publisher<AMBF_RAL_MSG(geometry_msgs, PoseStamped)>
+      (m_servoCPPub, m_rosNode, baseName + "/servo_cp", 1, false);
+    ambf_ral::create_publisher<AMBF_RAL_MSG(geometry_msgs, WrenchStamped)>
+      (m_servoCFPub, m_rosNode, baseName + "/compliance/servo_cf", 1, false);
+    ambf_ral::create_publisher<AMBF_RAL_MSG(sensor_msgs, JointState)>
+      (m_servoJPPub, m_rosNode, baseName + "/servo_jp", 1, false);
+    ambf_ral::create_publisher<AMBF_RAL_MSG(sensor_msgs, JointState)>
+      (m_moveJPPub, m_rosNode, baseName + "/move_jp", 1, false);
 }
         
     
-void CRTKInterface::poseCallback(geometry_msgs::PoseStampedConstPtr msg){
+void CRTKInterface::poseCallback(AMBF_RAL_MSG_PTR(geometry_msgs, PoseStamped) msg){
     m_measured_cp.setLocalPos(cVector3d(msg->pose.position.x,
                                         msg->pose.position.y,
                                         msg->pose.position.z));
@@ -43,12 +58,12 @@ void CRTKInterface::poseCallback(geometry_msgs::PoseStampedConstPtr msg){
     m_measured_cp.setLocalRot(rotM);
 }
 
-void CRTKInterface::jointStateCallback(sensor_msgs::JointStateConstPtr msg){
+void CRTKInterface::jointStateCallback(AMBF_RAL_MSG_PTR(sensor_msgs, JointState) msg){
     m_measured_jp = msg->position;
 
 }
 
-void CRTKInterface::forceCallback(geometry_msgs::WrenchStampedConstPtr msg){
+void CRTKInterface::forceCallback(AMBF_RAL_MSG_PTR(geometry_msgs, WrenchStamped) msg){
     m_measured_cf.set(msg->wrench.force.x, msg->wrench.force.y, msg->wrench.force.z);
 }
 
@@ -76,8 +91,12 @@ void CRTKInterface::servo_cp(cTransform &trans){
     m_servo_cp.pose.orientation.z = rot.z;
     m_servo_cp.pose.orientation.w = rot.w;
 
-    m_servoCPPub.publish(m_servo_cp);
-}
+    #if AMBF_ROS1
+        m_servoCPPub.publish(m_servo_cp);
+    #elif AMBF_ROS2
+        m_servoCPPub->publish(m_servo_cp);
+    #endif
+    }
 
 void CRTKInterface::servo_cf(vector<double>& force){
 
@@ -93,8 +112,11 @@ void CRTKInterface::servo_cf(vector<double>& force){
     m_servo_cf.wrench.torque.y = force[4];
     m_servo_cf.wrench.torque.z = force[5];
 
-    m_servoCFPub.publish(m_servo_cf);
-
+    #if AMBF_ROS1
+        m_servoCFPub.publish(m_servo_cf);
+    #elif AMBF_ROS2
+        m_servoCFPub->publish(m_servo_cf);
+    #endif
 }
 
 void CRTKInterface::servo_jp(vector<double>& q){
@@ -109,7 +131,11 @@ void CRTKInterface::servo_jp(vector<double>& q){
     vector<string> name = {"1", "2","3","4","5"};
     m_servo_jp.name = name;
     m_servo_jp.position = q;
-    m_servoJPPub.publish(m_servo_jp);
+    #if AMBF_ROS1
+        m_servoJPPub.publish(m_servo_jp);
+    #elif AMBF_ROS2
+        m_servoJPPub->publish(m_servo_jp);
+    #endif
 }
 
 
@@ -123,5 +149,13 @@ void CRTKInterface::move_jp(vector<double>& q){
     for (int idx = 0 ; idx < q.size() ; idx++){
         m_move_jp.position[idx] = q[idx];
     }
-    m_moveJPPub.publish(m_move_jp);
+    #if AMBF_ROS1
+        m_moveJPPub.publish(m_move_jp);
+    #elif AMBF_ROS2
+        m_moveJPPub->publish(m_move_jp);
+    #endif
+}
+
+void CRTKInterface::spin(){
+    ambf_ral::spin_some(m_rosNode);
 }

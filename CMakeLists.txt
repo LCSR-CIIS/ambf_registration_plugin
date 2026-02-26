@@ -36,7 +36,7 @@
 #  $Author: Hisashi Ishida $
 
 
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.3)
 project (ambf_registration_plugin)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -44,24 +44,53 @@ set(CMAKE_CXX_STANDARD 11)
 find_package(AMBF)
 find_package(Boost COMPONENTS program_options filesystem)
 
-find_package(PCL 1.2 REQUIRED)
+set (ROS1_depends ambf_server geometry_msgs sensor_msgs)
 
-include_directories(${AMBF_INCLUDE_DIRS})
+find_package (catkin QUIET
+  COMPONENTS ${ROS1_depends})
+
+if (catkin_FOUND)
+    message ("Found ROS 1")
+    set (AMBF_ROS_VERSION 1)
+    include_directories(include ${catkin_INCLUDE_DIRS})
+
+    catkin_package(
+      INCLUDE_DIRS .
+      LIBRARIES ${PROJECT_NAME}
+      CATKIN_DEPENDS
+    )
+    message("---> LIBS " ${catkin_INCLUDE_DIRS})
+    message("---> FOUND ? " ${catkin_vdrilling_msgs_FOUND})
+
+else(catkin_FOUND)
+  # look for ROS2
+  set (AMBF_ROS_VERSION 2)
+  find_package (ament_cmake QUIET)
+  if (ament_cmake_FOUND)
+      set (AMBF_ROS_VERSION 2)
+      message ("Found ROS 2")
+      set (ROS2_depends rclcpp geometry_msgs sensor_msgs ambf_server AMBF)
+      foreach (_dep ${ROS2_depends})
+        find_package (${_dep} REQUIRED)
+      endforeach()
+  endif (ament_cmake_FOUND)
+endif(catkin_FOUND)
+
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${PCL_INCLUDE_DIRS})
-
 
 link_directories(${AMBF_LIBRARY_DIRS})
 add_definitions(${AMBF_DEFINITIONS})
+include_directories(${AMBF_INCLUDE_DIRS})
 
+find_package(PCL 1.2 REQUIRED)
+include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 find_package( OpenCV REQUIRED )
-include_directories( ${OpenCV_INCLUDE_DIRS} )
+include_directories(${OpenCV_INCLUDE_DIRS} )
 link_directories(${OpenCV_LIBRARY_DIRS})
 add_definitions(${OpenCV_DEFINITIONS})
-
 
 # For registration plugin
 add_library(registration_plugin SHARED
@@ -79,16 +108,29 @@ add_library(registration_plugin SHARED
     src/registration/hand_eye_calibration.h
     )
 
-target_link_libraries (registration_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES})
-set_property(TARGET registration_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
-if(NOT BUILD_PLUGIN_WITH_ROS)
-    set(BUILD_PLUGIN_WITH_ROS TRUE)
+if (AMBF_ROS_VERSION EQUAL 1)
+    add_dependencies (registration_plugin ${catkin_EXPORTED_TARGETS})
+    target_link_libraries (registration_plugin ${Boost_LIBRARIES} ${AMBF_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES})
+else ()
+ target_link_libraries(registration_plugin
+        ${Boost_LIBRARIES}
+        ${AMBF_LIBRARIES}
+        ${PCL_LIBRARIES}
+        ${OpenCV_LIBRARIES}
+    )
+  install (
+    TARGETS registration_plugin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+    )
+  ament_target_dependencies (registration_plugin ${ROS2_depends})
+  ament_package ()
 endif()
 
-if(BUILD_PLUGIN_WITH_ROS)
-    add_definitions(-DBUILD_WITH_ROS)
-endif()
+# set_property(TARGET registration_plugin PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # add_executable(TestHandEye src/registration/hand_eye_calibration.cpp)
 # target_link_libraries(TestHandEye ${AMBF_LIBRARIES} ${OpenCV_LIBRARIES})

@@ -340,6 +340,10 @@ void afRegistrationPlugin::applybtTransformToRigidBody(afRigidBodyPtr bodyPtr, b
 
 // Physics related updates
 void afRegistrationPlugin::physicsUpdate(double dt){
+    m_HErobotInterface->spin();
+    m_HEreferenceInterface->spin();
+    m_pivotReferenceInterface->spin();
+    
     if (m_activeMode == RegistrationMode::POINTER){
         
         // Generate and store the location when the keyboard shortcut is pressed

@@ -8,13 +8,20 @@ https://github.com/user-attachments/assets/98d52432-d8ca-4ddc-8234-8a789d029b29
 Let's call the absolute location of this package as **<plugin_path>**. E.g. if you cloned this repo in your home folder, **<plugin_path>** = `~/ambf_registration_plugin/` OR `/home/<username>/ambf_registration_plugin`.
 
 ### 1.1 clone and build the repository
+For ROS1
 ```bash
-git clone git@github.com:LCSR-CIIS/ambf_registration_plugin.git
-cd ambf_registration_plugin
-mkdir build && cd build
-cmake ..
-make
+cd ~/ros1_ws/src # Move to src directory inside your ros1 workspace
+git clone git@github.com:LCSR-CIIS/ambf_registration_plugin.git 
+catkin build
 ```
+For ROS2
+```bash
+cd ~/ros2_ws/src # Move to src directory inside your ros2 workspace
+git clone git@github.com:LCSR-CIIS/ambf_registration_plugin.git 
+cd ~/ros2_ws # Go back to root of your ros2 workspace
+colcon build
+```
+
 ## 2 Preparation
 ### 2.0 Drill fiducial screws on the anatomy and segment scans
 For Pin Base Registration, it's essential to rigidly attach CT-opaque fiducials that are clearly visible and reachable by the tool/drill. After obtaining the CT scan of the anatomy, segment it using  [3D Slicer](https://www.slicer.org/) and employ its [markups functionality](https://slicer.readthedocs.io/en/latest/user_guide/modules/markups.html) to save the fiducial points.
