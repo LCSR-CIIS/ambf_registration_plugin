@@ -92,6 +92,8 @@ class afRegistrationPlugin: public afSimulatorPlugin{
 
         void addOptionDescription(string & text);
         void applybtTransformToRigidBody(afRigidBodyPtr bodyPtr, btTransform& trans);
+        void saveDataToCSV(string fileName, vector<cTransform> vecTransform);
+        void reWriteADFfile(string filePath, btTransform registeredTransform);
 
 
     // private:
@@ -127,6 +129,8 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         vector<cShapeSphere*> m_savedPointMeshList;
         cTransform m_registerdTrans;
         afRigidBodyPtr m_registeringObject = nullptr;
+
+        string m_registeringObjectADFFilePath;
        
 
         // Point cloud registration
@@ -179,6 +183,5 @@ class afRegistrationPlugin: public afSimulatorPlugin{
 };
 
 
-void saveDataToCSV(string fileName, vector<cTransform> vecTransform);
 
 AF_REGISTER_SIMULATOR_PLUGIN(afRegistrationPlugin)

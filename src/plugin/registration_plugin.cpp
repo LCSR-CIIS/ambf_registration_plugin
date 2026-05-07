@@ -400,18 +400,6 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 cerr << "Point set registration failed. Try again." << endl;
             }
 
-            // Visualize the registered points
-            for (size_t i = 0; i < registeredPoints.size(); i++){
-                cShapeSphere* point = new cShapeSphere(0.001);
-                point->setRadius(0.001);
-                point->m_material->setBlue();
-                point->m_material->setShininess(0);
-                point->m_material->m_specular.set(0, 0, 0);
-                point->setShowEnabled(true);
-                point->setLocalPos(registeredPoints[i]);
-                m_worldPtr->addSceneObjectToWorld(point);
-            }
-
             if (resultRegist){
                 // Change mode to "REGISTERED"
                 m_activeMode = RegistrationMode::REGISTERED;
@@ -420,6 +408,22 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 for (const auto visualSphere : m_visualPointsInModel){
                     visualSphere->setShowEnabled(false);
                 }
+                
+                // Visualize the registered points
+                for (size_t i = 0; i < registeredPoints.size(); i++){
+                    cShapeSphere* point = new cShapeSphere(0.001);
+                    point->setRadius(0.001);
+                    point->m_material->setBlue();
+                    point->m_material->setShininess(0);
+                    point->m_material->m_specular.set(0, 0, 0);
+                    point->setShowEnabled(true);
+                    point->setLocalPos(registeredPoints[i]);
+                    m_worldPtr->addSceneObjectToWorld(point);
+                }
+
+                // Quary for rewriting the ADF file
+                reWriteADFfile(m_registeringObjectADFFilePath, m_registeredTransform);
+
             }
         }
     }
@@ -693,12 +697,32 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 else{
                     cerr << "WARNING! No point named " << node["pointer"]["name of points"][i].as<string>() << " found." << endl;
                 }
-
             }
 
             cerr << numPoints << " points are specified as Keypoints" << endl;
             
             m_registeringObject = m_worldPtr->getRigidBody(node["pointer"]["object name"].as<string>());
+            
+            // ModelMap: map<string, afModelPtr>
+            afModelMap* map = m_worldPtr->getModelMap();
+            for (auto it=map->begin(); it != map->end(); it++){
+                //ChildrenMap: map<map<afType, map<string, afBaseObject*> >
+                afChildrenMap* childrenMap = it->second->getChildrenMap();
+                for(auto cIt = childrenMap->begin(); cIt != childrenMap->end(); ++cIt){   
+                    for (auto it_child=cIt->second.begin(); it_child != cIt->second.end(); ++it_child){
+                        // it_child->first /ambf/env/BODY rigidbodyName
+                        if (it_child->first.find(node["pointer"]["object name"].as<string>()) != string::npos){
+                            m_registeringObjectADFFilePath = it->second->getAttributes()->m_filePath.c_str();
+                        }
+                    }
+                }
+            }
+            
+            // If ADF file was not found then return error
+            if (m_registeringObjectADFFilePath.empty()){
+                cerr << "ERROR! No ADF file found for the object named " << node["pointer"]["object name"].as<string>() << endl;
+                return -1;
+            }
 
             if(!m_registeringObject){
                 cerr << "ERROR! No object named " << node["pointer"]["object name"].as<string>() << " found." << endl;
@@ -892,7 +916,7 @@ bool afRegistrationPlugin::close(){
     return -1;
 }
 
-void saveDataToCSV(string fileName, vector<cTransform> vecTransform){
+void afRegistrationPlugin::saveDataToCSV(string fileName, vector<cTransform> vecTransform){
     std::ofstream file;
     time_t now = time(0);
 
@@ -904,4 +928,82 @@ void saveDataToCSV(string fileName, vector<cTransform> vecTransform){
         file << to_string(qRot.x) + ", " + to_string(qRot.y) + ", " + to_string(qRot.z) + ", " + to_string(qRot.w) + "\n";
     }
     file.close();
+}
+
+void afRegistrationPlugin::reWriteADFfile(string filePath, btTransform registeredTransform){
+    // Prompt if you want to rewrite the ADF file with the registered transform
+    cout << " >> Do you want to rewrite the ADF file with the registered transform? (y/n)" << endl;
+    char answer;
+    cin >> answer; 
+
+    if (answer == 'y' || answer == 'Y'){
+        // Load the ADF file
+        YAML::Node adfNode = YAML::LoadFile(filePath);
+        string rawData = m_registeringObject->getAttributes()->getSpecificationData().m_rawData; // Get the name of the object to be registered
+
+        cerr << rawData << endl;
+        // objectName is between name: and the next line break in the raw data
+        size_t namePos = rawData.find("name:") + 6; // Move the position to the end of "name:"
+        size_t endLinePos = rawData.find("\n", namePos); // Find the position of the next line break after the name
+        string objectName = rawData.substr(namePos, endLinePos - namePos); // Extract the object name
+        // objectName.erase(remove_if(objectName.begin(), objectName.end(), ::isspace), objectName.end()); // Remove any whitespace from the object name        
+
+        YAML::Node objectNode;
+        cerr << "Searching for the object named " << objectName << " in the ADF file..." << endl;
+        for (int i=0; i < adfNode["bodies"].size(); i++){
+            string rigidbodyName = adfNode["bodies"][i].as<string>();
+            cerr << "Checking object: " << adfNode[rigidbodyName]["name"].as<string>() << endl;
+            if (adfNode[rigidbodyName]["name"].as<string>() == objectName){
+                // Found the object node, break the loop
+                objectNode = adfNode[rigidbodyName];
+                cerr << "Object node found in ADF file." << endl;
+                break;
+            }
+        }
+
+        if (objectNode.IsNull()){
+            cerr << "ERROR! No object named " << objectName << " found in the ADF file." << endl;
+            return;
+        }
+
+        cerr << "Object found in ADF file: " << objectName << endl;
+        cerr << objectNode["position"]["x"] << ", " << objectNode["position"]["y"] << ", " << objectNode["position"]["z"] << endl;
+
+        // Update position
+        const btVector3& pos = registeredTransform.getOrigin();
+
+        objectNode["position"]["x"] = static_cast<double>(pos.x());
+        objectNode["position"]["y"] = static_cast<double>(pos.y());
+        objectNode["position"]["z"] = static_cast<double>(pos.z());
+
+        // Convert rotation matrix to roll, pitch, yaw
+        double yaw, pitch, roll;
+        registeredTransform.getBasis().getEulerYPR(yaw, pitch, roll);
+
+        // Update orientation
+        objectNode["orientation"]["r"] = roll;
+        objectNode["orientation"]["p"] = pitch;
+        objectNode["orientation"]["y"] = yaw;
+
+        // Rename the old ADF file with timestamp
+        // YYYYMMDD_HHMMSS format
+        std::time_t now = std::time(nullptr);
+        std::tm tm_now;
+        localtime_r(&now, &tm_now);
+
+        std::ostringstream oss;
+        oss << std::put_time(&tm_now, "%Y%m%d_%H%M%S");
+        string newFilePath = filePath.substr(0, filePath.find_last_of(".")) + ".yaml." + oss.str() + ".old";
+        rename(filePath.c_str(), newFilePath.c_str());
+        cout << "[INFO!] ADF file rewritten. Old file is renamed to: " << newFilePath << endl;
+
+        // Save the updated ADF file
+        std::ofstream fout(filePath);
+        fout << adfNode;
+        fout.close();
+    }
+
+    else{
+        cout << "ADF file not rewritten." << endl;
+    }
 }

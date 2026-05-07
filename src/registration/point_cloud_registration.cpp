@@ -168,7 +168,7 @@ int PointCloudRegistration::PointSetRegistration(vector<cVector3d> &pointsIn, ve
     cout << "Total error in x, y, z directions: [" << totalError.transpose() << "]" << endl;
 
     // Output results in json file
-    outputJsonFile(translation, rotation.eulerAngles(2,1,0));
+    outputJsonFile(sourcePoints, targetPoints, transformedPoints, translation, rotation.eulerAngles(2,1,0));
     
     return 1;
 }
@@ -230,25 +230,55 @@ void PointCloudRegistration::eigenMatrixTobtTransform(Eigen::Matrix4d& Trans, bt
     trans = btTransform;
 }
 
-void PointCloudRegistration::outputJsonFile(const Eigen::Vector3d translation, const Eigen::Vector3d rotation){
-     // Manually format the JSON string
-    string jsonContent = 
-        "{\n"
-        "    \"position\": { \"x\": " + to_string(translation[0]) + ", \"y\": " + to_string(translation[1]) + ", \"z\": " + to_string(translation[2]) + " },\n"
-        "    \"orientation\": { \"r\": " + to_string(rotation[2]) + ", \"p\": " + to_string(rotation[1]) + ", \"y\": " + to_string(rotation[0]) + "}, \n"
-        "}";
+void PointCloudRegistration::outputJsonFile(const vector<Eigen::Vector3d>& sourcePoints, const vector<Eigen::Vector3d>& targetPoints,
+    const vector<Eigen::Vector3d>& transformedPoints,
+    const Eigen::Vector3d translation, const Eigen::Vector3d rotation){
+    // Add souce and target points to the JSON string
+    string jsonContent = "{\n \"source_points\": [\n";
+    for (const auto& point : sourcePoints) {
+        jsonContent += 
+        " { \"x\": " + to_string(point(0)) +
+        ", \"y\": " + to_string(point(1)) +
+        ", \"z\": " + to_string(point(2)) + " },\n";
+    }
+    jsonContent += " ],\n \"target_points\": [\n";
+    for (const auto& point : targetPoints) {
+        jsonContent += 
+        " { \"x\": " + to_string(point(0)) +
+        ", \"y\": " + to_string(point(1)) +
+        ", \"z\": " + to_string(point(2)) + " },\n";
+    }
+    jsonContent += " ],\n";
 
+    jsonContent += " \"Error per points (target - transformed source)\": [\n";
+    for (size_t i = 0; i < targetPoints.size(); ++i) {
+        Eigen::Vector3d errorVector = targetPoints[i] - transformedPoints[i];
+        jsonContent += 
+        " { \"x\": " + to_string(errorVector(0)) +
+        ", \"y\": " + to_string(errorVector(1)) +
+        ", \"z\": " + to_string(errorVector(2)) + " },\n";
+    }
+    jsonContent += " ],\n";
+    
+    // Manually format the JSON string
+    jsonContent +=
+        "registration_results: {\n"
+        " \"position\": { \"x\": " + to_string(translation[0]) + ", \"y\": " + to_string(translation[1]) + ", \"z\": " + to_string(translation[2]) + " },\n"
+        " \"orientation\": { \"r\": " + to_string(rotation[2]) + ", \"p\": " + to_string(rotation[1]) + ", \"y\": " + to_string(rotation[0]) + "}, \n"
+        " }\n"
+        "}";
+    
     // Write JSON string to a file
-    std::ofstream file("output.json");
+    std::ofstream file("registration_output.json");
     if (file.is_open()) {
         file << jsonContent;
         file.close();
         cout << "JSON file created: output.json" << endl;
-    } else {
+    } 
+    else {
         cerr << "Error opening file!" << endl;
     }
 }
-
 
 // For debugging purpose
 int main(){
