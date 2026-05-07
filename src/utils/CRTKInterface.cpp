@@ -6,19 +6,11 @@ CRTKInterface::CRTKInterface(string a_namespace){
 }
 
 CRTKInterface::~CRTKInterface(){
-    #if AMBF_ROS1
-        m_jointStateSub.shutdown();
-        m_forceSub.shutdown();
-        m_poseSub.shutdown();
-        m_servoCPPub.shutdown();
-        m_servoJPPub.shutdown();
-    #elif AMBF_ROS2
-        m_jointStateSub.reset();
-        m_forceSub.reset();
-        m_poseSub.reset();
-        m_servoCPPub.reset();
-        m_servoJPPub.reset();
-    #endif
+    ambf_ral::publisher_shutdown(m_servoCPPub); 
+    ambf_ral::publisher_shutdown(m_servoJPPub);
+    ambf_ral::subscriber_shutdown(m_poseSub);
+    ambf_ral::subscriber_shutdown(m_jointStateSub);
+    ambf_ral::subscriber_shutdown(m_forceSub);
 }
 
 void CRTKInterface::init(string a_namespace){
@@ -91,11 +83,7 @@ void CRTKInterface::servo_cp(cTransform &trans){
     m_servo_cp.pose.orientation.z = rot.z;
     m_servo_cp.pose.orientation.w = rot.w;
 
-    #if AMBF_ROS1
-        m_servoCPPub.publish(m_servo_cp);
-    #elif AMBF_ROS2
-        m_servoCPPub->publish(m_servo_cp);
-    #endif
+    m_servoCPPub->publish(m_servo_cp);
     }
 
 void CRTKInterface::servo_cf(vector<double>& force){
@@ -112,11 +100,7 @@ void CRTKInterface::servo_cf(vector<double>& force){
     m_servo_cf.wrench.torque.y = force[4];
     m_servo_cf.wrench.torque.z = force[5];
 
-    #if AMBF_ROS1
-        m_servoCFPub.publish(m_servo_cf);
-    #elif AMBF_ROS2
-        m_servoCFPub->publish(m_servo_cf);
-    #endif
+    m_servoCFPub->publish(m_servo_cf);
 }
 
 void CRTKInterface::servo_jp(vector<double>& q){
@@ -131,11 +115,7 @@ void CRTKInterface::servo_jp(vector<double>& q){
     vector<string> name = {"1", "2","3","4","5"};
     m_servo_jp.name = name;
     m_servo_jp.position = q;
-    #if AMBF_ROS1
-        m_servoJPPub.publish(m_servo_jp);
-    #elif AMBF_ROS2
-        m_servoJPPub->publish(m_servo_jp);
-    #endif
+    m_servoJPPub->publish(m_servo_jp);
 }
 
 
@@ -149,11 +129,7 @@ void CRTKInterface::move_jp(vector<double>& q){
     for (int idx = 0 ; idx < q.size() ; idx++){
         m_move_jp.position[idx] = q[idx];
     }
-    #if AMBF_ROS1
-        m_moveJPPub.publish(m_move_jp);
-    #elif AMBF_ROS2
-        m_moveJPPub->publish(m_move_jp);
-    #endif
+    m_moveJPPub->publish(m_move_jp);
 }
 
 void CRTKInterface::spin(){

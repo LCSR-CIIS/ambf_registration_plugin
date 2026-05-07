@@ -58,15 +58,15 @@ public:
 private:
 #if AMBF_ROS1
     // Subscribers
-    ros::Subscriber m_jointStateSub;
-    ros::Subscriber m_forceSub;
-    ros::Subscriber m_poseSub;
+    std::shared_ptr<ros::Subscriber> m_jointStateSub;
+    std::shared_ptr<ros::Subscriber> m_forceSub;
+    std::shared_ptr<ros::Subscriber> m_poseSub;
 
     // Publishers
-    ros::Publisher m_servoCPPub;
-    ros::Publisher m_servoCFPub;
-    ros::Publisher m_servoJPPub;
-    ros::Publisher m_moveJPPub;
+    std::shared_ptr<ros::Publisher> m_servoCPPub;
+    std::shared_ptr<ros::Publisher> m_servoCFPub;
+    std::shared_ptr<ros::Publisher> m_servoJPPub;
+    std::shared_ptr<ros::Publisher> m_moveJPPub;
 
     geometry_msgs::PoseStamped m_servo_cp;
     geometry_msgs::WrenchStamped m_servo_cf;
