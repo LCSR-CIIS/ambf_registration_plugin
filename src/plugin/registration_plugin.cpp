@@ -340,12 +340,7 @@ void afRegistrationPlugin::applybtTransformToRigidBody(afRigidBodyPtr bodyPtr, b
 
 // Physics related updates
 void afRegistrationPlugin::physicsUpdate(double dt){
-    m_HErobotInterface->spin();
-    m_HEreferenceInterface->spin();
-    m_pivotReferenceInterface->spin();
-    
-    if (m_activeMode == RegistrationMode::POINTER){
-        
+    if (m_activeMode == RegistrationMode::POINTER){ 
         // Generate and store the location when the keyboard shortcut is pressed
         if (m_savePoint){
             // Create red sphere when the saving the location
@@ -429,6 +424,9 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     }
 
     else if (m_activeMode == RegistrationMode::HANDEYE){
+        m_HErobotInterface->spin();
+        m_HEreferenceInterface->spin();
+
         cTransform measured_cp = m_HEtoolInterface->measured_cp();
         m_registeredText = "WARNING! No tool location published \nCheck your tracker!!\n";
 
@@ -495,7 +493,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     }
     
     else if (m_activeMode == RegistrationMode::PIVOT){
-
+        m_pivotReferenceInterface->spin();
         cTransform measured_cp;
         m_registeredText = "WARNING! No tool location published \nCheck your tracker!!\n";
 
