@@ -426,7 +426,6 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     else if (m_activeMode == RegistrationMode::HANDEYE){
         m_HErobotInterface->spin();
         m_HEreferenceInterface->spin();
-
         cTransform measured_cp = m_HEtoolInterface->measured_cp();
         m_registeredText = "WARNING! No tool location published \nCheck your tracker!!\n";
 

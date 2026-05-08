@@ -259,10 +259,18 @@ void PointCloudRegistration::outputJsonFile(const vector<Eigen::Vector3d>& sourc
         ", \"z\": " + to_string(errorVector(2)) + " },\n";
     }
     jsonContent += " ],\n";
+
+    jsonContent += " \"Error Magnitude per points (target - transformed source)\": [\n";
+    for (size_t i = 0; i < targetPoints.size(); ++i) {
+        Eigen::Vector3d errorVector = targetPoints[i] - transformedPoints[i];
+        double errorMagnitude = errorVector.norm();
+        jsonContent += " { \"magnitude\": " + to_string(errorMagnitude) + " },\n";
+    }
+    jsonContent += " ],\n";
     
     // Manually format the JSON string
     jsonContent +=
-        "registration_results: {\n"
+        "\"registration_results\": {\n"
         " \"position\": { \"x\": " + to_string(translation[0]) + ", \"y\": " + to_string(translation[1]) + ", \"z\": " + to_string(translation[2]) + " },\n"
         " \"orientation\": { \"r\": " + to_string(rotation[2]) + ", \"p\": " + to_string(rotation[1]) + ", \"y\": " + to_string(rotation[0]) + "}, \n"
         " }\n"
