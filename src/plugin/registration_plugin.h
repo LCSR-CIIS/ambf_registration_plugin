@@ -122,7 +122,7 @@ class afRegistrationPlugin: public afSimulatorPlugin{
 
         // Pointer based registration
         afRigidBodyPtr m_pointerToolTipPtr = nullptr;
-        vector<afRigidBodyPtr> m_pointsPtr; 
+        vector<afRigidBodyPtr> m_fiducialPointsPtr; 
         vector<cShapeSphere *> m_visualPointsInModel;
         vector<afRigidBodyPtr> m_trackingPointsPtr; 
         bool m_savePoint = false;
