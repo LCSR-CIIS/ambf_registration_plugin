@@ -8,6 +8,11 @@ plugins: [
    path: ./build/,
    name: registration_plugin,
    filename: libregistration_plugin.so
+ },
+  {
+   path: ./build/,
+   name: tf_plugin,
+   filename: libambf_tf_plugin.so
  }
 ]
 
