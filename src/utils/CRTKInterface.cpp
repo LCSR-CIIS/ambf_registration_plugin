@@ -133,5 +133,10 @@ void CRTKInterface::move_jp(vector<double>& q){
 }
 
 void CRTKInterface::spin(){
-    ambf_ral::spin_some(m_rosNode);
+    if (m_rosNode){
+        ambf_ral::spin_some(m_rosNode);
+    }
+    else{
+        cerr << "[ERROR!!] NO ROS NODE initialized!!!" << endl;
+    }
 }

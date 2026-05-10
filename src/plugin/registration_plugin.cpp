@@ -496,7 +496,10 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     }
     
     else if (m_activeMode == RegistrationMode::PIVOT){
-        m_pivotReferenceInterface->spin();
+        m_pivotToolInterface->spin();
+        if (m_pivotReferenceInterface){
+            m_pivotReferenceInterface->spin();
+        }
         cTransform measured_cp;
         m_registeredText = "WARNING! No tool location published \nCheck your tracker!!\n";
 
