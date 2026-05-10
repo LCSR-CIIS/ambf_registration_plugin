@@ -618,7 +618,8 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     else if (m_activeMode == RegistrationMode::REGISTERED){
         // Saving text for the status monitor
         m_registeredText = "Registeration Result: \n Avg: " + to_string(m_registeredTransform.getOrigin().x()) + "," +
-        to_string(m_registeredTransform.getOrigin().y()) + "," + to_string(m_registeredTransform.getOrigin().z()) + "\n";
+        to_string(m_registeredTransform.getOrigin().y()) + "," + to_string(m_registeredTransform.getOrigin().z()) + "\n" +
+        "Press 'CTRL + W' to save the registered location in ADF file.";
     }
 
     // Once you finish HandEye registration
@@ -1018,6 +1019,8 @@ void afRegistrationPlugin::reWriteADFfile(string filePath, btTransform registere
     string newFilePath = filePath.substr(0, filePath.find_last_of(".")) + ".yaml." + oss.str() + ".old";
     rename(filePath.c_str(), newFilePath.c_str());
     cout << "[INFO!] ADF file rewritten. Old file is renamed to: " << newFilePath << endl;
+
+    m_registeredText + = "\nADF file rewritten!! Old file is renamed to: " + newFilePath;
 
     // Save the updated ADF file
     std::ofstream fout(filePath);
