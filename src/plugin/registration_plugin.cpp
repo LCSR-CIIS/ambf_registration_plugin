@@ -987,13 +987,11 @@ void afRegistrationPlugin::reWriteADFfile(string filePath, btTransform registere
     cerr << objectNode["position"]["x"] << ", " << objectNode["position"]["y"] << ", " << objectNode["position"]["z"] << endl;
 
     // Move the object to the registered location
-    btTransform currentTransform, registeredTransform_bt;
-
-    bodyPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(currentTransform);
-    registeredTransform_bt.mult(currentTransform, registeredTransform); 
+    btTransform currentTransform;
+    m_registeringObject->m_bulletRigidBody->getMotionState()->getWorldTransform(currentTransform);
 
     // Update position
-    const btVector3& pos = registeredTransform_bt.getOrigin();
+    const btVector3& pos = currentTransform.getOrigin();
 
     objectNode["position"]["x"] = static_cast<double>(pos.x());
     objectNode["position"]["y"] = static_cast<double>(pos.y());
@@ -1001,7 +999,7 @@ void afRegistrationPlugin::reWriteADFfile(string filePath, btTransform registere
 
     // Convert rotation matrix to roll, pitch, yaw
     double yaw, pitch, roll;
-    registeredTransform_bt.getBasis().getEulerYPR(yaw, pitch, roll);
+    currentTransform.getBasis().getEulerYPR(yaw, pitch, roll);
 
     // Update orientation
     objectNode["orientation"]["r"] = roll;
@@ -1020,7 +1018,7 @@ void afRegistrationPlugin::reWriteADFfile(string filePath, btTransform registere
     rename(filePath.c_str(), newFilePath.c_str());
     cout << "[INFO!] ADF file rewritten. Old file is renamed to: " << newFilePath << endl;
 
-    m_registeredText + = "\nADF file rewritten!! Old file is renamed to: " + newFilePath;
+    m_registeredText += "\nADF file rewritten!! Old file is renamed to: " + newFilePath;
 
     // Save the updated ADF file
     std::ofstream fout(filePath);
