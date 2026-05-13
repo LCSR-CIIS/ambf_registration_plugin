@@ -131,6 +131,7 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         afRigidBodyPtr m_registeringObject = nullptr;
 
         string m_registeringObjectADFFilePath;
+        cTransform m_anatomicalOriginTransform; // Original Transform
        
 
         // Point cloud registration
