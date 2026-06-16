@@ -353,7 +353,7 @@ void afRegistrationPlugin::applybtTransformToRigidBody(afRigidBodyPtr bodyPtr, b
 
 // Physics related updates
 void afRegistrationPlugin::physicsUpdate(double dt){
-    if (m_activeMode == RegistrationMode::POINTER){ 
+    if (m_activeMode == RegistrationMode::POINTER){
         // Generate and store the location when the keyboard shortcut is pressed
         if (m_savePoint){
             // Create red sphere when the saving the location
@@ -412,6 +412,20 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 // Change mode to "REGISTERED"
                 m_activeMode = RegistrationMode::REGISTERED;
                 applybtTransformToRigidBody(m_registeringObject, m_registeredTransform);
+
+                // Move model_camera once to the registered volume position.
+                // Read from Bullet directly — getLocalPos() hasn't synced yet this step.
+                if (m_modelCamera && m_registeringObject){
+                    btVector3 btPos = m_registeringObject->m_bulletRigidBody->getWorldTransform().getOrigin();
+                    cVector3d volumePos(btPos.x(), btPos.y(), btPos.z());
+                    cVector3d camPos = volumePos + m_camLocationOffset;
+                    cVector3d lookAt = volumePos + m_camLookAtOffset;
+                    m_modelCamera->setView(camPos, lookAt, m_camUp);
+                    if (m_modelLight){
+                        m_modelLight->setLocalPos(camPos);
+                        m_modelLight->setDir(lookAt - camPos);
+                    }
+                }
 
                 for (const auto visualSphere : m_visualPointsInModel){
                     visualSphere->setShowEnabled(false);
@@ -622,6 +636,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     
     else if (m_activeMode == RegistrationMode::REGISTERED){
         // Saving text for the status monitor
+        if (!m_isADFsaved)
         m_registeredText = "Registeration Result: \n Avg: " + to_string(m_registeredTransform.getOrigin().x()) + "," +
         to_string(m_registeredTransform.getOrigin().y()) + "," + to_string(m_registeredTransform.getOrigin().z()) + "\n" +
         "Press 'CTRL + W' to save the registered location in ADF file.";
@@ -753,43 +768,42 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
             }
             else{
                 // Get pointer to camera
-                afCameraPtr model_camera = m_worldPtr->getCamera("model_camera");
-                m_panelManager.addCamera(model_camera);
+                m_modelCamera = m_worldPtr->getCamera("model_camera");
+                m_panelManager.addCamera(m_modelCamera);
 
-                if (model_camera){
+                if (m_modelCamera){
                     // Set background
                     cBackground* background = new cBackground();
                     background->setCornerColors(cColorf(0.2f, 0.2f, 0.2f),
                                                 cColorf(0.2f, 0.2f, 0.2f),
                                                 cColorf(0.2f, 0.2f, 0.2f),
                                                 cColorf(0.2f, 0.2f, 0.2f));
-                    model_camera->getBackLayer()->addChild(background);
+                    m_modelCamera->getBackLayer()->addChild(background);
 
                     // Load Camera related parameters
-                    cVector3d camLocation;
-                    cVector3d camLookAt;
-                    cVector3d camUp;
                     if (node["pointer"]["camera"].IsDefined()){
                         YAML::Node camLocationNode = node["pointer"]["camera"]["location_offset"];
-                        camLocation = m_registeringObject->getLocalPos() + to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camLocationNode));
+                        m_camLocationOffset = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camLocationNode));
                         YAML::Node camLookAtNode = node["pointer"]["camera"]["look at"];
-                        camLookAt = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camLookAtNode));
+                        m_camLookAtOffset = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camLookAtNode));
                         YAML::Node camUpNode = node["pointer"]["camera"]["up"];
-                        camUp = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camUpNode));
+                        m_camUp = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&camUpNode));
                     }
                     else{
-                        camLocation = m_registeringObject->getLocalPos() + 0.5 * cVector3d(0, 1.0, 0.0);
-                        camLookAt = cVector3d(0, -1.0, 0.0);
-                        camUp = cVector3d(0, 0.0, 1.0);
+                        m_camLocationOffset = 0.5 * cVector3d(0, 1.0, 0.0);
+                        m_camLookAtOffset = cVector3d(0, -1.0, 0.0);
+                        m_camUp = cVector3d(0, 0.0, 1.0);
                     }
 
-                    // Set camera related parameters
-                    model_camera->setView(camLocation, camLookAt, camUp);
+                    // Set camera for the first time
+                    cVector3d initCamPos = m_registeringObject->getLocalPos() + m_camLocationOffset;
+                    cVector3d initLookAt = m_registeringObject->getLocalPos() + m_camLookAtOffset;
+                    m_modelCamera->setView(initCamPos, initLookAt, m_camUp);
 
                     // Set light at the same location
-                    afLightPtr model_light = m_worldPtr->getLight("model_light");
-                    model_light->setLocalPos(model_camera->getLocalPos());
-                    model_light->setDir(camLookAt);
+                    m_modelLight = m_worldPtr->getLight("model_light");
+                    m_modelLight->setLocalPos(initCamPos);
+                    m_modelLight->setDir(initLookAt - initCamPos);
                 }
             }
         }
@@ -1023,7 +1037,9 @@ void afRegistrationPlugin::reWriteADFfile(string filePath, btTransform registere
     rename(filePath.c_str(), newFilePath.c_str());
     cout << "[INFO!] ADF file rewritten. Old file is renamed to: " << newFilePath << endl;
 
-    m_registeredText = "Registration saved!! Old file is renamed to: " + newFilePath;
+    m_registeredText = "Registration saved!!\nOld file is renamed to: " + newFilePath;
+
+    m_isADFsaved = true;
 
     // Save the updated ADF file
     std::ofstream fout(filePath);

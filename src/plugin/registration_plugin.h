@@ -105,6 +105,11 @@ class afRegistrationPlugin: public afSimulatorPlugin{
 
         // camera related
         map<string, afCameraPtr> m_cameras;
+        afCameraPtr m_modelCamera = nullptr;
+        afLightPtr m_modelLight = nullptr;
+        cVector3d m_camLocationOffset;
+        cVector3d m_camLookAtOffset;
+        cVector3d m_camUp;
 
         // Pop-up Panel related
         CameraPanelManager m_panelManager;
@@ -181,6 +186,8 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         // Check if the config file has results
         bool m_pivotDefined = false;
         bool m_HEDefined = false;
+
+        bool m_isADFsaved = false;
 };
 
 
