@@ -1023,7 +1023,7 @@ void afRegistrationPlugin::reWriteADFfile(string filePath, btTransform registere
     rename(filePath.c_str(), newFilePath.c_str());
     cout << "[INFO!] ADF file rewritten. Old file is renamed to: " << newFilePath << endl;
 
-    m_registeredText += "\nADF file rewritten!! Old file is renamed to: " + newFilePath;
+    m_registeredText = "Registration saved!! Old file is renamed to: " + newFilePath;
 
     // Save the updated ADF file
     std::ofstream fout(filePath);
