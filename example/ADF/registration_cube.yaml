@@ -4,6 +4,7 @@
 # Generated on: 2023-08-02 23:04:36
 bodies:
 - BODY Registration Cube
+- BODY Registration Cube_origin
 - BODY Sphere_00
 - BODY Sphere_01
 - BODY Sphere_02
@@ -97,13 +98,20 @@ BODY Registration Cube:
       g: 0.64
       r: 0.64
     transparency: 1.0
+
+BODY Registration Cube_origin:
+  name: Registration Cube_origin
+  mass: 0.0
+  location:
+    position: {x: 0.0, y: 0.0, z: 0.0}
+    orientation: {r: 0.0, p: 0.0, y: 0.0}
+    
 BODY Sphere_00:
   name: Sphere_00
-  mesh: Sphere_00.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: -0.02749
@@ -113,47 +121,13 @@ BODY Sphere_00:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_01:
   name: Sphere_01
-  mesh: Sphere_01.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: -0.02749
@@ -163,47 +137,13 @@ BODY Sphere_01:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_02:
   name: Sphere_02
-  mesh: Sphere_02.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: -0.02748
@@ -213,47 +153,13 @@ BODY Sphere_02:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_03:
   name: Sphere_03
-  mesh: Sphere_03.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: -0.02007
@@ -263,47 +169,13 @@ BODY Sphere_03:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+
 BODY Sphere_04:
   name: Sphere_04
-  mesh: Sphere_04.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: -0.01012
@@ -313,47 +185,13 @@ BODY Sphere_04:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_05:
   name: Sphere_05
-  mesh: Sphere_05.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: -7.0e-05
@@ -363,47 +201,13 @@ BODY Sphere_05:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_06:
   name: Sphere_06
-  mesh: Sphere_06.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: 0.01005
@@ -413,47 +217,13 @@ BODY Sphere_06:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+ 
 BODY Sphere_07:
   name: Sphere_07
-  mesh: Sphere_07.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: 0.01997
@@ -463,47 +233,13 @@ BODY Sphere_07:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_08:
   name: Sphere_08
-  mesh: Sphere_08.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: 0.02751
@@ -513,47 +249,13 @@ BODY Sphere_08:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_09:
   name: Sphere_09
-  mesh: Sphere_09.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: 0.0275
@@ -563,47 +265,13 @@ BODY Sphere_09:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_10:
   name: Sphere_10
-  mesh: Sphere_10.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: 0.0275
@@ -613,47 +281,13 @@ BODY Sphere_10:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_11:
   name: Sphere_11
-  mesh: Sphere_11.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: 0.0275
@@ -663,47 +297,13 @@ BODY Sphere_11:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+ 
 BODY Sphere_12:
   name: Sphere_12
-  mesh: Sphere_12.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: 0.0275
@@ -713,47 +313,13 @@ BODY Sphere_12:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_13:
   name: Sphere_13
-  mesh: Sphere_13.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: 0.01998
@@ -763,47 +329,13 @@ BODY Sphere_13:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_14:
   name: Sphere_14
-  mesh: Sphere_14.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: 0.01
@@ -813,47 +345,13 @@ BODY Sphere_14:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_15:
   name: Sphere_15
-  mesh: Sphere_15.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: -3.0e-05
@@ -863,47 +361,13 @@ BODY Sphere_15:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_16:
   name: Sphere_16
-  mesh: Sphere_16.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: -0.01004
@@ -913,47 +377,13 @@ BODY Sphere_16:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_17:
   name: Sphere_17
-  mesh: Sphere_17.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: -0.02009
@@ -963,47 +393,13 @@ BODY Sphere_17:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_18:
   name: Sphere_18
-  mesh: Sphere_18.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: -0.02748
@@ -1013,47 +409,13 @@ BODY Sphere_18:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 BODY Sphere_19:
   name: Sphere_19
-  mesh: Sphere_19.OBJ
-  collision mesh type: CONCAVE_MESH
-  mass: 1.0
-  collision margin: 0.001
-  scale: 1.0
+  # shape: SPHERE
+  # geometry:
+  #   radius: 0.002
+  mass: 0.0
   location:
     position:
       x: -0.02747
@@ -1063,40 +425,7 @@ BODY Sphere_19:
       r: 0.0
       p: -0.0
       y: 0.0
-  inertial offset:
-    position:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    orientation:
-      r: 0
-      p: 0
-      y: 0
-  passive: false
-  publish children names: false
-  publish joint names: false
-  publish joint positions: false
-  friction:
-    rolling: 0.0
-    static: 0.5
-  restitution: 0.1
-  damping:
-    angular: 0.1
-    linear: 0.04
-  visible: false
-  collision groups: []
-  color components:
-    ambient:
-      level: 1.0
-    diffuse:
-      b: 0.8
-      g: 0.8
-      r: 0.8
-    specular:
-      b: 0.64
-      g: 0.64
-      r: 0.64
-    transparency: 1.0
+  
 JOINT Registration Cube-Sphere_00:
   name: Registration Cube-Sphere_00
   parent: BODY Registration Cube

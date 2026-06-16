@@ -289,10 +289,15 @@ void afRegistrationPlugin::graphicsUpdate(){
             m_panelManager.setText(m_savedPointsListLabel, m_savedLocationText);
 
             for (size_t i = 0; i < m_visualPointsInModel.size(); i++){
-                if (i == m_savedPointMeshList.size())
+                if (i == m_savedPointMeshList.size()){
                     m_visualPointsInModel[i]->m_material->setRed();
+                    m_visualPointsInModel[i]->m_material->setShininess(0);
+                    m_visualPointsInModel[i]->m_material->m_specular.set(0, 0, 0);
+                }
                 else{
                     m_visualPointsInModel[i]->m_material->setGreen();
+                    m_visualPointsInModel[i]->m_material->setShininess(0);
+                    m_visualPointsInModel[i]->m_material->m_specular.set(0, 0, 0);
                 }
             }
             
@@ -701,8 +706,8 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
 
                     // Create visual green sphere
                     cShapeSphere* visualMesh = new cShapeSphere(0.001);
-                    visualMesh->setRadius(0.001);
-                    visualMesh->m_material->setColorf(0,1,0,1);
+                    visualMesh->setRadius(0.002);
+                    visualMesh->m_material->setRed();
                     visualMesh->m_material->setShininess(0);
                     visualMesh->m_material->m_specular.set(0, 0, 0);
                     visualMesh->setLocalPos(objectPtr->getLocalPos());
@@ -749,6 +754,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
             else{
                 // Get pointer to camera
                 afCameraPtr model_camera = m_worldPtr->getCamera("model_camera");
+                m_panelManager.addCamera(model_camera);
 
                 if (model_camera){
                     // Set background
