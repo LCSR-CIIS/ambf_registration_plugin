@@ -345,7 +345,7 @@ void afRegistrationPlugin::applybtTransformToRigidBody(afRigidBodyPtr bodyPtr, b
     btTransform currentTransform, Tcommand;
 
     bodyPtr->m_bulletRigidBody->getMotionState()->getWorldTransform(currentTransform);
-    Tcommand.mult(currentTransform, trans); 
+    Tcommand = trans * currentTransform; 
 
     bodyPtr->m_bulletRigidBody->getMotionState()->setWorldTransform(Tcommand);
     bodyPtr->m_bulletRigidBody->setWorldTransform(Tcommand);
@@ -696,10 +696,10 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 objectPtr = m_worldPtr->getRigidBody(node["pointer"]["name of points"][i].as<string>());
 
                 // Apply anatomical origin transformation
-                cTransform anatomicalOriginTransform = m_registeringObject->getLocalTransform();
+                m_anatomicalOriginTransform = m_registeringObject->getLocalTransform();
                 cTransform fiducialPose = objectPtr->getLocalTransform();
 
-                objectPtr->setLocalTransform(anatomicalOriginTransform * fiducialPose);
+                objectPtr->setLocalTransform(m_anatomicalOriginTransform * fiducialPose);
 
                 if(objectPtr){
                     m_fiducialPointsPtr.push_back(objectPtr);
@@ -993,8 +993,7 @@ void afRegistrationPlugin::reWriteADFfile(string filePath, btTransform registere
     cerr << objectNode["position"]["x"] << ", " << objectNode["position"]["y"] << ", " << objectNode["position"]["z"] << endl;
 
     // Move the object to the registered location
-    btTransform currentTransform;
-    m_registeringObject->m_bulletRigidBody->getMotionState()->getWorldTransform(currentTransform);
+    btTransform currentTransform = m_registeringObject->m_bulletRigidBody->getWorldTransform();
 
     // Update position
     const btVector3& pos = currentTransform.getOrigin();
