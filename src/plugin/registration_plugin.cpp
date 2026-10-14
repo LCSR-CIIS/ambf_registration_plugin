@@ -53,7 +53,8 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
     p_opt::options_description cmd_opts("SpaceNav control Command Line Options");
     cmd_opts.add_options()
             ("info", "Show Info")
-            ("registration_config", p_opt::value<string>()->default_value(""), "Name of specfile for spacenav control");
+            ("registration_config", p_opt::value<string>()->default_value(""), "Name of specfile for spacenav control")
+            ("tf_list", p_opt::value<string>()->default_value(""), "ambf_tf_plugin config. Used to read the tool tip for axis calibration");
 
     p_opt::variables_map var_map;
     p_opt::store(p_opt::command_line_parser(argc, argv).options(cmd_opts).allow_unregistered().run(), var_map);
@@ -66,6 +67,7 @@ int afRegistrationPlugin::init(int argc, char** argv, const afWorldPtr a_afWorld
 
     // Loading options 
     string config_filepath = var_map["registration_config"].as<string>();
+    m_tfConfigFilepath = var_map["tf_list"].as<string>();
 
     // Define path
     string file_path = __FILE__;
@@ -215,7 +217,18 @@ void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a
                 m_activeMode = RegistrationMode::UNREGISTERED;
             }
         }
-    
+
+        else if (a_key == GLFW_KEY_4){
+            if(m_isAxis){
+                m_activeMode = RegistrationMode::AXIS;
+                cerr << "Registration Mode changed to AXIS " << endl;
+            }
+            else{
+                cerr << "WARNING! Axis calibration is not configured. Add an 'axis' or 'pivot' section to the registration config." << endl;
+                m_activeMode = RegistrationMode::UNREGISTERED;
+            }
+        }
+
         else if(a_key == GLFW_KEY_9){
             if (m_activeMode == RegistrationMode::POINTER || m_activeMode == RegistrationMode::PIVOT){
                 m_savePoint = true;
@@ -251,6 +264,12 @@ void afRegistrationPlugin::addOptionDescription(string & text){
     }
     else{
         text += "[Ctrl + 3]: None, ";
+    }
+    if(m_isAxis){
+        text += "[Ctrl + 4]: Axis Calibration, ";
+    }
+    else{
+        text += "[Ctrl + 4]: None, ";
     }
     if(m_isPointer){
         text += "[Ctrl + 9]: Sample Point";
@@ -320,6 +339,13 @@ void afRegistrationPlugin::graphicsUpdate(){
             
             m_panelManager.setText(m_savedPointsListLabel, m_savedLocationText);
             m_panelManager.setText(m_savedPointsListLabel, m_registeredText);
+            m_panelManager.setFontColor(m_savedPointsListLabel, cColorf(0.,0.,0.));
+            break;
+
+        case RegistrationMode::AXIS:
+            m_panelManager.setText(m_registrationStatusLabel, "Registration Status: AXIS");
+            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(0.,0.,0.));
+            m_panelManager.setText(m_savedPointsListLabel, m_axisText);
             m_panelManager.setFontColor(m_savedPointsListLabel, cColorf(0.,0.,0.));
             break;
 
@@ -634,6 +660,95 @@ void afRegistrationPlugin::physicsUpdate(double dt){
         }
     }
     
+    else if (m_activeMode == RegistrationMode::AXIS){
+        m_axisToolInterface->spin();
+        if (m_axisReferenceInterface){
+            m_axisReferenceInterface->spin();
+        }
+        cTransform measured_cp = m_axisToolInterface->measured_cp();
+        bool isTracked = measured_cp.getLocalPos().length() > 0.0;
+
+        if (!m_axisDone){
+            m_axisText = "Keep the tip on the pivot and rotate the tool about its shaft only.\n";
+            if (!isTracked){
+                m_axisText += "WARNING! No tool location published \nCheck your tracker!!\n";
+            }
+            else{
+                cTransform collectedPoint = measured_cp;
+                if (m_axisReferenceInterface){
+                    cTransform collectedReference = m_axisReferenceInterface->measured_cp();
+                    collectedReference.invert();
+                    collectedPoint = collectedReference * measured_cp;
+                }
+
+                // Save only the new collected points which are far enough from old points
+                if (m_savedAxisPoints.size() == 0 ||
+                    (m_savedAxisPoints.back().getLocalPos() - collectedPoint.getLocalPos()).length() > m_axisRes){
+                    cShapeSphere* savedAxisPointMesh = new cShapeSphere(0.001);
+                    savedAxisPointMesh->m_material->setYellow();
+                    savedAxisPointMesh->m_material->setShininess(0);
+                    savedAxisPointMesh->m_material->m_specular.set(0, 0, 0);
+                    savedAxisPointMesh->setShowEnabled(true);
+                    savedAxisPointMesh->setLocalPos(measured_cp.getLocalPos());
+                    m_worldPtr->addSceneObjectToWorld(savedAxisPointMesh);
+
+                    m_savedAxisPoints.push_back(collectedPoint);
+                }
+                m_axisText += "Number of saved Points: " + to_string(m_savedAxisPoints.size()) + "/" + to_string(m_numAxis);
+            }
+
+            // Once you collected enough points for the calibration
+            if ((int)m_savedAxisPoints.size() >= m_numAxis){
+                // Tool tip used to orient the axis:
+                // pivot calibration of this session > axis section / tf config > pivot result in the config
+                const cVector3d* marker2tip = nullptr;
+                if (m_pivotDone && !m_manualPivot){
+                    marker2tip = &m_marker2tip;
+                    cerr << "Axis calibration uses the pivot calibration result of this session." << endl;
+                }
+                else if (m_axisTipDefined){
+                    marker2tip = &m_axisMarker2tip;
+                }
+                else if (m_pivotDefined && !m_manualPivot){
+                    marker2tip = &m_marker2tip;
+                }
+
+                saveDataToCSV("Axis_trackerTomarker.csv", m_savedAxisPoints);
+                int res = m_axisCalibration.calibrate(m_savedAxisPoints, marker2tip, m_axisMeshAxis, m_axisRollOffset, m_axisResult);
+
+                if (res < 0){
+                    m_savedAxisPoints.clear();
+                    cerr << "Axis calibration failed. Try again." << endl;
+                }
+                else{
+                    m_axisDone = true;
+                    char buf[1024];
+                    snprintf(buf, sizeof(buf),
+                             "Axis calibration result:\n"
+                             "orientation: {r: %.6f, p: %.6f, y: %.6f}\n"
+                             "Axis in marker frame: (%.4f, %.4f, %.4f)\n"
+                             "Radius: %.4f m, plane RMS: %.5f m, radius RMS: %.5f m\n"
+                             "Coverage: %.1f deg, axis spread: %.2f deg\n",
+                             m_axisResult.roll, m_axisResult.pitch, m_axisResult.yaw,
+                             m_axisResult.axisInMarker.x(), m_axisResult.axisInMarker.y(), m_axisResult.axisInMarker.z(),
+                             m_axisResult.circleRadius, m_axisResult.planeRMS, m_axisResult.radiusRMS,
+                             m_axisResult.angularCoverage * 180.0 / M_PI, m_axisResult.axisSpread * 180.0 / M_PI);
+                    m_axisText = buf;
+                    if (m_axisResult.signFromTip){
+                        m_axisText += "Pivot point to axis distance: " + to_string(m_axisResult.tipToAxisDistance) + " m";
+                    }
+                    else{
+                        m_axisText += "WARNING! No t_tip available: the axis sign is ambiguous.";
+                    }
+                    if (m_axisResult.angularCoverage < M_PI / 3.0){
+                        m_axisText += "\nWARNING! Small angular coverage, rotate further for a better fit.";
+                    }
+                    cerr << "Copy the orientation above into 'TF drill_tip-drill_body' (assumes the drill_tip frame has the marker orientation)." << endl;
+                }
+            }
+        }
+    }
+
     else if (m_activeMode == RegistrationMode::REGISTERED){
         // Saving text for the status monitor
         if (!m_isADFsaved)
@@ -937,10 +1052,110 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
                 m_pivotDefined = true;
             }
         }
+
+        if (node["axis"]){
+            cout << "> Axis Calibration" << endl;
+            m_isAxis = true;
+
+            // Setting up CRTK communication
+            string marker_nspace = node["axis"]["marker namespace"].as<string>();
+            m_axisToolInterface = new CRTKInterface(marker_nspace);
+
+            if (node["axis"]["reference namespace"]){
+                m_axisReferenceInterface = new CRTKInterface(node["axis"]["reference namespace"].as<string>());
+            }
+
+            if(node["axis"]["resolution"]){
+                m_axisRes = node["axis"]["resolution"].as<double>();
+            }
+
+            if(node["axis"]["number of points"]){
+                m_numAxis = node["axis"]["number of points"].as<int>();
+            }
+
+            // Tool tip w.r.t. marker. Falls back to the pivot calibration result if not specified.
+            if(node["axis"]["t_tip"]){
+                YAML::Node tipNode = node["axis"]["t_tip"];
+                m_axisMarker2tip = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&tipNode));
+                m_axisTipDefined = true;
+            }
+
+            // Axis of the body mesh (local frame) that runs along the shaft, from the tip to the back of the tool
+            if(node["axis"]["mesh axis"]){
+                YAML::Node meshAxisNode = node["axis"]["mesh axis"];
+                m_axisMeshAxis = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&meshAxisNode));
+                if (m_axisMeshAxis.length() < 1e-9){
+                    cerr << "ERROR! 'mesh axis' can not be zero" << endl;
+                    return -1;
+                }
+                m_axisMeshAxis.normalize();
+            }
+
+            // Rotation of the mesh about the shaft axis [rad]
+            if(node["axis"]["roll offset"]){
+                m_axisRollOffset = node["axis"]["roll offset"].as<double>();
+            }
+        }
+        // Without an axis section, enable axis calibration with the pivot marker and default parameters
+        else if (m_isPivot){
+            cout << "> Axis Calibration (using pivot marker namespace and default parameters)" << endl;
+            m_isAxis = true;
+            m_axisToolInterface = m_pivotToolInterface;
+            m_axisReferenceInterface = m_pivotReferenceInterface;
+        }
+
+        // Tool tip for axis calibration: axis section > pivot result > FIXED transform from the marker in the tf config
+        if (m_isAxis && !m_axisTipDefined && !m_pivotDefined){
+            string markerName;
+            if (node["axis"] && node["axis"]["marker name"]){
+                markerName = node["axis"]["marker name"].as<string>();
+            }
+            else if (node["pivot"] && node["pivot"]["marker name"]){
+                markerName = node["pivot"]["marker name"].as<string>();
+            }
+
+            if (!markerName.empty() && readTipFromTFConfig(m_tfConfigFilepath, markerName, m_axisMarker2tip)){
+                m_axisTipDefined = true;
+            }
+            else{
+                cerr << "WARNING! No 't_tip' for axis calibration. Run pivot calibration first in this session "
+                     << "or the axis sign will be ambiguous." << endl;
+            }
+        }
         cerr << "SUCCESSFULLY Initialized plugin!!" << endl;
 
         return 1;
 
+}
+
+// Look for a FIXED transform in the ambf_tf_plugin config whose parent is the marker (ex. TF marker_body-drill_tip)
+bool afRegistrationPlugin::readTipFromTFConfig(string tfConfigFilepath, string markerName, cVector3d& marker2tip){
+    if (tfConfigFilepath.empty()){
+        return false;
+    }
+
+    YAML::Node tfNode;
+    try{
+        tfNode = YAML::LoadFile(tfConfigFilepath);
+    }
+    catch (const exception& e){
+        cerr << "WARNING! Failed to load tf config " << tfConfigFilepath << ": " << e.what() << endl;
+        return false;
+    }
+
+    for (size_t i = 0; i < tfNode["transformations"].size(); i++){
+        string tfName = tfNode["transformations"][i].as<string>();
+        YAML::Node tf = tfNode[tfName];
+        if (tf["parent"] && tf["parent"].as<string>() == markerName &&
+            tf["type"] && tf["type"].as<string>() == "FIXED" &&
+            tf["transformation"]["position"]){
+            YAML::Node posNode = tf["transformation"]["position"];
+            marker2tip = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&posNode));
+            cout << "> Axis calibration t_tip from '" << tfName << "' in " << tfConfigFilepath << ": " << marker2tip.str(6) << endl;
+            return true;
+        }
+    }
+    return false;
 }
 
 void afRegistrationPlugin::reset(){

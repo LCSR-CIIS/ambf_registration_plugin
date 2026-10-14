@@ -104,6 +104,8 @@ add_library(registration_plugin SHARED
     src/registration/point_cloud_registration.h
     src/registration/pivot_calibration.cpp
     src/registration/pivot_calibration.h
+    src/registration/axis_calibration.cpp
+    src/registration/axis_calibration.h
     src/registration/hand_eye_calibration.cpp
     src/registration/hand_eye_calibration.h
     )

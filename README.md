@@ -168,6 +168,15 @@ After completing the calibration, copy the result (t_tip) and incorporate it int
 Press `[Ctrl + 2]` to activate Hand-Eye calibration mode.
 Once you are done with the pivot calibration. You can copy the result (t_tip) and paste in the registration_configuration file.
 
+### 3.3 Perform Axis calibration
+Add an `axis:` section to the registration configuration file (see `example/test_axis.yaml`) and press `[Ctrl + 4]`.
+Keep the tool tip on a pivot and rotate the tool about its own shaft only. Samples are collected automatically.
+The marker origin traces a circle whose normal is the shaft axis. The axis is expressed in the marker frame and oriented
+from the tip towards the back of the tool using `t_tip` (from the `axis` section, or the pivot calibration result).
+The result is printed as `orientation: {r, p, y}` for `TF drill_tip-drill_body` (ambf_tf_plugin config), such that the
+`mesh axis` of the body mesh (default +X, as in the drill meshes) is aligned with the shaft. Rotation about the shaft
+is not observable; use `roll offset` to adjust it.
+
 ### 3.1 Perform Pin-base registration
 Press `[Ctrl + 3]` to activate pin-base registration mode. Press `[Ctrl + 9]` to store the points.
 [Caution] Sampling order matters!! Make sure to sample the points in the same order as the points in `launch.yaml`.

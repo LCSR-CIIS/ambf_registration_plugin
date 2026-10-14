@@ -50,6 +50,7 @@
 #include "../registration/point_cloud_registration.h"
 #include "../registration/hand_eye_calibration.h"
 #include "../registration/pivot_calibration.h"
+#include "../registration/axis_calibration.h"
 
 
 #include <boost/program_options.hpp>
@@ -72,7 +73,7 @@ using namespace std;
 using namespace ambf;
 
 enum class RegistrationMode{
-    UNREGISTERED=0, POINTER=1, PIVOT=2, HANDEYE=3, REGISTERED=5 
+    UNREGISTERED=0, POINTER=1, PIVOT=2, HANDEYE=3, AXIS=4, REGISTERED=5 
 };
 
 class afRegistrationPlugin: public afSimulatorPlugin{
@@ -89,6 +90,7 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         bool initLabels();
         bool initCamera(vector<string> cameraNames);
         int readConfigFile(string config_filepath);
+        bool readTipFromTFConfig(string tfConfigFilepath, string markerName, cVector3d& marker2tip);
 
         void addOptionDescription(string & text);
         void applybtTransformToRigidBody(afRigidBodyPtr bodyPtr, btTransform& trans);
@@ -178,10 +180,27 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         bool m_manualPivot = false;
         cVector3d m_ee2tip;
 
+        // Axis calibration
+        AxisCalibration m_axisCalibration;
+        AxisCalibrationResult m_axisResult;
+        CRTKInterface * m_axisToolInterface = nullptr;
+        CRTKInterface * m_axisReferenceInterface = nullptr;
+        vector<cTransform> m_savedAxisPoints;
+        double m_axisRes = 0.002;
+        int m_numAxis = 100;
+        bool m_axisDone = false;
+        bool m_axisTipDefined = false; // t_tip given in the axis section
+        cVector3d m_axisMarker2tip;
+        cVector3d m_axisMeshAxis = cVector3d(1.0, 0.0, 0.0);
+        double m_axisRollOffset = 0.0;
+        string m_axisText;
+        string m_tfConfigFilepath;
+
         // Flag used to check if the mode was defined in the config file.
         bool m_isPivot = false;
         bool m_isHE = false; 
         bool m_isPointer = false;
+        bool m_isAxis = false;
 
         // Check if the config file has results
         bool m_pivotDefined = false;

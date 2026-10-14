@@ -1,0 +1,25 @@
+# AMBF Registration configuration file for drill/pointer axis calibration
+# Pivot calibration ([Ctrl + 2]) and axis calibration ([Ctrl + 4]).
+
+## Pivot calibration
+pivot:
+  marker namespace: /atracsys/drill_marker # namespace for the marker
+  marker name: marker # [Optional] Name of the rigid body in AMBF
+  type: AUTO
+  resolution: 0.01
+  number of points: 150
+  # The axis calibration uses this tip to orient the axis from the tip towards the back of the tool
+  registered pivot result:
+    t_tip: {x: -0.140626, y: -0.134951, z: 0.0559472}
+
+## Axis calibration
+# Keep the tip on the pivot and rotate the tool about its own shaft only.
+# The marker origin traces a circle, whose normal is the shaft axis.
+axis:
+  marker namespace: /atracsys/drill_marker # namespace for the marker
+  # reference namespace: /atracsys/Anatomy # [Optional] namespace for the reference
+  resolution: 0.002 # [m] minimum marker displacement between samples
+  number of points: 100
+  # t_tip: {x: -0.140626, y: -0.134951, z: 0.0559472} # [Optional] overrides the pivot result
+  mesh axis: {x: 1.0, y: 0.0, z: 0.0} # [Optional] mesh axis along the shaft from tip to back (drill meshes: +X)
+  roll offset: 0.0 # [Optional] rotation of the mesh about the shaft [rad]
