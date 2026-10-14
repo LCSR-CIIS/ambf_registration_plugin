@@ -126,7 +126,7 @@ bool afRegistrationPlugin::initLabels(){
     m_registrationStatusLabel->setCornerRadius(5, 5, 5, 5);
     m_registrationStatusLabel->setShowPanel(true);
     m_registrationStatusLabel->setColor(cColorf(1.0, 1.0, 1.0, 1.0));
-    m_panelManager.addPanel(m_registrationStatusLabel, 0.7, 0.85, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
+    m_panelManager.addPanel(m_registrationStatusLabel, 0.01, 0.85, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
     m_panelManager.setVisible(m_registrationStatusLabel, true);
 
     // Objects List panel
@@ -136,7 +136,7 @@ bool afRegistrationPlugin::initLabels(){
     m_savedPointsListLabel->setCornerRadius(5, 5, 5, 5);
     m_savedPointsListLabel->setShowPanel(true);
     m_savedPointsListLabel->setColor(cColorf(1.0, 1.0, 1.0, 1.0));
-    m_panelManager.addPanel(m_savedPointsListLabel, 0.7, 0.75, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
+    m_panelManager.addPanel(m_savedPointsListLabel, 0.01, 0.75, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
     m_panelManager.setVisible(m_savedPointsListLabel, true);
 
     return true;
@@ -190,45 +190,45 @@ void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a
     if (a_mods == GLFW_MOD_CONTROL){
         if (a_key == GLFW_KEY_1){
             if (m_isHE){
-                m_activeMode = RegistrationMode::HANDEYE;
+                setActiveMode(RegistrationMode::HANDEYE);
                 cerr << "Registration Mode changed to HANDEYE " << endl;
             }
             else{
-                m_activeMode = RegistrationMode::UNREGISTERED;
+                setActiveMode(RegistrationMode::UNREGISTERED);
             }
         }
 
         else if (a_key == GLFW_KEY_2){
             if(m_isPivot){
-                m_activeMode = RegistrationMode::PIVOT;
+                setActiveMode(RegistrationMode::PIVOT);
                 cerr << "Registration Mode changed to PIVOT " << endl;
             }
             else{
-                m_activeMode = RegistrationMode::UNREGISTERED;
+                setActiveMode(RegistrationMode::UNREGISTERED);
             }
         }
         
         else if (a_key == GLFW_KEY_3){
             if(m_isPointer){
-                m_activeMode = RegistrationMode::POINTER;
+                setActiveMode(RegistrationMode::POINTER);
                 cerr << "Registration Mode changed to POINTER " << endl;
             }
             else{
-                m_activeMode = RegistrationMode::UNREGISTERED;
+                setActiveMode(RegistrationMode::UNREGISTERED);
             }
         }
 
         else if (a_key == GLFW_KEY_4){
             if(m_isAxis){
-                m_activeMode = RegistrationMode::AXIS;
+                setActiveMode(RegistrationMode::AXIS);
                 cerr << "Registration Mode changed to AXIS " << endl;
             }
             else{
                 cerr << "WARNING! Axis calibration is not configured. Add an 'axis' or 'pivot' section to the registration config." << endl;
-                m_activeMode = RegistrationMode::UNREGISTERED;
+                setActiveMode(RegistrationMode::UNREGISTERED);
             }
         }
-
+    
         else if(a_key == GLFW_KEY_9){
             if (m_activeMode == RegistrationMode::POINTER || m_activeMode == RegistrationMode::PIVOT){
                 m_savePoint = true;
@@ -236,66 +236,96 @@ void afRegistrationPlugin::keyboardUpdate(GLFWwindow* a_window, int a_key, int a
             }
         }
 
-        else if (a_key == GLFW_KEY_W){
+        // Restart the active calibration (handled in physicsUpdate)
+        else if (a_key == GLFW_KEY_D && a_action == GLFW_PRESS){
+            if (m_activeMode == RegistrationMode::PIVOT || m_activeMode == RegistrationMode::AXIS){
+                m_restartRequested = true;
+            }
+        }
+
+        else if (a_key == GLFW_KEY_W && a_action == GLFW_PRESS){
             if (m_activeMode == RegistrationMode::REGISTERED){
                 cerr << "[INFO!!] Rewriting ADF file ..." << endl;
                 // Quary for rewriting the ADF file
                 reWriteADFfile(m_registeringObjectADFFilePath, m_registeredTransform);
             }
+            else if ((m_activeMode == RegistrationMode::PIVOT && m_pivotDone) ||
+                     (m_activeMode == RegistrationMode::AXIS && m_axisDone)){
+                saveCalibrationToTF();
+            }
         }
     }
 }
 
+// Change the registration mode and only show the samples of the active calibration
+void afRegistrationPlugin::setActiveMode(RegistrationMode mode){
+    m_activeMode = mode;
+    m_tfSaveText.clear();
+    for (auto mesh: m_pivotPointMeshes){
+        mesh->setShowEnabled(mode == RegistrationMode::PIVOT);
+    }
+    for (auto mesh: m_axisPointMeshes){
+        mesh->setShowEnabled(mode == RegistrationMode::AXIS);
+    }
+}
+
 void afRegistrationPlugin::addOptionDescription(string & text){
-    if(m_isHE){
-        text += "[Ctrl + 1]: Hand-Eye Registraion,";
+    auto option = [&](const string& key, const string& name, RegistrationMode mode, bool configured, bool done){
+        if (!configured){
+            return;
+        }
+        text += (m_activeMode == mode) ? "> " : "   ";
+        text += "[Ctrl + " + key + "]: " + name;
+        if (done){
+            text += " (done)";
+        }
+        text += "\n";
+    };
+    option("1", "Hand-Eye Registration", RegistrationMode::HANDEYE, m_isHE, m_HEDone);
+    option("2", "Pivot Calibration", RegistrationMode::PIVOT, m_isPivot, m_pivotDone);
+    option("3", "Pointer Based Registration", RegistrationMode::POINTER, m_isPointer, m_activeMode == RegistrationMode::REGISTERED);
+    option("4", "Axis Calibration", RegistrationMode::AXIS, m_isAxis, m_axisDone);
+    if (m_isPointer || m_manualPivot){
+        text += "   [Ctrl + 9]: Sample Point\n";
     }
-    else{
-        text += "[Ctrl + 1]: None, ";
+    if (m_isPivot || m_isAxis){
+        text += "   [Ctrl + D]: Restart active calibration\n";
+        text += "   [Ctrl + W]: Save result of the active calibration";
     }
-    if(m_isPivot){
-        text += "[Ctrl + 2]: Pivot Calibration, ";
+}
+
+// Stack the panels from the upper left corner of the main camera so they are fully visible
+void afRegistrationPlugin::layoutPanels(){
+    afCameraPtr cam = m_cameras["main_camera"];
+    if (!cam || cam->m_width <= 0 || cam->m_height <= 0){
+        return;
     }
-    else{
-        text += "[Ctrl + 2]: None, ";
-    }
-    if(m_isPointer){
-        text += "[Ctrl + 3]: Pointer Based Registration, ";
-    }
-    else{
-        text += "[Ctrl + 3]: None, ";
-    }
-    if(m_isAxis){
-        text += "[Ctrl + 4]: Axis Calibration, ";
-    }
-    else{
-        text += "[Ctrl + 4]: None, ";
-    }
-    if(m_isPointer){
-        text += "[Ctrl + 9]: Sample Point";
-    }
-    else{
-        text += "[Ctrl + 9]: None";
-    }
+    double margin = 10.0;
+    double xpos = margin / cam->m_width;
+    double top = cam->m_height - margin;
+
+    top -= m_registrationStatusLabel->getHeight();
+    m_panelManager.setPos(m_registrationStatusLabel, xpos, top / cam->m_height, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
+
+    top -= margin + m_savedPointsListLabel->getHeight();
+    m_panelManager.setPos(m_savedPointsListLabel, xpos, top / cam->m_height, PanelReferenceOrigin::LOWER_LEFT, PanelReferenceType::NORMALIZED);
 }
 
 // Graphics related updates
 void afRegistrationPlugin::graphicsUpdate(){
 
     string m_savedLocationText = "--- List of Saved Locations ([Ctrl + 9] to sample Point) --- \n";
-    string text;
+    string status;
+    string info;
+    cColorf statusColor(0., 0., 0.);
     // For Registration Status Label
     switch (m_activeMode){
         case RegistrationMode::UNREGISTERED:
-            text = "Registration Status: UNREGISTER \n";
-            addOptionDescription(text);
-            m_panelManager.setText(m_registrationStatusLabel, text);
-            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(0.,0.0,0.0));
+            status = "UNREGISTERED";
             break;
         
         case RegistrationMode::POINTER:
-            m_panelManager.setText(m_registrationStatusLabel, "Registration Status: POINTER");
-            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(0.,0.,0.));
+            status = "POINTER";
 
             // Saving the saved points location as text and show on the screen.
             for (int i=0; i < m_savedPointMeshList.size(); i++){   
@@ -305,7 +335,7 @@ void afRegistrationPlugin::graphicsUpdate(){
                     m_savedLocationText += "\n";
                 }
             }
-            m_panelManager.setText(m_savedPointsListLabel, m_savedLocationText);
+            info = m_savedLocationText;
 
             for (size_t i = 0; i < m_visualPointsInModel.size(); i++){
                 if (i == m_savedPointMeshList.size()){
@@ -323,46 +353,53 @@ void afRegistrationPlugin::graphicsUpdate(){
             break;
 
         case RegistrationMode::PIVOT:
-            m_panelManager.setText(m_registrationStatusLabel, "Registration Status: PIVOT");
-            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(0.,0.,0.));
+            status = "PIVOT";
+            info = m_pivotText;
             
-            if (m_manualPivot){
+            if (m_manualPivot && !m_pivotDone){
                 // Saving the saved points location as text and show on the screen.
+                info += "\n" + m_savedLocationText;
                 for (int i=0; i < m_savedPivotPoints.size(); i++){   
                     cVector3d trans = m_savedPivotPoints[i].getLocalPos();
-                    m_savedLocationText += "Point " + to_string(i) + ": " + trans.str(5);
+                    info += "Point " + to_string(i) + ": " + trans.str(5);
                     if(i < m_savedPivotPoints.size()-1){
-                        m_savedLocationText += "\n";
+                        info += "\n";
                     }
                 }
             }
-            
-            m_panelManager.setText(m_savedPointsListLabel, m_savedLocationText);
-            m_panelManager.setText(m_savedPointsListLabel, m_registeredText);
-            m_panelManager.setFontColor(m_savedPointsListLabel, cColorf(0.,0.,0.));
             break;
 
         case RegistrationMode::AXIS:
-            m_panelManager.setText(m_registrationStatusLabel, "Registration Status: AXIS");
-            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(0.,0.,0.));
-            m_panelManager.setText(m_savedPointsListLabel, m_axisText);
-            m_panelManager.setFontColor(m_savedPointsListLabel, cColorf(0.,0.,0.));
+            status = "AXIS";
+            info = m_axisText;
             break;
 
         case RegistrationMode::HANDEYE:
-            m_panelManager.setText(m_registrationStatusLabel, "Registration Status: HANDEYE");
-            m_panelManager.setText(m_savedPointsListLabel, m_registeredText);
-            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(1.,0.,0.));
-            m_panelManager.setFontColor(m_savedPointsListLabel, cColorf(0.,0.,0.));
+            status = "HANDEYE";
+            statusColor = cColorf(1., 0., 0.);
+            info = m_registeredText;
             break;
 
         case RegistrationMode::REGISTERED:
-            m_panelManager.setText(m_registrationStatusLabel, "Registration Status: REGISTERED");
-            m_panelManager.setFontColor(m_registrationStatusLabel, cColorf(0.,0.5,0.5));
-            m_panelManager.setText(m_savedPointsListLabel, m_registeredText);
+            status = "REGISTERED";
+            statusColor = cColorf(0., 0.5, 0.5);
+            info = m_registeredText;
             break;
     }
 
+    if (!m_tfSaveText.empty()){
+        info += "\n" + m_tfSaveText;
+    }
+
+    string text = "Registration Status: " + status + "\n";
+    addOptionDescription(text);
+    m_panelManager.setText(m_registrationStatusLabel, text);
+    m_panelManager.setFontColor(m_registrationStatusLabel, statusColor);
+    m_panelManager.setText(m_savedPointsListLabel, info);
+    m_panelManager.setFontColor(m_savedPointsListLabel, cColorf(0., 0., 0.));
+    m_panelManager.setVisible(m_savedPointsListLabel, !info.empty());
+
+    layoutPanels();
     m_panelManager.update();
 }
 
@@ -379,6 +416,11 @@ void afRegistrationPlugin::applybtTransformToRigidBody(afRigidBodyPtr bodyPtr, b
 
 // Physics related updates
 void afRegistrationPlugin::physicsUpdate(double dt){
+    if (m_restartRequested){
+        restartCalibration();
+        m_restartRequested = false;
+    }
+
     if (m_activeMode == RegistrationMode::POINTER){
         // Generate and store the location when the keyboard shortcut is pressed
         if (m_savePoint){
@@ -546,14 +588,16 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             m_pivotReferenceInterface->spin();
         }
         cTransform measured_cp;
-        m_registeredText = "WARNING! No tool location published \nCheck your tracker!!\n";
+        if (!m_pivotDone){
+            m_pivotText = "WARNING! No tool location published \nCheck your tracker!!\n";
+        }
 
         // Perform Pivot calibration method using Optical Tracker
         if(!m_manualPivot){
             measured_cp = m_pivotToolInterface->measured_cp();
             if (measured_cp.getLocalPos().length() > 0.0 && !m_pivotDone){
                 // Erase the warning if there is measured_cf
-                m_registeredText = "Saving Points...\n";
+                m_pivotText = "Saving Points...\n";
 
                 // get trackerLocation data from rostopics
                 cTransform collectedPoint = m_pivotToolInterface->measured_cp();
@@ -567,51 +611,54 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                     collectedReference.identity();
                 }
 
-                if (m_savedPivotPoints.size() == 0){
+                // Save only the new collected points which are far enough from old points
+                if (m_savedPivotPoints.size() == 0 ||
+                    (m_savedPivotPoints.back().getLocalPos() - collectedPoint.getLocalPos()).length() > m_pivotRes){
+                    // Add mesh to the scene
+                    cShapeSphere* savedPivotPointMesh = new cShapeSphere(0.001);
+                    savedPivotPointMesh->setRadius(0.001);
+                    savedPivotPointMesh->m_material->setBlue();
+                    savedPivotPointMesh->m_material->setShininess(0);
+                    savedPivotPointMesh->m_material->m_specular.set(0, 0, 0);
+                    savedPivotPointMesh->setShowEnabled(true);
+                    savedPivotPointMesh->setLocalPos(collectedPoint.getLocalPos());
+                    m_worldPtr->addSceneObjectToWorld(savedPivotPointMesh);
+                    m_pivotPointMeshes.push_back(savedPivotPointMesh);
+
                     m_savedPivotPoints.push_back(collectedPoint);
                     m_savedPivotRef2Points.push_back(collectedReference * collectedPoint);
-                }
-                else {
-                    // Save only the new collected points which are far enough from old points
-                    if ((m_savedPivotPoints.back().getLocalPos() - collectedPoint.getLocalPos()).length() > m_pivotRes){
-                        // Add mesh to the scene
-                        cShapeSphere* savedPivotPointMesh = new cShapeSphere(0.001);
-                        savedPivotPointMesh->setRadius(0.001);
-                        savedPivotPointMesh->m_material->setBlue();
-                        savedPivotPointMesh->m_material->setShininess(0);
-                        savedPivotPointMesh->m_material->m_specular.set(0, 0, 0);
-                        savedPivotPointMesh->setShowEnabled(true);
-                        savedPivotPointMesh->setLocalPos(collectedPoint.getLocalPos());
-                        m_worldPtr->addSceneObjectToWorld(savedPivotPointMesh);
-
-                        m_savedPivotPoints.push_back(collectedPoint);
-                        m_savedPivotRef2Points.push_back(collectedReference * collectedPoint);
-                    }
                 }
 
                 // Once you collected enough points for the calibration
                 if (m_savedPivotPoints.size() > m_numPivot){
                     cVector3d dimple;
                     cVector3d test;
-                    m_pivotCalibration.calibrate(m_savedPivotPoints, m_marker2tip, dimple);
+                    m_pivotCalibration.calibrate(m_savedPivotPoints, m_marker2tip, dimple, &m_pivotMeanError);
 
                     if (m_pivotReferenceInterface){
                         cout << "Pivot calibration result w.r.t reference." << endl;
                         m_pivotCalibration.calibrate(m_savedPivotRef2Points, test, dimple);
                     }
 
-                    // If you want to save the points
-                    m_registeredText = "Saving Points into csv file.";
                     saveDataToCSV("Pivot_trackerTomarker.csv", m_savedPivotPoints);             
                     saveDataToCSV("Pivot_referenceTomarker.csv", m_savedPivotRef2Points);             
-                    m_registeredText = "[INFO] Saved to /data/ folder!";
                     cerr << "Saved to /data/ folder!" << endl;
+
+                    char buf[512];
+                    snprintf(buf, sizeof(buf),
+                             "Pivot calibration result:\n"
+                             "position: {x: %.7g, y: %.7g, z: %.7g}\n"
+                             "Mean calibration error: %.6g m\n",
+                             m_marker2tip.x(), m_marker2tip.y(), m_marker2tip.z(), m_pivotMeanError);
+                    m_pivotText = buf;
+                    m_pivotText += savePromptText();
+                    cerr << savePromptText() << endl;
                     
                     m_pivotDone = true;
                 }
 
                 else if(m_savedPivotPoints.size() > 0){
-                    m_registeredText += "Number of saved Points: " + to_string(m_savedPivotPoints.size()) + "/" + to_string(m_numPivot);
+                    m_pivotText += "Number of saved Points: " + to_string(m_savedPivotPoints.size()) + "/" + to_string(m_numPivot);
                 }
             }
         }
@@ -622,7 +669,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
 
             if (measured_cp.getLocalPos().length() > 0.0 && !m_pivotDone){
                 // Erase the warning if there is measured_cf
-                m_registeredText = "Saving Points...\n";
+                m_pivotText = "Saving Points...\n";
 
                 if (m_savePoint){
                     if (m_savedPivotPoints.size() == 0){
@@ -644,10 +691,8 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 cVector3d test;
                 m_pivotCalibration.calibrate(m_savedPivotPoints, m_ee2tip, dimple);
 
-                // If you want to save the points
-                m_registeredText = "Saving Points into csv file.";
                 saveDataToCSV("Pivot_robotTomarker.csv", m_savedPivotPoints);             
-                m_registeredText = "[INFO] Saved to /data/ folder!";
+                m_pivotText = "[INFO] Saved to /data/ folder!";
                 cerr << "Saved to /data/ folder!" << endl;
                 
                 m_pivotDone = true;
@@ -655,7 +700,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
             }
 
             else if(m_savedPivotPoints.size() > 0){
-                m_registeredText += "Number of saved Points: " + to_string(m_savedPivotPoints.size()) + "/" + to_string(m_numPivot);
+                m_pivotText += "Number of saved Points: " + to_string(m_savedPivotPoints.size()) + "/" + to_string(m_numPivot);
             }
         }
     }
@@ -691,6 +736,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                     savedAxisPointMesh->setShowEnabled(true);
                     savedAxisPointMesh->setLocalPos(measured_cp.getLocalPos());
                     m_worldPtr->addSceneObjectToWorld(savedAxisPointMesh);
+                    m_axisPointMeshes.push_back(savedAxisPointMesh);
 
                     m_savedAxisPoints.push_back(collectedPoint);
                 }
@@ -722,6 +768,7 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                 }
                 else{
                     m_axisDone = true;
+                    m_axisLineTip = marker2tip ? *marker2tip : cVector3d(0, 0, 0);
                     char buf[1024];
                     snprintf(buf, sizeof(buf),
                              "Axis calibration result:\n"
@@ -735,15 +782,16 @@ void afRegistrationPlugin::physicsUpdate(double dt){
                              m_axisResult.angularCoverage * 180.0 / M_PI, m_axisResult.axisSpread * 180.0 / M_PI);
                     m_axisText = buf;
                     if (m_axisResult.signFromTip){
-                        m_axisText += "Pivot point to axis distance: " + to_string(m_axisResult.tipToAxisDistance) + " m";
+                        m_axisText += "Pivot point to axis distance: " + to_string(m_axisResult.tipToAxisDistance) + " m\n";
                     }
                     else{
-                        m_axisText += "WARNING! No t_tip available: the axis sign is ambiguous.";
+                        m_axisText += "WARNING! No t_tip available: the axis sign is ambiguous.\n";
                     }
                     if (m_axisResult.angularCoverage < M_PI / 3.0){
-                        m_axisText += "\nWARNING! Small angular coverage, rotate further for a better fit.";
+                        m_axisText += "WARNING! Small angular coverage, rotate further for a better fit.\n";
                     }
-                    cerr << "Copy the orientation above into 'TF drill_tip-drill_body' (assumes the drill_tip frame has the marker orientation)." << endl;
+                    m_axisText += savePromptText();
+                    cerr << savePromptText() << endl;
                 }
             }
         }
@@ -772,13 +820,29 @@ void afRegistrationPlugin::physicsUpdate(double dt){
     // If pivot calibration is done
     if (m_pivotDone || m_pivotDefined){
         if (m_pivotMarkerPtr){
-            cVector3d tmp;
-            m_ee2marker.mulr(m_marker2tip, tmp);
             cVector3d tip;
-            m_pivotMarkerPtr->getLocalTransform().mulr(m_ee2tip, tip);
+            m_pivotMarkerPtr->getLocalTransform().mulr(m_manualPivot ? m_ee2tip : m_marker2tip, tip);
             m_burrMesh->setLocalPos(tip);
             m_burrMesh->setShowEnabled(true);
         }
+    }
+
+    // Show the calibrated axis attached to the marker, from the tip towards the back of the tool
+    if (m_axisDone && m_pivotMarkerPtr){
+        cTransform markerTrans = m_pivotMarkerPtr->getLocalTransform();
+        cVector3d tip, back;
+        markerTrans.mulr(m_axisLineTip, tip);
+        markerTrans.mulr(m_axisLineTip + 0.2 * m_axisResult.axisInMarker, back);
+        if (!m_axisLine){
+            m_axisLine = new cShapeLine(tip, back);
+            m_axisLine->setLineWidth(3.0);
+            m_axisLine->m_colorPointA.setGreen();
+            m_axisLine->m_colorPointB.setGreen();
+            m_worldPtr->addSceneObjectToWorld(m_axisLine);
+        }
+        m_axisLine->m_pointA = tip;
+        m_axisLine->m_pointB = back;
+        m_axisLine->setShowEnabled(m_activeMode == RegistrationMode::AXIS);
     }
     
     // If both Handeye calibration and pivot calibration are done
@@ -1016,6 +1080,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
 
             // Get marker in AMBF
             string markerName = node["pivot"]["marker name"].as<string>();
+            m_pivotMarkerName = markerName;
             m_pivotMarkerPtr = m_worldPtr->getRigidBody(markerName);
             
             if(!m_pivotMarkerPtr){
@@ -1041,6 +1106,11 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
 
             if(node["pivot"]["number of points"]){
                 m_numPivot = node["pivot"]["number of points"].as<int>();
+            }
+
+            // [Optional] TF in the tf config (--tf_list) written with [Ctrl + W]. Default: FIXED transform from the marker
+            if(node["pivot"]["tf name"]){
+                m_pivotTFName = node["pivot"]["tf name"].as<string>();
             }
 
             if(node["pivot"]["registered pivot result"]){
@@ -1095,6 +1165,17 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
             if(node["axis"]["roll offset"]){
                 m_axisRollOffset = node["axis"]["roll offset"].as<double>();
             }
+
+            // Marker body in AMBF, used to find the tip in the tf config and to show the calibrated axis
+            if(node["axis"]["marker name"]){
+                m_pivotMarkerName = node["axis"]["marker name"].as<string>();
+                m_pivotMarkerPtr = m_worldPtr->getRigidBody(m_pivotMarkerName);
+            }
+
+            // [Optional] TF in the tf config (--tf_list) written with [Ctrl + W]. Default: FIXED transform from the tip
+            if(node["axis"]["tf name"]){
+                m_axisTFName = node["axis"]["tf name"].as<string>();
+            }
         }
         // Without an axis section, enable axis calibration with the pivot marker and default parameters
         else if (m_isPivot){
@@ -1106,15 +1187,7 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
 
         // Tool tip for axis calibration: axis section > pivot result > FIXED transform from the marker in the tf config
         if (m_isAxis && !m_axisTipDefined && !m_pivotDefined){
-            string markerName;
-            if (node["axis"] && node["axis"]["marker name"]){
-                markerName = node["axis"]["marker name"].as<string>();
-            }
-            else if (node["pivot"] && node["pivot"]["marker name"]){
-                markerName = node["pivot"]["marker name"].as<string>();
-            }
-
-            if (!markerName.empty() && readTipFromTFConfig(m_tfConfigFilepath, markerName, m_axisMarker2tip)){
+            if (readTipFromTFConfig(m_axisMarker2tip)){
                 m_axisTipDefined = true;
             }
             else{
@@ -1128,34 +1201,168 @@ int afRegistrationPlugin::readConfigFile(string config_filepath){
 
 }
 
-// Look for a FIXED transform in the ambf_tf_plugin config whose parent is the marker (ex. TF marker_body-drill_tip)
-bool afRegistrationPlugin::readTipFromTFConfig(string tfConfigFilepath, string markerName, cVector3d& marker2tip){
-    if (tfConfigFilepath.empty()){
+// TF of the tf config (--tf_list) that holds the tool tip w.r.t. the marker (ex. TF marker_body-drill_tip)
+string afRegistrationPlugin::getTFTipName(string& tipChild){
+    tipChild.clear();
+    if (m_tfConfigFilepath.empty()){
+        return "";
+    }
+    if (!m_pivotTFName.empty()){
+        try{
+            YAML::Node tf = YAML::LoadFile(m_tfConfigFilepath)[m_pivotTFName];
+            if (tf && tf["child"]){
+                tipChild = tf["child"].as<string>();
+            }
+        }
+        catch (const exception& e){
+            cerr << "WARNING! Failed to read tf config " << m_tfConfigFilepath << ": " << e.what() << endl;
+        }
+        return m_pivotTFName;
+    }
+    if (m_pivotMarkerName.empty()){
+        return "";
+    }
+    return TFConfigWriter::findFixedTransform(m_tfConfigFilepath, m_pivotMarkerName, tipChild);
+}
+
+bool afRegistrationPlugin::readTipFromTFConfig(cVector3d& marker2tip){
+    string tipChild;
+    string tfName = getTFTipName(tipChild);
+    if (tfName.empty()){
         return false;
     }
-
-    YAML::Node tfNode;
     try{
-        tfNode = YAML::LoadFile(tfConfigFilepath);
+        YAML::Node posNode = YAML::LoadFile(m_tfConfigFilepath)[tfName]["transformation"]["position"];
+        if (!posNode){
+            return false;
+        }
+        marker2tip = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&posNode));
+        cout << "> Axis calibration t_tip from '" << tfName << "' in " << m_tfConfigFilepath << ": " << marker2tip.str(6) << endl;
+        return true;
     }
     catch (const exception& e){
-        cerr << "WARNING! Failed to load tf config " << tfConfigFilepath << ": " << e.what() << endl;
-        return false;
-    }
-
-    for (size_t i = 0; i < tfNode["transformations"].size(); i++){
-        string tfName = tfNode["transformations"][i].as<string>();
-        YAML::Node tf = tfNode[tfName];
-        if (tf["parent"] && tf["parent"].as<string>() == markerName &&
-            tf["type"] && tf["type"].as<string>() == "FIXED" &&
-            tf["transformation"]["position"]){
-            YAML::Node posNode = tf["transformation"]["position"];
-            marker2tip = to_cVector3d(adf_loader_1_0::ADFUtils::positionFromNode(&posNode));
-            cout << "> Axis calibration t_tip from '" << tfName << "' in " << tfConfigFilepath << ": " << marker2tip.str(6) << endl;
-            return true;
-        }
+        cerr << "WARNING! Failed to read " << tfName << " in " << m_tfConfigFilepath << ": " << e.what() << endl;
     }
     return false;
+}
+
+string afRegistrationPlugin::savePromptText(){
+    if (m_tfConfigFilepath.empty()){
+        return "No tf config (--tf_list) given: copy the result manually.";
+    }
+    string name = (m_activeMode == RegistrationMode::PIVOT) ? "pivot" : "axis";
+    return "Save " + name + " result to tf config? Press [Ctrl + W]\n(" + m_tfConfigFilepath + ")\n"
+           "Only this result is saved.";
+}
+
+void afRegistrationPlugin::restartCalibration(){
+    if (m_activeMode == RegistrationMode::PIVOT){
+        for (auto mesh: m_pivotPointMeshes){
+            mesh->setShowEnabled(false);
+        }
+        m_pivotPointMeshes.clear();
+        m_savedPivotPoints.clear();
+        m_savedPivotRef2Points.clear();
+        m_pivotDone = false;
+        m_pivotText.clear();
+        cerr << "Pivot calibration restarted." << endl;
+    }
+    else if (m_activeMode == RegistrationMode::AXIS){
+        for (auto mesh: m_axisPointMeshes){
+            mesh->setShowEnabled(false);
+        }
+        m_axisPointMeshes.clear();
+        m_savedAxisPoints.clear();
+        m_axisDone = false;
+        m_axisText.clear();
+        if (m_axisLine){
+            m_axisLine->setShowEnabled(false);
+        }
+        cerr << "Axis calibration restarted." << endl;
+    }
+    m_tfSaveText.clear();
+}
+
+// Write the pivot (tip position) or axis (body orientation) result into the tf config (--tf_list)
+void afRegistrationPlugin::saveCalibrationToTF(){
+    if (m_tfConfigFilepath.empty()){
+        m_tfSaveText = "ERROR! No tf config (--tf_list) given.";
+        cerr << m_tfSaveText << endl;
+        return;
+    }
+
+    string tipChild;
+    string tipTF = getTFTipName(tipChild);
+    string date = TFConfigWriter::timestamp("%Y-%m-%d %H:%M:%S");
+    string tfName, header, errorMsg, backupPath;
+    vector<pair<string, string>> values;
+    char buf[256];
+
+    if (m_activeMode == RegistrationMode::PIVOT){
+        if (m_manualPivot){
+            m_tfSaveText = "ERROR! Saving a MANUAL pivot calibration to the tf config is not supported.";
+            cerr << m_tfSaveText << endl;
+            return;
+        }
+        tfName = tipTF;
+        if (tfName.empty()){
+            m_tfSaveText = "ERROR! No FIXED transform with parent '" + m_pivotMarkerName + "' in the tf config.\nSet 'tf name' in the pivot section.";
+            cerr << m_tfSaveText << endl;
+            return;
+        }
+        snprintf(buf, sizeof(buf), "{x: %.7g, y: %.7g, z: %.7g}", m_marker2tip.x(), m_marker2tip.y(), m_marker2tip.z());
+        values.push_back(make_pair(string("position"), string(buf)));
+        snprintf(buf, sizeof(buf), "%.6g", m_pivotMeanError);
+        values.push_back(make_pair(string("Mean calibration error"), string(buf)));
+        header = "Pivot calibration performed on " + date + " (ambf_registration_plugin)";
+    }
+    else if (m_activeMode == RegistrationMode::AXIS){
+        tfName = m_axisTFName;
+        if (tfName.empty() && !tipChild.empty()){
+            string bodyChild;
+            tfName = TFConfigWriter::findFixedTransform(m_tfConfigFilepath, tipChild, bodyChild);
+        }
+        if (tfName.empty()){
+            m_tfSaveText = "ERROR! No FIXED transform from the tool tip in the tf config.\nSet 'tf name' in the axis section.";
+            cerr << m_tfSaveText << endl;
+            return;
+        }
+
+        // The axis result is w.r.t. the marker. Express it w.r.t. the tip frame: R_tip_body = R_marker_tip^T * R_marker_body
+        cMatrix3d markerToTip;
+        markerToTip.identity();
+        double r, p, y;
+        if (!tipTF.empty() && TFConfigWriter::readOrientation(m_tfConfigFilepath, tipTF, r, p, y)){
+            afMatrix3d rot;
+            rot.setRPY(r, p, y);
+            markerToTip = to_cMatrix3d(rot);
+        }
+        cMatrix3d tipToMarker, tipToBody;
+        markerToTip.transr(tipToMarker);
+        tipToMarker.mulr(m_axisResult.markerToBodyRot, tipToBody);
+        double yaw = atan2(tipToBody(1, 0), tipToBody(0, 0));
+        double pitch = atan2(-tipToBody(2, 0), sqrt(tipToBody(2, 1) * tipToBody(2, 1) + tipToBody(2, 2) * tipToBody(2, 2)));
+        double roll = atan2(tipToBody(2, 1), tipToBody(2, 2));
+
+        snprintf(buf, sizeof(buf), "{r: %.6f, p: %.6f, y: %.6f}", roll, pitch, yaw);
+        values.push_back(make_pair(string("orientation"), string(buf)));
+        snprintf(buf, sizeof(buf), " (coverage: %.1f deg, axis spread: %.2f deg)",
+                 m_axisResult.angularCoverage * 180.0 / M_PI, m_axisResult.axisSpread * 180.0 / M_PI);
+        header = "Axis calibration performed on " + date + buf;
+    }
+    else{
+        return;
+    }
+
+    if (TFConfigWriter::updateTransformation(m_tfConfigFilepath, tfName, values, header, backupPath, errorMsg)){
+        m_tfSaveText = "Saved to '" + tfName + "' in " + m_tfConfigFilepath + "\nBackup: " + backupPath +
+                       "\nRestart the simulation to load the new tf config.";
+        cout << "[INFO!] " << m_tfSaveText << endl;
+    }
+    else{
+        m_tfSaveText = "ERROR! " + errorMsg;
+        cerr << m_tfSaveText << endl;
+    }
 }
 
 void afRegistrationPlugin::reset(){

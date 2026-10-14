@@ -177,6 +177,22 @@ The result is printed as `orientation: {r, p, y}` for `TF drill_tip-drill_body` 
 `mesh axis` of the body mesh (default +X, as in the drill meshes) is aligned with the shaft. Rotation about the shaft
 is not observable; use `roll offset` to adjust it.
 
+### 3.4 Saving pivot/axis results to the tf config
+When the plugin is started with `--tf_list <tf_config.yaml>` (ambf_tf_plugin config), press `[Ctrl + W]` once a pivot or
+axis calibration is finished to write the result into the tf config:
+- Pivot: `position` and `Mean calibration error` of the FIXED transform whose parent is the pivot `marker name` (ex. `TF marker_body-drill_tip`).
+- Axis: `orientation` of the FIXED transform whose parent is the tool tip (ex. `TF drill_tip-drill_body`).
+
+Use `tf name` in the `pivot`/`axis` section to choose the transform explicitly. The previous values are kept as comments,
+and the original file is backed up as `<tf_config>.yaml.<YYYYMMDD_HHMMSS>.bkp`. Restart the simulation to load the new values.
+
+`[Ctrl + W]` only saves the result of the active calibration (the one selected with [Ctrl + 2] or [Ctrl + 4]).
+
+Pivot and axis calibration can be done in the same session ([Ctrl + 2] then [Ctrl + 4]); the axis calibration then uses the
+new tool tip. To save both results, press `[Ctrl + W]` in each mode: for example `[Ctrl + W]` after the axis calibration,
+then `[Ctrl + 2]` and `[Ctrl + W]` again for the pivot. Each save creates its own backup.
+`[Ctrl + D]` restarts the active calibration.
+
 ### 3.1 Perform Pin-base registration
 Press `[Ctrl + 3]` to activate pin-base registration mode. Press `[Ctrl + 9]` to store the points.
 [Caution] Sampling order matters!! Make sure to sample the points in the same order as the points in `launch.yaml`.

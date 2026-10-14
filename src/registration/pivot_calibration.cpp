@@ -65,7 +65,7 @@ Eigen::Matrix3d cMatrixToEigen(cMatrix3d mat)
     return (m);
 }
 
-int PivotCalibration::calibrate(vector<cTransform> transIn, cVector3d& tipPos, cVector3d& markerPos){
+int PivotCalibration::calibrate(vector<cTransform> transIn, cVector3d& tipPos, cVector3d& markerPos, double* meanError){
     // Convert to Eigen data type
     vector<Eigen::Matrix3d> vec_R;
     vector<Eigen::Vector3d> vec_P;
@@ -119,6 +119,9 @@ int PivotCalibration::calibrate(vector<cTransform> transIn, cVector3d& tipPos, c
     }
     double meanErr = errSum / vec_R.size();
     cerr << "Mean calibration error: " << meanErr << endl;
+    if (meanError){
+        *meanError = meanErr;
+    }
 
     return 1;
 }

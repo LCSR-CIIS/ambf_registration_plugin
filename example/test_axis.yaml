@@ -5,6 +5,7 @@
 pivot:
   marker namespace: /atracsys/drill_marker # namespace for the marker
   marker name: marker # [Optional] Name of the rigid body in AMBF
+  # tf name: TF marker_body-drill_tip # [Optional] TF of --tf_list written with [Ctrl + W]. Default: FIXED transform from 'marker name'
   type: AUTO
   resolution: 0.01
   number of points: 150
@@ -23,3 +24,4 @@ axis:
   # t_tip: {x: -0.140626, y: -0.134951, z: 0.0559472} # [Optional] overrides the pivot result
   mesh axis: {x: 1.0, y: 0.0, z: 0.0} # [Optional] mesh axis along the shaft from tip to back (drill meshes: +X)
   roll offset: 0.0 # [Optional] rotation of the mesh about the shaft [rad]
+  # tf name: TF drill_tip-drill_body # [Optional] TF of --tf_list written with [Ctrl + W]. Default: FIXED transform from the tip

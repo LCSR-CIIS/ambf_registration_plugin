@@ -45,6 +45,7 @@
 
 #include "../utils/camera_panel_manager.h"
 #include "../utils/CRTKInterface.h"
+#include "../utils/tf_config_writer.h"
 #include <yaml-cpp/yaml.h>
 
 #include "../registration/point_cloud_registration.h"
@@ -90,7 +91,13 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         bool initLabels();
         bool initCamera(vector<string> cameraNames);
         int readConfigFile(string config_filepath);
-        bool readTipFromTFConfig(string tfConfigFilepath, string markerName, cVector3d& marker2tip);
+        bool readTipFromTFConfig(cVector3d& marker2tip);
+        string savePromptText();
+        void setActiveMode(RegistrationMode mode);
+        void restartCalibration();
+        void saveCalibrationToTF();
+        void layoutPanels();
+        string getTFTipName(string& tipChild);
 
         void addOptionDescription(string & text);
         void applybtTransformToRigidBody(afRigidBodyPtr bodyPtr, btTransform& trans);
@@ -177,6 +184,11 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         bool m_pivotDone = false;
 
         cVector3d m_marker2tip;
+        double m_pivotMeanError = 0.0;
+        string m_pivotText;
+        string m_pivotMarkerName;
+        string m_pivotTFName; // [Optional] TF in the tf config written with the pivot result
+        vector<cShapeSphere*> m_pivotPointMeshes;
         bool m_manualPivot = false;
         cVector3d m_ee2tip;
 
@@ -194,7 +206,15 @@ class afRegistrationPlugin: public afSimulatorPlugin{
         cVector3d m_axisMeshAxis = cVector3d(1.0, 0.0, 0.0);
         double m_axisRollOffset = 0.0;
         string m_axisText;
+        string m_axisTFName; // [Optional] TF in the tf config written with the axis result
+        vector<cShapeSphere*> m_axisPointMeshes;
+        cShapeLine* m_axisLine = nullptr;
+        cVector3d m_axisLineTip;
+
+        // Saving calibration results to the ambf_tf_plugin config (--tf_list)
         string m_tfConfigFilepath;
+        string m_tfSaveText;
+        bool m_restartRequested = false;
 
         // Flag used to check if the mode was defined in the config file.
         bool m_isPivot = false;

@@ -53,7 +53,7 @@ using namespace chai3d;
 class PivotCalibration{
     public:
         PivotCalibration();
-        int calibrate(vector<cTransform> transIn, cVector3d& tipPos, cVector3d& markerPos);
+        int calibrate(vector<cTransform> transIn, cVector3d& tipPos, cVector3d& markerPos, double* meanError = nullptr);
 };
 
 #endif //PIVOT_CALIBRATION_H

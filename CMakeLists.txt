@@ -100,6 +100,8 @@ add_library(registration_plugin SHARED
     src/utils/camera_panel_manager.h
     src/utils/CRTKInterface.cpp
     src/utils/CRTKInterface.h
+    src/utils/tf_config_writer.cpp
+    src/utils/tf_config_writer.h
     src/registration/point_cloud_registration.cpp
     src/registration/point_cloud_registration.h
     src/registration/pivot_calibration.cpp
